@@ -11,7 +11,7 @@
 Interaktive High-Performance Charts für Home Assistant
 
 
-Das 📉 **Detailed Charts Panel** ist eine leistungsstarke Visualisierungslösung für Home Assistant, um historische Daten deiner Sensoren tiefgehend zu analysieren. Es bietet Funktionen, die weit über die Standard-History hinausgehen, wie z.B. Zoom, Pan, Grid-Layouts und eine persistente Konfiguration.
+Das 📉 **Detailed Charts Panel** ist eine leistungsstarke Visualisierungslösung für Home Assistant, um historische Daten deiner Sensoren tiefgehend zu analysieren. Es bietet Funktionen, die weit über die Standard-History hinausgehen, wie z.B. Zoom, Pan, Grid-Layouts, verschiedene Diagrammtype und eine fortbestehende Konfiguration. Zudem läuft alles rein lokal mit Hilfe der Websocket Api von Home Assistant.
 
 Das Panel speichert deine Einstellungen (ausgewählte Sensoren, Farben, Ansichten) automatisch im Browser (Local Storage), sodass du deine Analyseumgebung nach einem Neustart sofort wieder vorfindest.
 
