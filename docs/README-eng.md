@@ -11,7 +11,7 @@
 Interactive High-Performance Charts for Home Assistant
 
 
-The 📉 **Detailed Charts Panel** is a powerful visualization solution for Home Assistant designed to deeply analyze historical data of your sensors. It offers features far beyond the standard history view, such as seamless Zoom, Pan, Grid Layouts, and persistent configuration.
+The 📉 **Detailed Charts Panel** is a powerful visualization solution for Home Assistant, allowing for in-depth analysis of historical data from your sensors. It offers features that go far beyond standard history, such as zoom, pan, grid layouts, various chart types, and persistent configuration. Furthermore, everything runs entirely locally using the Home Assistant WebSocket API.
 
 The panel automatically saves your settings (selected sensors, colors, view options) in the browser (Local Storage), ensuring your analysis environment is ready immediately after a reload.
 
@@ -28,8 +28,6 @@ If you like this panel, I would be very happy about a star rating ⭐. 🤗
 - ### 📈 **Statistics:** Live display of Min / Max / Average / Current values
 - ### 🛠️ **Quick Controls:** Instantly toggle between Line and Bar charts per sensor
 
-<img width="48%" height="auto" alt="Split View Grid" src="https://github.com/jayjojayson/detailed-charts-panel/blob/main/docs/split_view.png" /> <img width="48%" height="auto" alt="Combined View" src="https://github.com/jayjojayson/detailed-charts-panel/blob/main/docs/combined_view.png" />
-<img width="96%" height="auto" alt="Full Interface" src="https://github.com/jayjojayson/detailed-charts-panel/blob/main/docs/main_interface.png" />
 
 ---
 
