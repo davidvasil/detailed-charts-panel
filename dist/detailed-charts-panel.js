@@ -1,4 +1,4 @@
-console.log("DetailedChartsPanel: v_1.2");
+console.log("DetailedChartsPanel: v_1.3");
 
 class DetailedChartsPanel extends HTMLElement {
   constructor() {
@@ -9,6 +9,7 @@ class DetailedChartsPanel extends HTMLElement {
     this._globalStartTime = null;
     this._globalEndTime = null;
     this.libsLoaded = false;
+    this._allSensors = [];
     
     this.STORAGE_KEY_CONFIG = 'detailed-charts-config';
     this.STORAGE_KEY_VIEWS = 'detailed-charts-saved-views';
@@ -20,6 +21,7 @@ class DetailedChartsPanel extends HTMLElement {
     this.layoutMode = 'combined'; 
     this.gridColumns = 1;
     this.stackedBars = false;
+    this.showStats = true; 
   }
 
   set hass(hass) {
@@ -34,7 +36,11 @@ class DetailedChartsPanel extends HTMLElement {
           this.innerHTML = `<div style="color:red;padding:20px;">Fehler: ${e.message}</div>`;
       }
     }
-    if (this.content) this.populateSensorList();
+    if (this._hass && this._hass.states) {
+        this._allSensors = Object.keys(this._hass.states)
+            .filter(k => k.startsWith('sensor.') || k.startsWith('binary_sensor.') || k.startsWith('input_number.'))
+            .sort();
+    }
   }
 
   initUI() {
@@ -51,6 +57,9 @@ class DetailedChartsPanel extends HTMLElement {
           --accent-color: var(--primary-color, #03a9f4);
           --btn-color: #616161; 
         }
+        /* GLOBAL BOX SIZING FIX */
+        * { box-sizing: border-box; }
+
         .container { display: flex; height: 100%; overflow: hidden; }
         
         /* SIDEBAR */
@@ -63,15 +72,31 @@ class DetailedChartsPanel extends HTMLElement {
         }
         h2 { margin: 0 0 10px 0; font-weight: 300; letter-spacing: 1px; font-size: 1.5em; }
         label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--secondary-text-color); margin-bottom: 4px; display: block; letter-spacing: 0.5px; }
-        .control-group { margin-bottom: 5px; }
+        .control-group { margin-bottom: 5px; position: relative; }
         
         input, select { 
             padding: 12px 10px; border-radius: 4px; border: 1px solid var(--divider-color); 
             background: var(--primary-background-color); color: var(--primary-text-color); 
-            font-family: inherit; font-size: 14px; width: 100%; box-sizing: border-box; outline: none; 
+            font-family: inherit; font-size: 14px; width: 100%; outline: none; 
             transition: border-color 0.2s, box-shadow 0.2s; -webkit-appearance: none; appearance: none;
         }
         input:focus, select:focus { border-color: var(--accent-color); }
+
+        /* CUSTOM SEARCH DROPDOWN */
+        .suggestions-list {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: var(--secondary-background-color, #2c2c2c); 
+            border: 1px solid var(--divider-color);
+            border-radius: 4px; max-height: 300px; overflow-y: auto; z-index: 100;
+            display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .suggestion-item {
+            padding: 10px; border-bottom: 1px solid var(--divider-color); cursor: pointer;
+            transition: background 0.2s;
+        }
+        .suggestion-item:hover { background: rgba(255, 255, 255, 0.1); }
+        .s-name { font-weight: 500; font-size: 14px; color: var(--primary-text-color); }
+        .s-id { font-size: 11px; color: var(--secondary-text-color); margin-top: 2px; }
 
         .add-sensor-row { display: flex; gap: 8px; align-items: center; }
         .color-picker { width: 44px; height: 44px; padding: 2px; border-radius: 4px; border: 1px solid var(--divider-color); background: var(--primary-background-color); cursor: pointer; }
@@ -80,7 +105,17 @@ class DetailedChartsPanel extends HTMLElement {
         .btn-icon.grey { background-color: #757575; }
         .btn-icon.grey:hover { background-color: #616161; }
 
-        .sensor-list { display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding: 5px 0; margin-bottom: 10px; border-top: 1px solid var(--divider-color); padding-top: 15px; }
+        /* SENSOR LIST - INCREASED HEIGHT & HIDDEN SCROLLBAR */
+        .sensor-list { 
+            display: flex; flex-direction: column; gap: 8px; 
+            max-height: 230px; /* INCREASED HEIGHT */
+            overflow-y: auto; 
+            padding: 5px 0; margin-bottom: 10px; 
+            border-top: 1px solid var(--divider-color); padding-top: 15px; 
+            scrollbar-width: none; 
+        }
+        .sensor-list::-webkit-scrollbar { display: none; }
+
         .sensor-item { display: flex; align-items: center; gap: 10px; background: rgba(128, 128, 128, 0.1); padding: 8px; border-radius: 4px; font-size: 13px; }
         .sensor-color-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
         .sensor-name { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -129,34 +164,54 @@ class DetailedChartsPanel extends HTMLElement {
 
         .main-content { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; background-color: var(--primary-background-color); overflow-y: auto; position: relative; }
         
-        /* Layout Wrappers */
+        /* AUTO GRID for Stats */
+        .stats-wrapper { 
+            margin-top: 20px; 
+            display: flex; flex-wrap: wrap; gap: 15px; 
+        }
+        
+        .stats-card { 
+            padding: 10px 15px; background: var(--card-background-color); border-left: 5px solid transparent; 
+            border-radius: 4px; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid var(--divider-color); border-left-width: 5px;
+            display: flex; flex-direction: column; gap: 2px;
+            /* Max 5 per row logic */
+            flex: 1 1 calc(19% - 15px);
+            min-width: 200px;
+        }
+
+        .stats-header { 
+            font-weight: bold; color: var(--primary-text-color); 
+            margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px solid var(--divider-color);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+        }
+        
+        /* CLASSIC DIVIDER ROW STYLE */
+        .stats-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 3px 0; border-bottom: 1px solid rgba(128, 128, 128, 0.1);
+        }
+        .stats-row:last-child { border-bottom: none; }
+        
+        .stats-row span:first-child { color: var(--secondary-text-color); text-transform: uppercase; font-size: 0.8em; font-weight: 500; }
+        .stats-row span:last-child { font-weight: 700; color: var(--primary-text-color); }
+        .stats-main-val { font-size: 1.0em; color: var(--primary-text-color); font-weight: bold; }
+
         .chart-container-outer { width: 100%; height: 450px; min-height: 200px; position: relative; background: var(--card-background-color); border-radius: 8px; padding: 15px; box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid var(--divider-color); display: flex; flex-direction: column; }
         .canvas-wrapper { flex-grow: 1; position: relative; width: 100%; height: 100%; overflow: hidden; }
         #resize-handle { height: 14px; width: 100%; background: var(--card-background-color); cursor: ns-resize; display: flex; align-items: center; justify-content: center; border-top: 1px solid var(--divider-color); margin-top: 5px; }
         .grip-lines { width: 30px; height: 3px; border-top: 1px solid var(--secondary-text-color); border-bottom: 1px solid var(--secondary-text-color); opacity: 0.5; }
         #resize-ghost { position: absolute; left: 40px; right: 40px; height: 4px; background-color: var(--accent-color); opacity: 0.5; z-index: 100; display: none; pointer-events: none; cursor: ns-resize; }
         
-        .stats-wrapper { margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
-        
-        .stats-card { 
-            padding: 15px; background: var(--card-background-color); border-left: 5px solid transparent; 
-            border-radius: 4px; font-size: 1rem; line-height: 1.5em; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border: 1px solid var(--divider-color); border-left-width: 5px;
-        }
-
-        /* Split Grid Wrapper - FIXED CSS */
-        .split-grid-wrapper { display: grid; gap: 20px; align-content: start; width: 100%; }
-
-        @media (max-width: 700px) { 
-            .split-grid-wrapper { grid-template-columns: 1fr; }
-            .stats-wrapper { grid-template-columns: 1fr; } 
-            .split-footer { flex-direction: column; }
-            .split-controls-box { width: 100%; flex-direction: row; border-left: none; border-top: 1px solid var(--divider-color); padding-left: 0; padding-top: 10px; }
+        /* FLEX SPLIT WRAPPER */
+        .split-grid-wrapper { 
+            display: flex; flex-wrap: wrap; gap: 20px; width: 100%; 
         }
 
         .split-chart-card {
             background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 8px; padding: 15px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 0; height: fit-content;
+            flex-grow: 1;
         }
         .split-chart-header { font-weight: bold; font-size: 1.1em; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .split-canvas-container { height: 300px; position: relative; width: 100%; }
@@ -183,8 +238,8 @@ class DetailedChartsPanel extends HTMLElement {
           
           <div class="control-group">
             <label>Sensor hinzufügen:</label>
-            <input list="sensors-datalist" id="sensor-input" placeholder="Tippen zum Suchen..." autocomplete="off">
-            <datalist id="sensors-datalist"></datalist>
+            <input id="sensor-input" placeholder="Tippen zum Suchen..." autocomplete="off">
+            <div id="suggestions" class="suggestions-list"></div>
           </div>
           
           <div class="control-group add-sensor-row">
@@ -219,6 +274,11 @@ class DetailedChartsPanel extends HTMLElement {
                   </select>
               </div>
 
+              <div class="toggle-row" id="toggle-stats-row" style="margin-top: 10px;">
+                  <span class="toggle-label">Statistiken anzeigen</span>
+                  <input type="checkbox" class="toggle-switch" id="stats-switch" checked>
+              </div>
+
               <div class="slider-row" id="grid-slider-row">
                   <div class="slider-header">
                       <label>Spalten (Grid)</label>
@@ -239,6 +299,7 @@ class DetailedChartsPanel extends HTMLElement {
                 <option value="line" selected>Line (Kurve)</option>
                 <option value="bar">Bar (Balken)</option>
                 <option value="doughnut">Donut (Verteilung)</option>
+                <option value="stepped">Stepped (Stufen)</option>
                 <option value="scatter">Scatter (Punkte)</option>
             </select>
           </div>
@@ -301,10 +362,16 @@ class DetailedChartsPanel extends HTMLElement {
     });
 
     const sInput = this.content.querySelector('#sensor-input');
-    sInput.addEventListener('focus', () => this.populateSensorList());
-    sInput.addEventListener('click', () => this.populateSensorList());
+    sInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
+    sInput.addEventListener('focus', (e) => this.handleSearch(e.target.value));
+    
+    document.addEventListener('click', (e) => {
+        if(this.shadowRoot && !e.composedPath().includes(this.content.querySelector('.control-group'))) {
+            this.content.querySelector('#suggestions').style.display = 'none';
+        }
+    });
 
-    const inputs = ['#chart-type', '#time-select', '#date-start', '#date-end', '#fill-switch', '#layout-select', '#stacked-switch'];
+    const inputs = ['#chart-type', '#time-select', '#date-start', '#date-end', '#fill-switch', '#layout-select', '#stacked-switch', '#stats-switch'];
     inputs.forEach(id => {
         this.content.querySelector(id).addEventListener('change', (e) => {
             if (id === '#fill-switch') this.fillArea = e.target.checked;
@@ -315,6 +382,9 @@ class DetailedChartsPanel extends HTMLElement {
             }
 
             if (id === '#stacked-switch') this.stackedBars = e.target.checked;
+            if (id === '#stats-switch') {
+                this.showStats = e.target.checked;
+            }
             
             this.updateStackedVisibility();
             this.saveSettings(); 
@@ -358,6 +428,43 @@ class DetailedChartsPanel extends HTMLElement {
     }
 }
 
+  // --- CUSTOM SEARCH ---
+  handleSearch(query) {
+      const list = this.content.querySelector('#suggestions');
+      if(!this._allSensors || this._allSensors.length === 0) return;
+      
+      const q = query.toLowerCase();
+      const matches = this._allSensors.filter(id => {
+          if (id.toLowerCase().includes(q)) return true;
+          const state = this._hass.states[id];
+          if (state && state.attributes.friendly_name && state.attributes.friendly_name.toLowerCase().includes(q)) return true;
+          return false;
+      }).slice(0, 50);
+
+      if (matches.length === 0) {
+          list.style.display = 'none';
+          return;
+      }
+
+      list.innerHTML = '';
+      matches.forEach(id => {
+          const div = document.createElement('div');
+          div.className = 'suggestion-item';
+          const name = this.cleanName(id);
+          const state = this._hass.states[id];
+          const friendly = state && state.attributes.friendly_name ? state.attributes.friendly_name : name;
+          
+          div.innerHTML = `<div class="s-name">${friendly}</div><div class="s-id">${id}</div>`;
+          div.onclick = () => {
+              this.content.querySelector('#sensor-input').value = id;
+              list.style.display = 'none';
+              this.addSensor();
+          };
+          list.appendChild(div);
+      });
+      list.style.display = 'block';
+  }
+
   // --- HELPERS ---
   cleanName(name) {
       return name.replace(/^(sensor|binary_sensor)\./, '');
@@ -374,7 +481,7 @@ class DetailedChartsPanel extends HTMLElement {
 
       let sensorsToSave = JSON.parse(JSON.stringify(this.selectedSensors));
       if (this.chartInstances.length > 0 && (this.layoutMode === 'combined' || this.layoutMode === 'mixed')) {
-           const chart = this.chartInstances[0]; // First chart is usually combined
+           const chart = this.chartInstances[0]; 
            if(chart.config.type !== 'doughnut') {
                chart.data.datasets.forEach((ds, idx) => {
                    const meta = chart.getDatasetMeta(idx);
@@ -396,7 +503,8 @@ class DetailedChartsPanel extends HTMLElement {
           fillArea: this.fillArea,
           layoutMode: this.layoutMode,
           gridColumns: this.gridColumns,
-          stackedBars: this.stackedBars
+          stackedBars: this.stackedBars,
+          showStats: this.showStats
       };
 
       this.savedViews.push(viewConfig);
@@ -423,6 +531,7 @@ class DetailedChartsPanel extends HTMLElement {
       this.gridColumns = config.gridColumns || 1;
       this.timeMode = config.timeMode || 'relative';
       this.stackedBars = config.stackedBars || false;
+      this.showStats = config.showStats !== undefined ? config.showStats : true;
 
       this.content.querySelector('#chart-type').value = config.chartType || 'line';
       this.content.querySelector('#time-select').value = config.timeSelect || '24';
@@ -432,6 +541,7 @@ class DetailedChartsPanel extends HTMLElement {
       this.content.querySelector('#fill-switch').checked = this.fillArea;
       this.content.querySelector('#layout-select').value = this.layoutMode;
       this.content.querySelector('#stacked-switch').checked = this.stackedBars;
+      this.content.querySelector('#stats-switch').checked = this.showStats;
       this.content.querySelector('#grid-slider').value = this.gridColumns;
       this.content.querySelector('#grid-value-display').textContent = this.gridColumns;
 
@@ -471,6 +581,7 @@ class DetailedChartsPanel extends HTMLElement {
       if (this.layoutMode !== 'combined') row.classList.add('visible');
       else row.classList.remove('visible');
       this.updateStackedVisibility();
+      this.updateStatsToggleVisibility();
   }
 
   updateStackedVisibility() {
@@ -480,6 +591,15 @@ class DetailedChartsPanel extends HTMLElement {
           stackedRow.style.display = 'flex';
       } else {
           stackedRow.style.display = 'none';
+      }
+  }
+
+  updateStatsToggleVisibility() {
+      const statsRow = this.content.querySelector('#toggle-stats-row');
+      if (this.layoutMode !== 'split') {
+           statsRow.style.display = 'flex';
+      } else {
+           statsRow.style.display = 'none';
       }
   }
 
@@ -517,7 +637,8 @@ class DetailedChartsPanel extends HTMLElement {
               fillArea: this.fillArea,
               layoutMode: this.layoutMode,
               gridColumns: this.gridColumns,
-              stackedBars: this.stackedBars
+              stackedBars: this.stackedBars,
+              showStats: this.showStats
           };
           const singleContainer = this.content.querySelector('#chart-container-single');
           if (singleContainer) settings.containerHeight = singleContainer.style.height;
@@ -563,6 +684,11 @@ class DetailedChartsPanel extends HTMLElement {
           if (settings.stackedBars !== undefined) {
               this.stackedBars = settings.stackedBars;
               this.content.querySelector('#stacked-switch').checked = settings.stackedBars;
+          }
+
+          if (settings.showStats !== undefined) {
+              this.showStats = settings.showStats;
+              this.content.querySelector('#stats-switch').checked = settings.showStats;
           }
           this.updateSliderVisibility();
           
@@ -649,16 +775,12 @@ class DetailedChartsPanel extends HTMLElement {
       });
   }
 
-  getRandomColor() {
-      const l = '0123456789ABCDEF'; let c='#'; for(let i=0;i<6;i++) c+=l[Math.floor(Math.random()*16)]; return c;
+  populateSensorList() {
+      // Replaced by custom search logic on input
   }
 
-  populateSensorList() {
-    if (!this._hass || !this._hass.states) return;
-    const dl = this.content.querySelector('#sensors-datalist');
-    if (dl.children.length > 0) return;
-    const s = Object.keys(this._hass.states).filter(k => k.startsWith('sensor.') || k.startsWith('binary_sensor.') || k.startsWith('input_number.')).sort();
-    dl.innerHTML = s.slice(0, 5000).map(x => `<option value="${x}">${this.cleanName(x)}</option>`).join('');
+  getRandomColor() {
+      const l = '0123456789ABCDEF'; let c='#'; for(let i=0;i<6;i++) c+=l[Math.floor(Math.random()*16)]; return c;
   }
 
   showError(text) {
@@ -803,7 +925,10 @@ class DetailedChartsPanel extends HTMLElement {
       this.content.querySelector('#reset-zoom-btn').style.display = 'none';
   }
 
-  calculateEnergySum(values) {
+  calculateEnergySum(values, isAggregated) {
+      if (isAggregated) {
+          return values.reduce((a, b) => a + b, 0);
+      }
       let sum = 0;
       for (let i = 1; i < values.length; i++) {
           const diff = values[i] - values[i-1];
@@ -812,13 +937,11 @@ class DetailedChartsPanel extends HTMLElement {
       return sum;
   }
 
-  // --- AGGREGATION FOR DAILY BARS ---
   aggregateToDaily(historyData, isEnergy) {
       const groups = {};
       historyData.forEach(pt => {
           if (isNaN(parseFloat(pt.state))) return;
           const val = parseFloat(pt.state);
-          // Use last_changed which is timestamp (ms)
           const d = new Date(pt.last_changed);
           const key = d.toISOString().split('T')[0];
           
@@ -850,12 +973,10 @@ class DetailedChartsPanel extends HTMLElement {
       });
   }
 
-  // --- PROCESS DATA ---
   processData(history, type, unit) {
       const isEnergy = unit && (unit.includes("Wh") || unit.includes("kWh"));
       
       if (history.length > 1) {
-          // Detect duration
           const start = new Date(history[0].last_changed).getTime();
           const end = new Date(history[history.length-1].last_changed).getTime();
           const hours = (end - start) / 3600000;
@@ -886,21 +1007,18 @@ class DetailedChartsPanel extends HTMLElement {
       return Object.keys(buckets).sort().map(timestamp => { const t = parseInt(timestamp); return { x: t, y: buckets[timestamp].sum / buckets[timestamp].count }; });
   }
 
+  // --- REDESIGNED COMPACT STATS CARD (FLEX & CLASSIC) ---
   createStatsCard(conf, min, avg, max, curr, unit, label) {
-      const styles = getComputedStyle(this);
-      const textColor = styles.getPropertyValue('--primary-text-color').trim();
       return `
         <div class="stats-card" style="border-left-color: ${conf.color}">
-            <div style="font-weight:bold; margin-bottom:12px; color:${textColor}; display:flex; justify-content:space-between; align-items:center;">
-                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%; font-size:1.1em;" title="${conf.entityId}">${this.cleanName(conf.entityId)}</span>
-                <span class="stat-current" style="color:${conf.color}">${curr} <span class="stat-unit">${unit}</span></span>
+            <div class="stats-header" title="${this.cleanName(conf.entityId)}">${this.cleanName(conf.entityId)}</div>
+            <div class="stats-row">
+                <span>${label}</span>
+                <span class="stats-main-val" style="color:${conf.color}">${curr} ${unit}</span>
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; text-align:center;">
-                <div><div class="stat-label">MIN</div><div class="stat-value">${min}</div></div>
-                <div><div class="stat-label">AVG</div><div class="stat-value">${avg}</div></div>
-                <div><div class="stat-label">MAX</div><div class="stat-value">${max}</div></div>
-            </div>
-            <div style="text-align:right; font-size:0.75em; color:var(--secondary-text-color); margin-top:5px;">${label}</div>
+            <div class="stats-row"><span>Min</span> <span>${min}</span></div>
+            <div class="stats-row"><span>Avg</span> <span>${avg}</span></div>
+            <div class="stats-row"><span>Max</span> <span>${max}</span></div>
         </div>
      `;
   }
@@ -931,7 +1049,9 @@ class DetailedChartsPanel extends HTMLElement {
           }
       });
       this.chartInstances.push(chart);
-      statsWrapper.innerHTML = `<div style="text-align:center;width:100%;color:${textColor};padding:20px;">Durchschnittswerte (Ø)</div>`;
+      if(this.showStats) {
+        statsWrapper.innerHTML = `<div style="text-align:center;width:100%;color:${textColor};padding:20px;">Durchschnittswerte (Ø)</div>`;
+      }
   }
 
   renderCombinedView(cacheData, chartType, container) {
@@ -942,7 +1062,7 @@ class DetailedChartsPanel extends HTMLElement {
              <div class="canvas-wrapper"><canvas id="canvas-combined"></canvas></div>
              <div id="resize-handle"><div class="grip-lines"></div></div>
           </div>
-          <div id="stats-wrapper" class="stats-wrapper"></div>
+          <div id="stats-wrapper" class="stats-wrapper" style="display:${this.showStats ? 'flex' : 'none'}"></div>
       `;
       wrapper.style.width = '100%';
       container.appendChild(wrapper);
@@ -980,7 +1100,10 @@ class DetailedChartsPanel extends HTMLElement {
           let displayVal = curr;
           let displayLabel = "AKTUELL";
           if (unit && (unit.includes("Wh") || unit.includes("kWh"))) {
-              displayVal = this.calculateEnergySum(values).toFixed(2);
+              const hours = (et - st) / 3600000;
+              const isAggregated = (effectiveType === 'bar' && hours > 24);
+              
+              displayVal = this.calculateEnergySum(values, isAggregated).toFixed(2);
               displayLabel = "SUMME";
           }
 
@@ -1001,7 +1124,7 @@ class DetailedChartsPanel extends HTMLElement {
               hidden: isHidden, 
               data: points, borderColor: conf.color, backgroundColor: bg, fill: this.fillArea,
               borderWidth: (effectiveType === 'bar') ? 0 : 2.5, 
-              categoryPercentage: 0.7, barPercentage: 1.0,
+              categoryPercentage: 0.98, barPercentage: 0.98, 
               pointRadius: (effectiveType === 'scatter') ? 4 : 0, pointHoverRadius: 6, pointBackgroundColor: conf.color,
               tension: 0.4, cubicInterpolationMode: 'monotone', stepped: (effectiveType === 'stepped')
           });
@@ -1014,8 +1137,12 @@ class DetailedChartsPanel extends HTMLElement {
   renderSplitView(cacheData, globalChartType, container) {
       const gridWrapper = document.createElement('div');
       gridWrapper.className = 'split-grid-wrapper';
-      gridWrapper.style.gridTemplateColumns = `repeat(${this.gridColumns}, 1fr)`;
+      // FLEX GAP
       container.appendChild(gridWrapper);
+
+      const st = this._globalStartTime || cacheData[0]?.startTime || new Date();
+      const et = this._globalEndTime || cacheData[0]?.endTime || new Date();
+      const hours = (et - st) / 3600000;
 
       cacheData.forEach((sensorDataObj, idx) => {
           const conf = this.selectedSensors[idx];
@@ -1023,6 +1150,12 @@ class DetailedChartsPanel extends HTMLElement {
 
           const card = document.createElement('div');
           card.className = 'split-chart-card';
+          // DYNAMIC WIDTH VIA FLEX
+          // width ~ 100% / columns - gap adjustment
+          const pct = 99 / this.gridColumns;
+          card.style.flex = `1 1 calc(${pct}% - 20px)`;
+          card.style.minWidth = '250px'; // Prevent too small on resize
+
           const canvasId = `split-canvas-${idx}`;
           
           card.innerHTML = `
@@ -1045,7 +1178,8 @@ class DetailedChartsPanel extends HTMLElement {
           let displayVal = curr;
           let displayLabel = "Aktuell";
           if (unit && (unit.includes("Wh") || unit.includes("kWh"))) {
-              displayVal = this.calculateEnergySum(values).toFixed(2);
+              const isAggregated = (currentType === 'bar' && hours > 24);
+              displayVal = this.calculateEnergySum(values, isAggregated).toFixed(2);
               displayLabel = "Summe";
           }
 
@@ -1092,10 +1226,10 @@ class DetailedChartsPanel extends HTMLElement {
 
               const dataset = {
                   label: this.cleanName(conf.entityId), data: newPoints, borderColor: conf.color, backgroundColor: bg, fill: this.fillArea,
-                  borderWidth: (newType === 'bar') ? 0 : 2.5, categoryPercentage: 0.8, barPercentage: 1.0,
+                  borderWidth: (newType === 'bar') ? 0 : 2.5, categoryPercentage: 0.98, barPercentage: 0.98,
                   pointRadius: 0, pointHoverRadius: 6, pointBackgroundColor: conf.color, tension: 0.4, cubicInterpolationMode: 'monotone'
               };
-              this.createChartInstance(ctx, newType, [dataset], sensorDataObj.startTime, sensorDataObj.endTime, false, idx);
+              this.createChartInstance(ctx, newType, [dataset], sensorDataObj.startTime, sensorDataObj.endTime, false, idx, true);
           };
 
           btnLine.onclick = () => updateThisChart('line');
@@ -1104,7 +1238,7 @@ class DetailedChartsPanel extends HTMLElement {
       });
   }
 
-  createChartInstance(ctx, type, datasets, startTime, endTime, showZoomBtn, sensorIndex) {
+  createChartInstance(ctx, type, datasets, startTime, endTime, showZoomBtn, sensorIndex, hideLegend) {
       const styles = getComputedStyle(this);
       const textColor = styles.getPropertyValue('--primary-text-color').trim();
       const gridColor = styles.getPropertyValue('--divider-color').trim();
@@ -1118,7 +1252,10 @@ class DetailedChartsPanel extends HTMLElement {
               responsive: true, maintainAspectRatio: false,
               interaction: { mode: 'index', intersect: false }, 
               plugins: {
-                  legend: { display: true, position: 'top', align: 'end', labels: { color: textColor, usePointStyle: true, boxWidth: 8 } },
+                  legend: { 
+                      display: !hideLegend, 
+                      position: 'top', align: 'end', labels: { color: textColor, usePointStyle: true, boxWidth: 8 } 
+                  },
                   tooltip: {
                       backgroundColor: 'rgba(20, 20, 20, 0.95)', titleColor: '#fff', bodyColor: '#bbb', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, padding: 12,
                       callbacks: {
@@ -1139,6 +1276,7 @@ class DetailedChartsPanel extends HTMLElement {
                                  if (this.layoutMode !== 'combined' && sensorIndex !== null) {
                                      this.loadSingleSensorHistory(sensorIndex, new Date(min), new Date(max));
                                  } else {
+                                     // For Combined or Mixed Top
                                      if (min < startTime.getTime() || max > endTime.getTime()) {
                                          this.loadSpecificRange(new Date(min), new Date(max));
                                      }
@@ -1153,7 +1291,7 @@ class DetailedChartsPanel extends HTMLElement {
                       type: 'linear', 
                       position: 'bottom', min: startTime.getTime(), max: endTime.getTime(),
                       stacked: this.stackedBars, 
-                      offset: (type === 'bar'),
+                      offset: false, 
                       ticks: {
                           color: secondaryText, maxTicksLimit: 8,
                           callback: function(value) {
