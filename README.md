@@ -7,6 +7,7 @@
 [![stars](https://img.shields.io/github/stars/jayjojayson/detailed-charts-panel)](https://github.com/jayjojayson/detailed-charts-panel/stargazers)
 
 
+
 # Detailed Charts Panel
 Interaktive High-Performance Charts für Home Assistant
 
@@ -16,6 +17,8 @@ Das 📉 **Detailed Charts Panel** ist eine leistungsstarke Visualisierungslösu
 Das Panel speichert deine Einstellungen (ausgewählte Sensoren, Farben, Ansichten) automatisch im Browser (Local Storage), sodass du deine Analyseumgebung nach einem Neustart sofort wieder vorfindest.
 
 Wenn euch das Panel gefällt, würde ich mich sehr über eine Sternebewertung ⭐ freuen. 🤗
+
+[![Wiki](https://img.shields.io/badge/📖_Doku-Wiki-blue?style=for-the-badge)](https://jayjojayson.github.io/detailed-charts-panel/)
 
 ## Features
 
