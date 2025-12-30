@@ -9,7 +9,8 @@
 # Detailed Charts Panel
 **Interaktive High-Performance Charts für Home Assistant – Deine Daten, endlich verständlich.**
 
-Das 📉 **Detailed Charts Panel** ist eine leistungsstarke Visualisierungslösung für Home Assistant, um historische Daten deiner Sensoren tiefgehend zu analysieren. Es bietet Funktionen, die weit über die Standard-History hinausgehen.
+Das 📉 **Detailed Charts Panel** ist eine leistungsstarke Visualisierungslösung für Home Assistant, um historische Daten deiner Sensoren tiefgehend zu analysieren, ohne auf externe Lösungen zurückgreifen zu müssen.
+Es bietet Funktionen, die weit über die Standard-History hinausgehen.
 
 Das Panel läuft vollständig lokal im Browser und nutzt die Websocket API von Home Assistant für maximale Performance.
 
@@ -37,6 +38,8 @@ Card on Dashboard:
 <img src="images/example5-card.png" alt="Dashboard Card" width="50%">
 
 
+---
+
 ## Features im Detail
 
 🖱️ Interaktive Maus-Steuerung
@@ -45,7 +48,7 @@ Card on Dashboard:
 * Tooltips: Fahre mit der Maus über die Punkte, um exakte Werte, Uhrzeiten und Einheiten zu sehen.
 * Legende: Klicke oben im Chart auf den Namen eines Sensors (z.B. "Solar"), um ihn temporär auszublenden, ohne ihn zu löschen.
 
-📊 Intelligente Statistik-Boxen
+📊 Intelligente Statistik-Boxen  
 Egal welche Ansicht du wählst, das Panel berechnet live Statistiken für den gewählten Zeitraum:
 
 * Min / Max: Der niedrigste und höchste Wert.
@@ -57,7 +60,7 @@ Ein häufiges Problem: Deine Solaranlage liefert 4500 Watt, aber du willst "4,5 
 * Aktiviere den Schalter Auto-Scale. 
 * Das Panel rechnet Werte von Sensoren mit der Einheit W oder Wh automatisch durch 1000 und ändert die Einheit im Chart auf kW bzw. kWh. Kein Kopfrechnen mehr nötig!
 
-🏗️ Drag & Drop (Nur im "Getrennt"-Modus)
+🏗️ Drag & Drop (Nur im "Getrennt"-Modus)  
 Wenn du das Layout auf Getrennt (Grid) oder Mixed stellst, kannst du die Reihenfolge der kleinen Charts ändern:  
 
 * Klicke auf das Verschiebe-Symbol (die kleinen Punkte oben rechts im Mini-Chart).  
