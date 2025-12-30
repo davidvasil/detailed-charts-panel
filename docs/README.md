@@ -35,3 +35,57 @@ Panel-View:
 Card on Dashboard:
 
 <img src="images/example5-card.png" alt="Dashboard Card" width="50%">
+
+
+## Features im Detail
+
+🖱️ Interaktive Maus-Steuerung
+Zoom: Ziehe mit gedrückter linker Maustaste einen Rahmen im Chart, um genau in diesen Zeitbereich hineinzuzoomen. Ein Button 🔍 ZOOM ZURÜCKSETZEN erscheint dann automatisch in der Sidebar.
+
+Tooltips: Fahre mit der Maus über die Punkte, um exakte Werte, Uhrzeiten und Einheiten zu sehen.
+
+Legende: Klicke oben im Chart auf den Namen eines Sensors (z.B. "Solar"), um ihn temporär auszublenden, ohne ihn zu löschen.
+
+📊 Intelligente Statistik-Boxen
+Egal welche Ansicht du wählst, das Panel berechnet live Statistiken für den gewählten Zeitraum:
+
+Min / Max: Der niedrigste und höchste Wert.
+
+Ø (Avg): Der Durchschnittswert.
+
+Summe / Aktuell: Intelligente Umschaltung! Bei Leistung (Watt) wird der aktuelle Wert gezeigt. Bei Energie (kWh) wird automatisch die Summe (Verbrauch/Ertrag) für den Zeitraum berechnet.
+
+⚡ Auto-Scale (W ➡ kW) NEU
+Ein häufiges Problem: Deine Solaranlage liefert 4500 Watt, aber du willst "4,5 kW" lesen.
+
+Aktiviere den Schalter Auto-Scale.
+
+Das Panel rechnet Werte von Sensoren mit der Einheit W oder Wh automatisch durch 1000 und ändert die Einheit im Chart auf kW bzw. kWh. Kein Kopfrechnen mehr nötig!
+
+🏗️ Drag & Drop (Nur im "Getrennt"-Modus)
+Wenn du das Layout auf Getrennt (Grid) oder Mixed stellst, kannst du die Reihenfolge der kleinen Charts ändern:
+
+Klicke auf das Verschiebe-Symbol (die kleinen Punkte oben rechts im Mini-Chart).
+
+Halte die Maus gedrückt und ziehe das Chart an die gewünschte Position. Die anderen Charts machen automatisch Platz.
+
+🍩 Die Donut-Sidebar
+Möchtest du wissen, wer am meisten Strom verbraucht hat?
+
+Aktiviere den Schalter Donut Sidebar.
+
+Rechts neben dem Hauptchart erscheint ein Ringdiagramm.
+
+Es summiert automatisch alle Werte (ideal für kWh) und zeigt die prozentuale Verteilung an.
+
+🔴 Schwellwert-Linie (Threshold)
+Willst du sehen, wann dein Balkonkraftwerk über 600W produziert hat?
+
+Trage bei Referenzlinie den Wert 600 ein.
+
+Eine gestrichelte rote Linie erscheint im Chart bei genau diesem Wert als Orientierungshilfe.
+
+💾 Speichern & Laden
+Lokal speichern: Das Diskette-Symbol 💾 speichert die aktuelle Ansicht im Browser.
+
+Global speichern (Code): Der Button < > (Export) gibt dir den Code für die detailed-charts-views.js. Damit kannst du Ansichten "festverdrahten", sodass sie auf Tablet, Handy und PC gleichermaßen verfügbar sind und ein Schloss-Symbol 🔒 erhalten.

@@ -19,7 +19,7 @@ Dies ist die "Profi-Methode", um Ansichten auf **allen Geräten** (Tablet, Handy
 4.  Öffne die Datei `detailed-charts-views.js` in deinem Home Assistant Ordner (`/www/community/detailed-charts-panel/`).
 5.  Füge den Code in das `sharedViews` Array ein.
 
-<img src="images/example4.png" alt="JSON Code" width="50%">
+<img src="images/example4.png" alt="JSON Code" width="25%">
 
 ### Beispiel für `detailed-charts-views.js`:
 

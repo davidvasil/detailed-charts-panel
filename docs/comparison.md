@@ -1,6 +1,10 @@
 # Warum Detailed Charts?
 
-Während die standardmäßige Home Assistant Historie gut ist, um mal eben zu schauen, ob das Licht an war, stößt sie bei der Analyse von Energie, Klima oder komplexen Sensor-Zusammenhängen schnell an ihre Grenzen.
+Deine Daten, endlich verständlich!
+
+Das Detailed Charts Panel ist weit mehr als nur eine einfache Verlaufskarte. Während die standardmäßige Home Assistant Historie gut ist, um mal eben zu schauen, ob das Licht an war, stößt sie bei der Analyse von Energie, Klima oder komplexen Sensor-Zusammenhängen schnell an ihre Grenzen.
+
+Dieses Projekt schließt die Lücke zwischen einfacher Anzeige und professioneller Datenanalyse – direkt in deinem Dashboard.
 
 Hier sind die Gründe, warum dieses Panel für Analysen besser geeignet ist:
 
@@ -23,3 +27,29 @@ Das Panel rechnet für dich:
 
 ### 4. Flexible Layouts
 Vom klassischen **Kombiniert-Modus** (alles in einem) über den **Grid-Modus** (Getrennt) bis hin zum **Mixed-Modus** (Übersicht oben, Details unten). Dazu gibt es optional eine Donut-Sidebar für die prozentuale Verteilung.
+
+---
+
+### 5 Panel Mode vs. Card Mode – Ein mächtiger Workflow
+
+Das Projekt ist dual konzipiert. Es dient sowohl als Explorer (Panel) als auch als Anzeige (Card).
+
+1. Der Panel Mode (Der "Editor")
+Hier passiert die Magie. Wenn du das Panel als Sidebar-Element (View) einbindest, erhältst du eine Vollbild-Anwendung.
+
+Suchen & Finden: Durchsuche blitzschnell deine Sensoren.
+
+Drag & Drop: Ordne Charts im Split-View einfach per Maus neu an.
+
+Konfiguration: Stelle Zeiträume (relativ oder fester Kalender), Farben und Chart-Typen per UI ein.
+
+2. Der YAML Export (Für den Card Mode)
+Du hast im Panel Mode die perfekte Ansicht für deine Solaranlage zusammengeklickt? Du willst genau diese Ansicht auf deinem Dashboard auf dem Tablet haben?
+
+Klicke auf den YAML-Button (📋).
+
+Kopiere den generierten Code.
+
+Füge ihn in eine beliebige Standard-Lovelace-Karte ein.
+
+Ergebnis: Eine fest definierte Karte, genau so konfiguriert, wie du sie erstellt hast.

@@ -7,6 +7,8 @@ Alle Sensoren liegen in einem Chart übereinander. Ideal, um Korrelationen zu er
 
 <img src="images/combined.png" alt="Combined View" width="50%">
 
+Combined View mit vergrößerten Chart
+
 <img src="images/combined2.png" alt="Combined View 2" width="50%">
 
 ## 2. Getrennte Ansicht (Grid)
@@ -24,5 +26,7 @@ Die Kombination aus beidem: Oben die Übersicht, unten die Details.
 ## Andere View Beispiele
 
 <img src="images/example1.png" alt="Combined Example" width="50%">
+
+Beispiel 2
 
 <img src="images/example2.png" alt="Combined Example" width="50%">
