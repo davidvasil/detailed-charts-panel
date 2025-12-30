@@ -14,4 +14,4 @@
   * [Ansichten Panel/Card](examples.md)
 
 * Extras
-  * [🌍 Translate to English](https://translate.google.com/translate?sl=de&tl=en&u=https://jayjojayson.github.io/detailed-charts-panel/)
+  * [Translate to English](https://translate.google.com/translate?sl=de&tl=en&u=https://jayjojayson.github.io/detailed-charts-panel/)
