@@ -10,5 +10,5 @@
   * [Schritt-für-Schritt](usage.md)
   * [Speichern & Export](saving.md)
 
-* Galerie
-  * [Beispiel-Ansichten](examples.md)
+* Beispiele
+  * [Ansichten Panel/Card](examples.md)
