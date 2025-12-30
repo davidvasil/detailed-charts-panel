@@ -9,7 +9,7 @@ Dieses Projekt schließt hoffentlich die Lücke zwischen einfacher Anzeige und p
 Hier sind die Gründe, warum dieses Panel für Analysen besser geeignet ist:
 
 ### 1. Totale Kontrolle über die Darstellung
-* **Standard HA:** Linienfarben sind oft zufällig oder fest vorgegeben. Typen (Balken/Linie) sind schwer mischbar.
+* **Standard HA:** Linienfarben sind oft zufällig oder fest vorgegeben. Typen wie Balken Chart können nicht ausgewählt werden.
 * **Detailed Charts:** Du entscheidest! Mische Balkendiagramme (für Energie) mit Linienverläufen (für SoC/Spannung) in einem Chart. Wähle Farben, fülle Flächen, stapele Balken (Stacked Bars) oder nutze Scatter-Plots für Rohdatenpunkte.
 
 ### 2. Live-Interaktivität & "Labor-Modus"
@@ -44,8 +44,8 @@ Hier passiert die Magie. Wenn du das Panel als Sidebar-Element (View) einbindest
 #### B. Der YAML Export (Für den Card Mode)  
 Du hast im Panel Mode die perfekte Ansicht für deine Solaranlage zusammengeklickt? Du willst genau diese Ansicht auf deinem Dashboard auf dem Tablet haben?  
 
-* Klicke auf den YAML-Button (📋).  
-* Kopiere den generierten Code.  
-* Füge ihn in eine beliebige Standard-Lovelace-Karte ein.
-  
+* Klicke auf den Kopieren-Button (📋).
+* Kopiere den generierten yaml Code aus der oberen Ansicht im Auswahlfenster.
+* Füge ihn in eine manuelle Standard-Lovelace-Karte ein.  
+ 
 *Ergebnis:* Eine fest definierte Karte, genau so konfiguriert, wie du sie erstellt hast.

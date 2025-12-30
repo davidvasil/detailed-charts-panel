@@ -14,6 +14,8 @@ Es bietet Funktionen, die weit über die Standard-History hinausgehen.
 
 Das Panel läuft vollständig lokal im Browser und nutzt die Websocket API von Home Assistant für maximale Performance.
 
+Wenn euch die Details-Charts gefallen, würde ich mich sehr über einen Stern ⭐ freuen. 🤗
+
 ## Features im Überblick
 
 - **📉 Interaktive Charts:** Stufenloser Zoom & Pan (Touch & Mausrad) mit automatischem Nachladen der Daten (Infinite Scrolling).
@@ -82,4 +84,4 @@ Willst du sehen, wann dein Balkonkraftwerk über 600W produziert hat?
 💾 Speichern & Laden  
 Lokal speichern: Das Diskette-Symbol 💾 speichert die aktuelle Ansicht im Browser.  
 
-* Global speichern (Code): Der Button < > (Export) gibt dir den Code für die detailed-charts-views.js. Damit kannst du Ansichten "festverdrahten", sodass sie auf Tablet, Handy und PC gleichermaßen verfügbar sind und ein Schloss-Symbol 🔒 erhalten.
+* Global speichern (Code): Über den Kopieren Button kommst du an den Code für die detailed-charts-views.js. Damit kannst du Ansichten "festverdrahten", sodass sie auf Tablet, Handy und PC gleichermaßen verfügbar sind und ein Schloss-Symbol 🔒 erhalten.
