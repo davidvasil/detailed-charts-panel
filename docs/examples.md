@@ -26,6 +26,7 @@ Die Kombination aus beidem: Oben die Übersicht, unten die Details. Perfekt für
 ## Andere View Beispiele
 
 Zeigt kWH Energy der letzten 7 Tage mit Batterie SoC im Hintergrund als Linie dargestellt.
+
 <img src="images/example1.png" alt="Combined Example" width="50%">
 
 Beispiel 2 zeigt Temperaturen der letzten 24h mit Referenzlinie 21 Grad an für schnellen Überblick.
