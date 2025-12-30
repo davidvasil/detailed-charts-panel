@@ -19,3 +19,11 @@ Das Panel läuft vollständig lokal im Browser und nutzt die Websocket API von H
 - **📈 Live-Statistiken:** Min / Max / Durchschnitt / Summe / Aktuell – intelligent berechnet.
 - **🏗️ Drag & Drop:** Ordne Charts im Grid-Modus einfach per Maus neu an.
 - **🌑 Modern UI:** Voller Support für Home Assistant Themes (Light & Dark Mode).
+
+Panel-View:
+
+![JSON Code](images/example3.png)
+
+Card on Dashboard:
+
+![JSON Code](images/example5-card.png)
