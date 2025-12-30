@@ -4,13 +4,37 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Detailed Charts Panel Wiki</title>
+  <title>📉 Detailed Charts Panel Wiki</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <meta name="description" content="Dokumentation für das Detailed Charts Panel für Home Assistant">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/dark.css"> 
 </head>
+
+<style>
+  /* Optional: Falls dir die Seitenleiste (Links) zu klein ist, 
+     kannst du sie hiermit separat vergrößern */
+  .sidebar-nav {
+      font-size: 18px !important; 
+  }  
+  /* Optional: Die Überschrift in der Sidebar größer machen */
+  .app-name {
+      font-size: 22px !important;
+  }
+  /* Der normale Fließtext */
+  .markdown-section p, 
+  .markdown-section ul, 
+  .markdown-section ol {
+      font-size: 20px !important; /* Hier die Wunschgröße eintragen (Standard ist oft 16px) */
+      line-height: 1.6;           /* Zeilenabstand etwas erhöhen für bessere Lesbarkeit */
+  }
+  /* Code-Blöcke (die schwarzen Kästen) */
+  .markdown-section pre > code {
+      font-size: 16px !important; /* Code sollte oft etwas kleiner sein als Text */
+  }
+</style>  
+  
 <body>
   <div id="app">Lade Dokumentation...</div>
   <script>
