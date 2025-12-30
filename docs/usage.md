@@ -28,10 +28,10 @@ Das Panel ist so konzipiert, dass du dich intuitiv von oben nach unten durch die
 
 Das Projekt ist dual konzipiert:
 
-### 1. Der Panel Modus (Der "Editor")
+### 1. Panel Modus (Der "Editor")
 Dies ist die Vollbild-Ansicht über die Seitenleiste (siehe Installation). Hier hast du alle Freiheiten: Suchen, Drag & Drop, Live-Analyse. Dieser Modus ist dein "Labor", um Daten zu erforschen oder auch im "kombiniert" Modus eine Dashboard Card zu konfigurieren.
 
-### 2. Der Card Modus (Für das Dashboard)
+### 2. Card Modus (Für das Dashboard)
 Du hast im Panel Modus eine perfekte Ansicht erstellt und möchtest diese fest auf deinem Dashboard haben? 
 
 1.  Konfiguriere deine Ansicht im Panel Mode (kombiniert) fertig.

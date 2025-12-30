@@ -21,12 +21,16 @@ panel_custom:
     module_url: /local/community/detailed-charts-panel/detailed-charts-panel.js
 ```	
 
+---
+
 ## Methode 2: Manuell
 
 1.  Lade alle `.js` Dateien aus dem Repository herunter (`detailed-charts-panel.js`, `chart.umd.min.js`, etc.).
 2.  Erstelle den Ordner `/config/www/community/detailed-charts-panel/`.
 3.  Kopiere die Dateien dort hinein.
 4.  Füge unter **Einstellungen > Dashboards > Ressourcen** den Pfad `/local/community/detailed-charts-panel/detailed-charts-panel.js` als JavaScript-Modul hinzu.
+
+---
 
 ## Methode 3: Manuell in HA
 
