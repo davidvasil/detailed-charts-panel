@@ -26,42 +26,39 @@ Das Projekt nutzt bewährte Open-Source-Bibliotheken:
 
 ---
 
-Das Detailed Charts Panel ist als Custom Element (Web Component) für Home Assistant konzipiert. Es läuft vollständig clientseitig im Browser des Benutzers und kommuniziert direkt mit der Home Assistant API. Es wird kein externer Cloud-Dienst benötigt.
-
-1. Architektur der Dateien (Modularer Aufbau)
+#### Architektur der Dateien (Modularer Aufbau)
 Der Code ist in drei logische Module unterteilt, um Wartbarkeit und Übersichtlichkeit zu gewährleisten:
-detailed-charts-panel.js (Der Controller): Dies ist die Hauptdatei. Sie definiert das Custom Element (HTMLElement). Hier liegt die Logik für:
 
-Verbindung zu Home Assistant (this._hass).
-Event-Handling (Klicks, Toggles, Slider).
+  `detailed-charts-panel.js` (Der Controller):  
+  Dies ist die Hauptdatei. Sie definiert das Custom Element (HTMLElement). Hier liegt die Logik für:
 
-State-Management (welche Sensoren sind ausgewählt, welcher Zeitbereich ist aktiv).
-API-Aufrufe zum Laden der Daten.
-detailed-charts-panel-function.js (Die Worker & View): Diese Datei enthält reine Hilfsfunktionen ("Pure Functions"), die ausgelagert wurden, um den Hauptcode sauber zu halten:
-Datenverarbeitung: Algorithmen zur Aggregation (z.B. Umrechnung von Watt-Werten in Tages-kWh, Glättung von Kurven).
-HTML-Templates: Generierung des HTML-Codes (Strings) für die Karten, Statistiken und die Sidebar.
-Helper: Farbgnerierung, Hex-zu-RGBA Konvertierung etc.
+* Verbindung zu Home Assistant (this._hass).
+* Event-Handling (Klicks, Toggles, Slider).
+* State-Management (welche Sensoren sind ausgewählt, welcher Zeitbereich ist aktiv).
+* API-Aufrufe zum Laden der Daten.
+ 
+`detailed-charts-panel-function.js` (Die Worker & View):  
+Diese Datei enthält reine Hilfsfunktionen ("Pure Functions"), die ausgelagert wurden, um den Hauptcode sauber zu halten:
 
-detailed-charts-views.js (Die Konfiguration): Eine reine Datendatei, die ein JSON-Objekt exportiert (sharedViews). Hier werden globale, schreibgeschützte Ansichten definiert, die fest im System hinterlegt sind.
+* Datenverarbeitung: Algorithmen zur Aggregation (z.B. Umrechnung von Watt-Werten in Tages-kWh, Glättung von Kurven).
+* HTML-Templates: Generierung des HTML-Codes (Strings) für die Karten, Statistiken und die Sidebar.
+* Helper: Farbgnerierung, Hex-zu-RGBA Konvertierung etc.
 
-2. Datenverarbeitung & Rendering-Pipeline
+`detailed-charts-views.js` (Die Konfiguration):  
+Eine reine Datendatei, die ein JSON-Objekt exportiert (sharedViews). Hier werden globale, schreibgeschützte Ansichten definiert, die fest im System hinterlegt sind.
+
+#### Datenverarbeitung & Rendering-Pipeline
 Wenn du auf "Daten laden" klickst, passiert folgendes:
 
-Fetch: Die Daten werden asynchron (async/await) parallel für alle Sensoren von Home Assistant abgerufen.
+* Fetch: Die Daten werden asynchron (async/await) parallel für alle Sensoren von Home Assistant abgerufen.
+* Process (processData): Die Rohdaten werden bereinigt (Fehlerwerte filtern).
+* Falls nötig (z.B. bei "Bar"-Charts über lange Zeiträume), werden die Daten auf Tage oder Stunden heruntergerechnet (aggregiert).
+* Auto-Scale: Werte werden bei Bedarf (z.B. W → kW) dividiert.
+* Render: Ein Chart-Objekt wird instanziiert.
+* Die Datasets (Linien/Balken) werden mit Farben, Fülloptionen und Kurvenglättung (cubicInterpolationMode: 'monotone') konfiguriert.
+* Das Canvas wird gezeichnet.
 
-Process (processData):
-
-Die Rohdaten werden bereinigt (Fehlerwerte filtern).
-Falls nötig (z.B. bei "Bar"-Charts über lange Zeiträume), werden die Daten auf Tage oder Stunden heruntergerechnet (aggregiert).
-Auto-Scale: Werte werden bei Bedarf (z.B. W → kW) dividiert.
-
-Render:
-
-Ein Chart-Objekt wird instanziiert.
-Die Datasets (Linien/Balken) werden mit Farben, Fülloptionen und Kurvenglättung (cubicInterpolationMode: 'monotone') konfiguriert.
-Das Canvas wird gezeichnet.
-
-3. Zustandspeicherung (Speicherung)
+#### Zustandspeicherung (Speicherung)
 Damit du nach einem Neuladen (F5) nicht von vorne beginnen musst, nutzt das Panel den LocalStorage des Browsers.
 Jede Änderung (Sensor hinzugefügt, Farbe geändert, Zoom-Level) wird sofort in ein JSON-Objekt im Browser-Speicher geschrieben (localStorage.setItem).
 Beim Start prüft das Panel, ob Einstellungen vorhanden sind, und stellt den letzten Zustand wieder her.
