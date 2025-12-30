@@ -30,7 +30,7 @@ Vom klassischen **Kombiniert-Modus** (alles in einem) über den **Grid-Modus** (
 
 ---
 
-### 5 Panel Mode vs. Card Mode – Ein mächtiger Workflow
+### 5. Panel Mode vs. Card Mode – Ein mächtiger Workflow
 
 Das Projekt ist dual konzipiert. Es dient sowohl als Explorer (Panel) als auch als Anzeige (Card).  
 
