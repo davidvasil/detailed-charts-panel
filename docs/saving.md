@@ -34,3 +34,4 @@ export const sharedViews = [
         "fillArea": true
     }
 ];
+```
