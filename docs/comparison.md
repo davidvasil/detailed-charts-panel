@@ -32,20 +32,20 @@ Vom klassischen **Kombiniert-Modus** (alles in einem) über den **Grid-Modus** (
 
 ### 5. Panel Mode vs. Card Mode – Ein mächtiger Workflow
 
-Das Projekt ist dual konzipiert. Es dient sowohl als Explorer (Panel) als auch als Anzeige (Card).  
+Das Projekt ist dual konzipiert. Es dient sowohl als Explorer (Panel) oder auch als Anzeige (Dashboard-Card).  
 
-A. Der Panel Mode (Der "Editor")  
+#### A. Der Panel Mode (Der "Editor")  
 Hier passiert die Magie. Wenn du das Panel als Sidebar-Element (View) einbindest, erhältst du eine Vollbild-Anwendung.  
 
 * Suchen & Finden: Durchsuche blitzschnell deine Sensoren.  
 * Drag & Drop: Ordne Charts im Split-View einfach per Maus neu an.  
 * Konfiguration: Stelle Zeiträume (relativ oder fester Kalender), Farben und Chart-Typen per UI ein.  
 
-B. Der YAML Export (Für den Card Mode)  
+#### B. Der YAML Export (Für den Card Mode)  
 Du hast im Panel Mode die perfekte Ansicht für deine Solaranlage zusammengeklickt? Du willst genau diese Ansicht auf deinem Dashboard auf dem Tablet haben?  
 
 * Klicke auf den YAML-Button (📋).  
 * Kopiere den generierten Code.  
 * Füge ihn in eine beliebige Standard-Lovelace-Karte ein.
   
-Ergebnis: Eine fest definierte Karte, genau so konfiguriert, wie du sie erstellt hast.
+*Ergebnis:* Eine fest definierte Karte, genau so konfiguriert, wie du sie erstellt hast.
