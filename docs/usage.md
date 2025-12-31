@@ -48,7 +48,7 @@ Du hast im Panel Modus eine perfekte Ansicht erstellt und möchtest diese fest a
 **Beispiel-Code**
 Ein einfaches Beispiel für ein Linien Diagramm für die letzten 7 Tage:
 
-```yaml
+```yml
 type: custom:detailed-charts-panel
 chartType: line
 timeMode: relative
@@ -67,7 +67,7 @@ sensors:
 
 Oder hier mit **festgelegtem Zeitraum** ein Beispiel für ein Balken Diagramm für die letzten 24 Tage:
 
-```yaml
+```yml
 type: custom:detailed-charts-panel
 chartType: bar
 timeMode: fixed
