@@ -29,22 +29,22 @@ Das Projekt nutzt bewährte Open-Source-Bibliotheken:
 ## Architektur Details
 Der Code ist in drei logische Module unterteilt, um Wartbarkeit und Übersichtlichkeit zu gewährleisten:
 
-#### `detailed-charts-panel.js` (Der Controller)  
+#### `detailed-charts-panel.js` (Der Controller)
 Dies ist die Hauptdatei. Sie definiert das Custom Element (HTMLElement). Hier liegt die Logik für:
 
 * Verbindung zu Home Assistant (this._hass)
 * Event-Handling (Klicks, Toggles, Slider)
 * State-Management (welche Sensoren sind ausgewählt, welcher Zeitbereich ist aktiv)
-* API-Aufrufe zum Laden der Daten.  
+* API-Aufrufe zum Laden der Daten.
  
-#### `detailed-charts-panel-function.js` (Die Worker & Views)  
+#### `detailed-charts-panel-function.js` (Die Worker & Views)
 Diese Datei enthält reine Hilfsfunktionen ("Pure Functions"), die ausgelagert wurden, um den Hauptcode sauber zu halten:
 
 * Datenverarbeitung: Algorithmen zur Aggregation (z.B. Umrechnung von Watt-Werten in Tages-kWh, Glättung von Kurven)
 * HTML-Templates: Generierung des HTML-Codes (Strings) für die Karten, Statistiken und die Sidebar
-* Helper: Farbgnerierung, Hex-zu-RGBA Konvertierung etc.  
+* Helper: Farbgnerierung, Hex-zu-RGBA Konvertierung etc.
 
-#### `detailed-charts-views.js` (Die Konfiguration):  
+#### `detailed-charts-views.js` (Die Konfiguration):
 Eine reine Datendatei, die ein JSON-Objekt exportiert (sharedViews). Hier werden globale, schreibgeschützte Ansichten definiert, die fest im System hinterlegt sind.
 
 #### Datenverarbeitung & Rendering-Pipeline
