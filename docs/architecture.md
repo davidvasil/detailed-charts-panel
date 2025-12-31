@@ -36,7 +36,7 @@ Dies ist die Hauptdatei. Sie definiert das Custom Element (HTMLElement). Hier li
 * Event-Handling (Klicks, Toggles, Slider)
 * State-Management (welche Sensoren sind ausgewählt, welcher Zeitbereich ist aktiv)
 * API-Aufrufe zum Laden der Daten.
- 
+
 #### `detailed-charts-panel-function.js` (Die Worker & Views)
 Diese Datei enthält reine Hilfsfunktionen ("Pure Functions"), die ausgelagert wurden, um den Hauptcode sauber zu halten:
 
