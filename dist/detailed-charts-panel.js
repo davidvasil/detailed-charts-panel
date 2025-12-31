@@ -1,4 +1,4 @@
-console.log("DetailedChartsPanel: v_1.3");
+console.log("DetailedChartsPanel: v_1.4");
 
 class DetailedChartsPanel extends HTMLElement {
   constructor() {
@@ -22,6 +22,7 @@ class DetailedChartsPanel extends HTMLElement {
     this.gridColumns = 1;
     this.stackedBars = false;
     this.showStats = true; 
+    this.showDonutSidebar = false; // New Setting
   }
 
   set hass(hass) {
@@ -57,12 +58,10 @@ class DetailedChartsPanel extends HTMLElement {
           --accent-color: var(--primary-color, #03a9f4);
           --btn-color: #616161; 
         }
-        /* GLOBAL BOX SIZING FIX */
         * { box-sizing: border-box; }
 
         .container { display: flex; height: 100%; overflow: hidden; }
         
-        /* SIDEBAR */
         .sidebar { 
             width: var(--sidebar-width); min-width: var(--sidebar-width); 
             background-color: var(--card-background-color); 
@@ -82,7 +81,6 @@ class DetailedChartsPanel extends HTMLElement {
         }
         input:focus, select:focus { border-color: var(--accent-color); }
 
-        /* CUSTOM SEARCH DROPDOWN */
         .suggestions-list {
             position: absolute; top: 100%; left: 0; right: 0;
             background: var(--secondary-background-color, #2c2c2c); 
@@ -105,10 +103,9 @@ class DetailedChartsPanel extends HTMLElement {
         .btn-icon.grey { background-color: #757575; }
         .btn-icon.grey:hover { background-color: #616161; }
 
-        /* SENSOR LIST - INCREASED HEIGHT & HIDDEN SCROLLBAR */
         .sensor-list { 
             display: flex; flex-direction: column; gap: 8px; 
-            max-height: 230px; /* INCREASED HEIGHT */
+            max-height: 230px; 
             overflow-y: auto; 
             padding: 5px 0; margin-bottom: 10px; 
             border-top: 1px solid var(--divider-color); padding-top: 15px; 
@@ -164,20 +161,14 @@ class DetailedChartsPanel extends HTMLElement {
 
         .main-content { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; background-color: var(--primary-background-color); overflow-y: auto; position: relative; }
         
-        /* AUTO GRID for Stats */
-        .stats-wrapper { 
-            margin-top: 20px; 
-            display: flex; flex-wrap: wrap; gap: 15px; 
-        }
+        .stats-wrapper { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 15px; }
         
         .stats-card { 
             padding: 10px 15px; background: var(--card-background-color); border-left: 5px solid transparent; 
             border-radius: 4px; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             border: 1px solid var(--divider-color); border-left-width: 5px;
             display: flex; flex-direction: column; gap: 2px;
-            /* Max 5 per row logic */
-            flex: 1 1 calc(19% - 15px);
-            min-width: 200px;
+            flex: 1 1 calc(19% - 15px); min-width: 200px;
         }
 
         .stats-header { 
@@ -186,7 +177,6 @@ class DetailedChartsPanel extends HTMLElement {
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
         }
         
-        /* CLASSIC DIVIDER ROW STYLE */
         .stats-row { 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 3px 0; border-bottom: 1px solid rgba(128, 128, 128, 0.1);
@@ -203,9 +193,17 @@ class DetailedChartsPanel extends HTMLElement {
         .grip-lines { width: 30px; height: 3px; border-top: 1px solid var(--secondary-text-color); border-bottom: 1px solid var(--secondary-text-color); opacity: 0.5; }
         #resize-ghost { position: absolute; left: 40px; right: 40px; height: 4px; background-color: var(--accent-color); opacity: 0.5; z-index: 100; display: none; pointer-events: none; cursor: ns-resize; }
         
-        /* FLEX SPLIT WRAPPER */
-        .split-grid-wrapper { 
-            display: flex; flex-wrap: wrap; gap: 20px; width: 100%; 
+        .split-grid-wrapper { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; }
+
+        @media (max-width: 700px) { 
+            .split-grid-wrapper { grid-template-columns: 1fr; }
+            .stats-wrapper { grid-template-columns: 1fr; } 
+            .split-footer { flex-direction: column; }
+            .split-controls-box { width: 100%; flex-direction: row; border-left: none; border-top: 1px solid var(--divider-color); padding-left: 0; padding-top: 10px; }
+            .doughnut-container-flex { flex-direction: column; }
+            .doughnut-sidebar { width: 100% !important; padding-left: 0 !important; margin-top: 20px; }
+            .flex-main-wrapper { flex-direction: column; }
+            .side-donut-wrapper { width: 100% !important; border-left: none !important; border-top: 1px solid var(--divider-color); padding-left: 0 !important; padding-top: 15px; }
         }
 
         .split-chart-card {
@@ -230,6 +228,11 @@ class DetailedChartsPanel extends HTMLElement {
         .loader { border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid var(--accent-color); border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; margin: 10px auto; display: none; }
         .error-msg { color: #f44336; background: rgba(244, 67, 54, 0.1); padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 13px; display: none; border: 1px solid rgba(244, 67, 54, 0.3); }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .donut-legend-item { display: flex; align-items: center; margin-bottom: 8px; font-size: 13px; cursor: pointer; transition: opacity 0.2s; }
+        .donut-legend-item:hover { opacity: 0.8; }
+        .donut-legend-item.hidden { text-decoration: line-through; opacity: 0.5; }
+        .donut-legend-color { width: 12px; height: 12px; margin-right: 10px; flex-shrink:0; }
       </style>
 
       <div class="container">
@@ -277,6 +280,11 @@ class DetailedChartsPanel extends HTMLElement {
               <div class="toggle-row" id="toggle-stats-row" style="margin-top: 10px;">
                   <span class="toggle-label">Statistiken anzeigen</span>
                   <input type="checkbox" class="toggle-switch" id="stats-switch" checked>
+              </div>
+
+              <div class="toggle-row" id="toggle-donut-row" style="margin-top: 10px;">
+                  <span class="toggle-label">Donut Sidebar</span>
+                  <input type="checkbox" class="toggle-switch" id="donut-switch">
               </div>
 
               <div class="slider-row" id="grid-slider-row">
@@ -371,7 +379,7 @@ class DetailedChartsPanel extends HTMLElement {
         }
     });
 
-    const inputs = ['#chart-type', '#time-select', '#date-start', '#date-end', '#fill-switch', '#layout-select', '#stacked-switch', '#stats-switch'];
+    const inputs = ['#chart-type', '#time-select', '#date-start', '#date-end', '#fill-switch', '#layout-select', '#stacked-switch', '#stats-switch', '#donut-switch'];
     inputs.forEach(id => {
         this.content.querySelector(id).addEventListener('change', (e) => {
             if (id === '#fill-switch') this.fillArea = e.target.checked;
@@ -382,9 +390,8 @@ class DetailedChartsPanel extends HTMLElement {
             }
 
             if (id === '#stacked-switch') this.stackedBars = e.target.checked;
-            if (id === '#stats-switch') {
-                this.showStats = e.target.checked;
-            }
+            if (id === '#stats-switch') this.showStats = e.target.checked;
+            if (id === '#donut-switch') this.showDonutSidebar = e.target.checked;
             
             this.updateStackedVisibility();
             this.saveSettings(); 
@@ -504,7 +511,8 @@ class DetailedChartsPanel extends HTMLElement {
           layoutMode: this.layoutMode,
           gridColumns: this.gridColumns,
           stackedBars: this.stackedBars,
-          showStats: this.showStats
+          showStats: this.showStats,
+          showDonutSidebar: this.showDonutSidebar
       };
 
       this.savedViews.push(viewConfig);
@@ -532,6 +540,7 @@ class DetailedChartsPanel extends HTMLElement {
       this.timeMode = config.timeMode || 'relative';
       this.stackedBars = config.stackedBars || false;
       this.showStats = config.showStats !== undefined ? config.showStats : true;
+      this.showDonutSidebar = config.showDonutSidebar || false;
 
       this.content.querySelector('#chart-type').value = config.chartType || 'line';
       this.content.querySelector('#time-select').value = config.timeSelect || '24';
@@ -542,6 +551,7 @@ class DetailedChartsPanel extends HTMLElement {
       this.content.querySelector('#layout-select').value = this.layoutMode;
       this.content.querySelector('#stacked-switch').checked = this.stackedBars;
       this.content.querySelector('#stats-switch').checked = this.showStats;
+      this.content.querySelector('#donut-switch').checked = this.showDonutSidebar;
       this.content.querySelector('#grid-slider').value = this.gridColumns;
       this.content.querySelector('#grid-value-display').textContent = this.gridColumns;
 
@@ -582,6 +592,7 @@ class DetailedChartsPanel extends HTMLElement {
       else row.classList.remove('visible');
       this.updateStackedVisibility();
       this.updateStatsToggleVisibility();
+      this.updateDonutToggleVisibility();
   }
 
   updateStackedVisibility() {
@@ -600,6 +611,17 @@ class DetailedChartsPanel extends HTMLElement {
            statsRow.style.display = 'flex';
       } else {
            statsRow.style.display = 'none';
+      }
+  }
+
+  updateDonutToggleVisibility() {
+      const row = this.content.querySelector('#toggle-donut-row');
+      const chartType = this.content.querySelector('#chart-type').value;
+      // Donut toggle only makes sense if main chart is NOT doughnut and mode is Combined/Mixed
+      if (this.layoutMode !== 'split' && chartType !== 'doughnut') {
+          row.style.display = 'flex';
+      } else {
+          row.style.display = 'none';
       }
   }
 
@@ -638,7 +660,8 @@ class DetailedChartsPanel extends HTMLElement {
               layoutMode: this.layoutMode,
               gridColumns: this.gridColumns,
               stackedBars: this.stackedBars,
-              showStats: this.showStats
+              showStats: this.showStats,
+              showDonutSidebar: this.showDonutSidebar
           };
           const singleContainer = this.content.querySelector('#chart-container-single');
           if (singleContainer) settings.containerHeight = singleContainer.style.height;
@@ -689,6 +712,10 @@ class DetailedChartsPanel extends HTMLElement {
           if (settings.showStats !== undefined) {
               this.showStats = settings.showStats;
               this.content.querySelector('#stats-switch').checked = settings.showStats;
+          }
+          if (settings.showDonutSidebar !== undefined) {
+              this.showDonutSidebar = settings.showDonutSidebar;
+              this.content.querySelector('#donut-switch').checked = settings.showDonutSidebar;
           }
           this.updateSliderVisibility();
           
@@ -829,29 +856,181 @@ class DetailedChartsPanel extends HTMLElement {
       return (data && data.length > 0) ? data[0] : [];
   }
 
-  async loadSingleSensorHistory(index, startTime, endTime) {
-      const sensor = this.selectedSensors[index];
-      if (!sensor) return;
-      
+  // --- PANNING LOGIC ---
+  async loadSpecificRange(newStart, newEnd) {
       const loader = this.content.querySelector('#loader');
       loader.style.display = 'block';
-      
+
+      try {
+          const promises = this.selectedSensors.map(s => this.fetchDataSmart(s.entityId, newStart, newEnd));
+          const results = await Promise.all(promises);
+          
+          if (this.layoutMode === 'mixed' || this.showDonutSidebar) {
+              this._globalStartTime = newStart;
+              this._globalEndTime = newEnd;
+
+              // 1. Update Top Chart Instance
+              const topChart = this.chartInstances[0];
+              if(topChart) {
+                  const chartType = this.content.querySelector('#chart-type').value;
+                  topChart.data.datasets.forEach((ds, idx) => {
+                       const conf = this.selectedSensors[idx];
+                       const u = this._hass.states[conf.entityId]?.attributes?.unit_of_measurement || '';
+                       const effectiveType = this.stackedBars ? 'bar' : chartType;
+                       ds.data = this.processData(results[idx], effectiveType, u);
+                  });
+                  topChart.options.scales.x.min = newStart.getTime();
+                  topChart.options.scales.x.max = newEnd.getTime();
+                  topChart.update();
+              }
+
+              // 2. Update Top Stats HTML (if visible)
+              const statsWrapper = this.content.querySelector('#stats-wrapper-top');
+              if(statsWrapper) {
+                  // ... logic as before for stats box ...
+                  // Re-running full update logic for simplicity is safer
+                  let allStatsHTML = '';
+                  results.forEach((data, idx) => {
+                      const conf = this.selectedSensors[idx];
+                      const unit = this._hass.states[conf.entityId]?.attributes?.unit_of_measurement || '';
+                      const effectiveType = this.stackedBars ? 'bar' : this.content.querySelector('#chart-type').value;
+                      let points = this.processData(data, effectiveType, unit);
+                      if(!points.length) return;
+                      const values = points.map(p => p.y);
+                      const min = Math.min(...values); const max = Math.max(...values);
+                      const avg = (values.reduce((a,b)=>a+b,0)/values.length).toFixed(2);
+                      const curr = values[values.length-1].toFixed(2);
+                      let displayVal = curr; let displayLabel = "Aktuell";
+                      const hours = (newEnd - newStart) / 3600000;
+                      if (unit && (unit.includes("Wh") || unit.includes("kWh"))) {
+                          const isAggregated = (effectiveType === 'bar' && hours > 24);
+                          displayVal = this.calculateEnergySum(values, isAggregated).toFixed(2);
+                          displayLabel = "Summe";
+                      }
+                      allStatsHTML += this.createStatsCard(conf, min.toFixed(2), avg, max.toFixed(2), displayVal, unit, displayLabel);
+                  });
+                  statsWrapper.innerHTML = allStatsHTML;
+              }
+
+              // 3. Update Side Donut (if active)
+              if (this.showDonutSidebar) {
+                  const donutCanvas = this.shadowRoot.getElementById('canvas-side-donut');
+                  if (donutCanvas) {
+                      // We need to re-render the donut with new data
+                      // Easiest is to destroy and recreate or update dataset
+                      // Since we track chartInstances, the donut is the SECOND instance [1]
+                      const donutChart = this.chartInstances[1];
+                      if(donutChart) {
+                          // Update data
+                          // This requires re-calculating sums
+                          let newValues = [], newLabels = [], newColors = [];
+                          let totalSum = 0;
+                          let units = [];
+                          
+                          results.forEach((data, idx) => {
+                              const conf = this.selectedSensors[idx];
+                              if(!conf || conf.hidden) return;
+                              const unit = this._hass.states[conf.entityId]?.attributes?.unit_of_measurement || '';
+                              const points = this.processData(data, 'bar', unit);
+                              const valArray = points.map(p=>p.y);
+                              const isEnergy = unit && (unit.includes("Wh") || unit.includes("kWh"));
+                              const hours = (newEnd - newStart) / 3600000;
+                              const isDailyAgg = (hours > 24);
+                              
+                              let sum = isEnergy ? this.calculateEnergySum(valArray, isDailyAgg) : valArray.reduce((a,b)=>a+b,0);
+                              
+                              if(sum>0) {
+                                  newLabels.push(this.cleanName(conf.entityId));
+                                  newValues.push(sum);
+                                  newColors.push(conf.color);
+                                  totalSum += sum;
+                                  units.push(unit);
+                              }
+                          });
+                          
+                          donutChart.data.labels = newLabels;
+                          donutChart.data.datasets[0].data = newValues;
+                          donutChart.data.datasets[0].backgroundColor = newColors;
+                          donutChart.update();
+                          
+                          // Update total text
+                          const totalContainer = this.shadowRoot.getElementById('doughnut-total-container');
+                          if(totalContainer) {
+                              const u = units.length > 0 ? units[0] : '';
+                              totalContainer.innerHTML = `Gesamt: ${totalSum.toFixed(2)} ${u}`;
+                          }
+                      }
+                  }
+              }
+
+          } else {
+               this._sensorDataCache = results.map(res => ({ data: res, startTime: newStart, endTime: newEnd }));
+               this._globalStartTime = newStart; this._globalEndTime = newEnd;
+               setTimeout(() => this.updateChartFromCache(), 50);
+          }
+          
+      } catch (e) { console.error(e); } finally { loader.style.display = 'none'; }
+  }
+
+  // --- PANNING LOGIC (SINGLE BOTTOM CHART) ---
+  async loadSingleSensorHistory(index, startTime, endTime) {
+      // Logic same as previous version (decoupled update)
+      const sensor = this.selectedSensors[index];
+      if (!sensor) return;
+      const loader = this.content.querySelector('#loader');
+      loader.style.display = 'block';
       try {
           const newData = await this.fetchDataSmart(sensor.entityId, startTime, endTime);
           this._sensorDataCache[index] = { data: newData, startTime: startTime, endTime: endTime };
-          
-          if(this.chartInstances[index]) {
-             this.updateChartFromCache(); 
+
+          const canvasId = `split-canvas-${index}`;
+          // In mixed mode, index 0 is top chart, index 1 might be donut.
+          // We need to find the correct chart instance by canvas ID
+          const targetChart = this.chartInstances.find(c => c.canvas.id === canvasId);
+
+          if (targetChart) {
+              const conf = this.selectedSensors[index];
+              const currentType = conf.typeOverride || this.content.querySelector('#chart-type').value;
+              const unit = this._hass.states[conf.entityId]?.attributes?.unit_of_measurement || '';
+              const points = this.processData(newData, currentType, unit);
+
+              targetChart.data.datasets[0].data = points;
+              targetChart.options.scales.x.min = startTime.getTime();
+              targetChart.options.scales.x.max = endTime.getTime();
+              targetChart.update();
+
+              const footer = this.shadowRoot.getElementById(`footer-${index}`);
+              if (footer) {
+                  // ... Update stats box HTML ...
+                  const values = points.map(p => p.y);
+                  const min = Math.min(...values); const max = Math.max(...values);
+                  const avg = (values.reduce((a,b)=>a+b,0)/values.length).toFixed(2);
+                  const curr = values[values.length-1].toFixed(2);
+                  let displayVal = curr; let displayLabel = "Aktuell";
+                  const hours = (endTime - startTime) / 3600000;
+                  if (unit && (unit.includes("Wh") || unit.includes("kWh"))) {
+                      const isAggregated = (currentType === 'bar' && hours > 24);
+                      displayVal = this.calculateEnergySum(values, isAggregated).toFixed(2);
+                      displayLabel = "Summe";
+                  }
+                  
+                  footer.querySelector('.split-stats-box').innerHTML = `
+                     <div><div class="stat-label">${displayLabel}</div><div class="stat-current" style="color:${conf.color}">${displayVal} <span class="stat-unit">${unit}</span></div></div>
+                     <div><div class="stat-label">Min</div><div class="stat-value" style="font-size:1em">${min.toFixed(2)}</div></div>
+                     <div><div class="stat-label">Ø</div><div class="stat-value" style="font-size:1em">${avg}</div></div>
+                     <div><div class="stat-label">Max</div><div class="stat-value" style="font-size:1em">${max.toFixed(2)}</div></div>
+                  `;
+              }
           }
       } catch (e) { console.error(e); } finally { loader.style.display = 'none'; }
   }
 
   async loadHistory() {
+      // Standard load...
       const chartType = this.content.querySelector('#chart-type').value;
       const loader = this.content.querySelector('#loader');
       const errDiv = this.content.querySelector('#error-msg');
       errDiv.style.display = 'none';
-      
       if (!this.libsLoaded || this.selectedSensors.length === 0) return;
 
       let st, et, dh;
@@ -865,23 +1044,17 @@ class DetailedChartsPanel extends HTMLElement {
           dh = (et - st) / 3600000;
           if (st >= et) { this.showError("Enddatum muss nach Startdatum liegen."); return; }
       }
-
       if (chartType === 'scatter' && dh > 24.1) { this.showError("Scatter nur <= 24h."); return; }
 
       this._globalStartTime = st;
       this._globalEndTime = et;
-
       loader.style.display = 'block';
       this._sensorDataCache = []; 
 
       try {
           const promises = this.selectedSensors.map(s => this.fetchDataSmart(s.entityId, st, et));
           const results = await Promise.all(promises);
-          
-          results.forEach(res => {
-              this._sensorDataCache.push({ data: res, startTime: st, endTime: et });
-          });
-
+          results.forEach(res => { this._sensorDataCache.push({ data: res, startTime: st, endTime: et }); });
           this.updateChartFromCache();
       } catch (e) { console.error(e); this.showError(`Fehler: ${e.message}`); } finally { loader.style.display = 'none'; }
   }
@@ -901,7 +1074,10 @@ class DetailedChartsPanel extends HTMLElement {
           const topWrap = document.createElement('div');
           topWrap.style.marginBottom = '30px';
           mainArea.appendChild(topWrap);
+          
           this.renderCombinedView(cacheData, globalChartType, topWrap);
+          const sw = topWrap.querySelector('.stats-wrapper');
+          if(sw) sw.id = 'stats-wrapper-top';
 
           const botWrap = document.createElement('div');
           mainArea.appendChild(botWrap);
@@ -926,9 +1102,7 @@ class DetailedChartsPanel extends HTMLElement {
   }
 
   calculateEnergySum(values, isAggregated) {
-      if (isAggregated) {
-          return values.reduce((a, b) => a + b, 0);
-      }
+      if (isAggregated) return values.reduce((a, b) => a + b, 0);
       let sum = 0;
       for (let i = 1; i < values.length; i++) {
           const diff = values[i] - values[i-1];
@@ -968,26 +1142,19 @@ class DetailedChartsPanel extends HTMLElement {
           } else {
               yVal = g.sum / g.count;
           }
-          
           return { x: new Date(dateStr).getTime(), y: yVal };
       });
   }
 
   processData(history, type, unit) {
       const isEnergy = unit && (unit.includes("Wh") || unit.includes("kWh"));
-      
       if (history.length > 1) {
           const start = new Date(history[0].last_changed).getTime();
           const end = new Date(history[history.length-1].last_changed).getTime();
           const hours = (end - start) / 3600000;
-          
-          if (type === 'bar' && hours > 24) {
-              return this.aggregateToDaily(history, isEnergy);
-          }
+          if (type === 'bar' && hours > 24) return this.aggregateToDaily(history, isEnergy);
       }
-
       if (type === 'bar') return this.aggregateToHourly(history);
-      
       if (history.length > 2000) {
           const step = Math.ceil(history.length / 2000);
           return history.filter((_, i) => i % step === 0 && !isNaN(parseFloat(_.state)))
@@ -1007,18 +1174,17 @@ class DetailedChartsPanel extends HTMLElement {
       return Object.keys(buckets).sort().map(timestamp => { const t = parseInt(timestamp); return { x: t, y: buckets[timestamp].sum / buckets[timestamp].count }; });
   }
 
-  // --- REDESIGNED COMPACT STATS CARD (FLEX & CLASSIC) ---
   createStatsCard(conf, min, avg, max, curr, unit, label) {
       return `
         <div class="stats-card" style="border-left-color: ${conf.color}">
             <div class="stats-header" title="${this.cleanName(conf.entityId)}">${this.cleanName(conf.entityId)}</div>
             <div class="stats-row">
-                <span>${label}</span>
+                <span>${label}:</span>
                 <span class="stats-main-val" style="color:${conf.color}">${curr} ${unit}</span>
             </div>
-            <div class="stats-row"><span>Min</span> <span>${min}</span></div>
-            <div class="stats-row"><span>Avg</span> <span>${avg}</span></div>
-            <div class="stats-row"><span>Max</span> <span>${max}</span></div>
+            <div class="stats-row"><span>Min:</span> <span>${min}</span></div>
+            <div class="stats-row"><span>Avg:</span> <span>${avg}</span></div>
+            <div class="stats-row"><span>Max:</span> <span>${max}</span></div>
         </div>
      `;
   }
@@ -1027,55 +1193,167 @@ class DetailedChartsPanel extends HTMLElement {
       const styles = getComputedStyle(this);
       const textColor = styles.getPropertyValue('--primary-text-color').trim();
       const labels=[], values=[], bgColors=[], units=[];
+      let totalSum = 0;
+      
+      const st = this._globalStartTime || cacheData[0]?.startTime || new Date();
+      const et = this._globalEndTime || cacheData[0]?.endTime || new Date();
+      const hours = (et - st) / 3600000;
+      const isDailyAgg = (hours > 24);
+
       cacheData.forEach((obj, i) => {
-          const h = obj.data;
-          const c = this.selectedSensors[i];
-          if(!c||!h.length)return;
-          const clean = h.map(p=>parseFloat(p.state)).filter(v=>!isNaN(v));
-          if(!clean.length)return;
-          const avg = clean.reduce((a,b)=>a+b,0)/clean.length;
-          labels.push(this.cleanName(c.entityId)); values.push(avg.toFixed(2)); bgColors.push(c.color);
-          units.push(this._hass.states[c.entityId]?.attributes?.unit_of_measurement||'');
+          const conf = this.selectedSensors[i];
+          if(!conf || !obj.data.length) return;
+          if(conf.hidden) return; 
+
+          const unit = this._hass.states[conf.entityId]?.attributes?.unit_of_measurement || '';
+          const points = this.processData(obj.data, 'bar', unit); 
+          const valArray = points.map(p => p.y);
+
+          const isEnergy = unit && (unit.includes("Wh") || unit.includes("kWh"));
+          let sensorSum = 0;
+          if(isEnergy) {
+             sensorSum = this.calculateEnergySum(valArray, isDailyAgg);
+          } else {
+             sensorSum = valArray.reduce((a,b)=>a+b, 0);
+          }
+
+          if(sensorSum > 0) {
+              labels.push(this.cleanName(conf.entityId));
+              values.push(sensorSum);
+              bgColors.push(conf.color);
+              units.push(unit);
+              totalSum += sensorSum;
+          }
       });
+
+      const container = ctx.canvas.closest('.doughnut-container-flex');
+      if(container) {
+          const legendContainer = container.querySelector('#doughnut-legend-container');
+          const totalContainer = container.querySelector('#doughnut-total-container');
+          
+          if(legendContainer) {
+              legendContainer.innerHTML = '';
+              labels.forEach((label, i) => {
+                  const item = document.createElement('div');
+                  item.className = 'donut-legend-item';
+                  item.innerHTML = `<div class="donut-legend-color" style="background-color:${bgColors[i]}"></div><div>${label}</div>`;
+                  item.onclick = () => {
+                      const meta = chart.getDatasetMeta(0);
+                      meta.data[i].hidden = !meta.data[i].hidden;
+                      item.classList.toggle('hidden', meta.data[i].hidden);
+                      chart.update();
+                  };
+                  legendContainer.appendChild(item);
+              });
+          }
+          
+          if(totalContainer) {
+              const u = units.length > 0 ? units[0] : '';
+              totalContainer.innerHTML = `Gesamt: ${totalSum.toFixed(2)} ${u}`; // UNIT ADDED HERE
+              totalContainer.style.color = textColor;
+          }
+      }
+
       const chart = new window.Chart(ctx, {
           type: 'doughnut',
           data: { labels, datasets: [{ data: values, backgroundColor: bgColors, borderWidth: 0, hoverOffset: 10 }] },
           options: {
-              responsive: true, maintainAspectRatio: false, cutout: '60%', layout: { padding: 20 },
+              responsive: true, maintainAspectRatio: false, layout: { padding: 20 },
               plugins: {
-                  legend: { display: true, position: 'right', labels: { color: textColor, usePointStyle: true } },
-                  tooltip: { backgroundColor: 'rgba(20, 20, 20, 0.95)', callbacks: { label: (c) => ` Ø ${c.formattedValue} ${units[c.dataIndex]}` } }
+                  legend: { display: false }, 
+                  tooltip: { 
+                      backgroundColor: 'rgba(20, 20, 20, 0.95)', 
+                      callbacks: { 
+                          label: (c) => {
+                              const val = c.parsed;
+                              const pct = totalSum > 0 ? ((val / totalSum) * 100).toFixed(1) : 0;
+                              return `\u00A0\u00A0${c.label}: ${c.formattedValue} ${units[c.dataIndex]} (${pct}%)`; 
+                          } 
+                      } 
+                  }
               }
           }
       });
       this.chartInstances.push(chart);
-      if(this.showStats) {
-        statsWrapper.innerHTML = `<div style="text-align:center;width:100%;color:${textColor};padding:20px;">Durchschnittswerte (Ø)</div>`;
+      
+      // Also show in statsWrapper if it exists and not hidden by styling (fallback)
+      if(statsWrapper && this.layoutMode === 'combined' && this.content.querySelector('#chart-type').value === 'doughnut') {
+         // Standard donut view (not sidebar)
+         const u = units.length > 0 ? units[0] : '';
+         statsWrapper.innerHTML = `<div style="text-align:center;width:100%;color:${textColor};padding:15px;font-size:1.5em;font-weight:bold;">Gesamt: ${totalSum.toFixed(2)} ${u}</div>`;
       }
   }
 
   renderCombinedView(cacheData, chartType, container) {
       const wrapper = document.createElement('div');
-      wrapper.innerHTML = `
-          <div id="resize-ghost"></div>
-          <div class="chart-container-outer" id="chart-container-single">
-             <div class="canvas-wrapper"><canvas id="canvas-combined"></canvas></div>
-             <div id="resize-handle"><div class="grip-lines"></div></div>
-          </div>
-          <div id="stats-wrapper" class="stats-wrapper" style="display:${this.showStats ? 'flex' : 'none'}"></div>
-      `;
+      
+      if (chartType === 'doughnut') {
+          wrapper.innerHTML = `
+              <div class="chart-container-outer" id="chart-container-single" style="height: 450px;">
+                 <div class="doughnut-container-flex" style="display: flex; height: 100%; width: 100%;">
+                     <div style="flex-grow: 1; position: relative; min-width: 60%;">
+                        <canvas id="canvas-combined"></canvas>
+                     </div>
+                     <div class="doughnut-sidebar" style="width: 250px; display: flex; flex-direction: column; justify-content: center; padding-left: 20px;">
+                        <div id="doughnut-legend-container" style="overflow-y: auto; max-height: 80%;"></div>
+                        <div id="doughnut-total-container" style="margin-top: 20px; font-weight: bold; font-size: 1.4em;"></div>
+                     </div>
+                 </div>
+              </div>
+          `;
+      } else if (this.showDonutSidebar && (this.layoutMode === 'combined' || this.layoutMode === 'mixed')) {
+          // SIDE-BY-SIDE LAYOUT
+          wrapper.innerHTML = `
+              <div class="flex-main-wrapper" style="display: flex; gap: 20px; width: 100%;">
+                  <div class="main-chart-wrapper" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+                      <div id="resize-ghost"></div>
+                      <div class="chart-container-outer" id="chart-container-single">
+                         <div class="canvas-wrapper"><canvas id="canvas-combined"></canvas></div>
+                         <div id="resize-handle"><div class="grip-lines"></div></div>
+                      </div>
+                  </div>
+                  <div class="side-donut-wrapper" style="width: 30%; min-width: 300px; max-width: 400px; background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 8px; padding: 10px; display: flex; flex-direction: column;">
+                      <div class="doughnut-container-flex" style="display: flex; flex-direction: column; height: 100%; width: 100%;">
+                         <div style="flex-grow: 1; position: relative; min-height: 200px;">
+                            <canvas id="canvas-side-donut"></canvas>
+                         </div>
+                         <div class="doughnut-sidebar" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--divider-color);">
+                            <div id="doughnut-legend-container" style="overflow-y: auto; max-height: 150px;"></div>
+                            <div id="doughnut-total-container" style="margin-top: 10px; font-weight: bold; font-size: 1.2em; text-align: center;"></div>
+                         </div>
+                     </div>
+                  </div>
+              </div>
+              <div id="stats-wrapper" class="stats-wrapper" style="display:${this.showStats ? 'flex' : 'none'}"></div>
+          `;
+      } else {
+          // STANDARD LAYOUT
+          wrapper.innerHTML = `
+              <div id="resize-ghost"></div>
+              <div class="chart-container-outer" id="chart-container-single">
+                 <div class="canvas-wrapper"><canvas id="canvas-combined"></canvas></div>
+                 <div id="resize-handle"><div class="grip-lines"></div></div>
+              </div>
+              <div id="stats-wrapper" class="stats-wrapper" style="display:${this.showStats ? 'flex' : 'none'}"></div>
+          `;
+      }
+
       wrapper.style.width = '100%';
       container.appendChild(wrapper);
       
       const chartContainer = wrapper.querySelector('#chart-container-single');
-      if (this.savedContainerHeight) chartContainer.style.height = this.savedContainerHeight;
-      this.initResizeHandler(wrapper.querySelector('#resize-handle'), chartContainer, wrapper.querySelector('#resize-ghost'));
+      if (this.savedContainerHeight && chartType !== 'doughnut') chartContainer.style.height = this.savedContainerHeight;
+      
+      if (chartType !== 'doughnut') {
+        this.initResizeHandler(wrapper.querySelector('#resize-handle'), chartContainer, wrapper.querySelector('#resize-ghost'));
+      }
 
       const ctx = wrapper.querySelector('#canvas-combined').getContext('2d');
       const statsWrapper = wrapper.querySelector('#stats-wrapper');
 
       if (chartType === 'doughnut') { this.renderDoughnut(cacheData, ctx, statsWrapper); return; }
 
+      // --- MAIN CHART RENDERING ---
       const datasets = [];
       let allStatsHTML = '';
       
@@ -1102,7 +1380,6 @@ class DetailedChartsPanel extends HTMLElement {
           if (unit && (unit.includes("Wh") || unit.includes("kWh"))) {
               const hours = (et - st) / 3600000;
               const isAggregated = (effectiveType === 'bar' && hours > 24);
-              
               displayVal = this.calculateEnergySum(values, isAggregated).toFixed(2);
               displayLabel = "SUMME";
           }
@@ -1130,14 +1407,22 @@ class DetailedChartsPanel extends HTMLElement {
           });
       });
 
-      statsWrapper.innerHTML = allStatsHTML;
+      if(statsWrapper) statsWrapper.innerHTML = allStatsHTML;
       this.createChartInstance(ctx, this.stackedBars ? 'bar' : chartType, datasets, st, et, true, null);
+
+      // --- RENDER SIDE DONUT IF ACTIVE ---
+      if (this.showDonutSidebar && chartType !== 'doughnut') {
+          const donutCanvas = wrapper.querySelector('#canvas-side-donut');
+          if (donutCanvas) {
+              const ctxDonut = donutCanvas.getContext('2d');
+              this.renderDoughnut(cacheData, ctxDonut, null);
+          }
+      }
   }
 
   renderSplitView(cacheData, globalChartType, container) {
       const gridWrapper = document.createElement('div');
       gridWrapper.className = 'split-grid-wrapper';
-      // FLEX GAP
       container.appendChild(gridWrapper);
 
       const st = this._globalStartTime || cacheData[0]?.startTime || new Date();
@@ -1150,11 +1435,9 @@ class DetailedChartsPanel extends HTMLElement {
 
           const card = document.createElement('div');
           card.className = 'split-chart-card';
-          // DYNAMIC WIDTH VIA FLEX
-          // width ~ 100% / columns - gap adjustment
           const pct = 99 / this.gridColumns;
           card.style.flex = `1 1 calc(${pct}% - 20px)`;
-          card.style.minWidth = '250px'; // Prevent too small on resize
+          card.style.minWidth = '250px'; 
 
           const canvasId = `split-canvas-${idx}`;
           
@@ -1254,7 +1537,15 @@ class DetailedChartsPanel extends HTMLElement {
               plugins: {
                   legend: { 
                       display: !hideLegend, 
-                      position: 'top', align: 'end', labels: { color: textColor, usePointStyle: true, boxWidth: 8 } 
+                      position: 'top', align: 'end', 
+                      labels: { 
+                          color: textColor, usePointStyle: true, boxWidth: 8, boxPadding: 6, padding: 15,
+                          generateLabels: (chart) => {
+                               const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                               original.forEach(label => { label.text = '\u00A0\u00A0' + label.text; });
+                               return original;
+                          }
+                      } 
                   },
                   tooltip: {
                       backgroundColor: 'rgba(20, 20, 20, 0.95)', titleColor: '#fff', bodyColor: '#bbb', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, padding: 12,
@@ -1263,7 +1554,7 @@ class DetailedChartsPanel extends HTMLElement {
                           label: (c) => {
                               const lbl = c.dataset.label || '';
                               const unit = this._hass.states[this.selectedSensors.find(s=>this.cleanName(s.entityId)===lbl)?.entityId]?.attributes?.unit_of_measurement||'';
-                              return `${lbl}: ${c.formattedValue} ${unit}`;
+                              return `\u00A0\u00A0${lbl}: ${c.formattedValue} ${unit}`;
                           }
                       }
                   },
@@ -1273,10 +1564,10 @@ class DetailedChartsPanel extends HTMLElement {
                              onPanComplete: ({chart}) => { 
                                  const min = chart.scales.x.min;
                                  const max = chart.scales.x.max;
+                                 chart.stop();
                                  if (this.layoutMode !== 'combined' && sensorIndex !== null) {
                                      this.loadSingleSensorHistory(sensorIndex, new Date(min), new Date(max));
                                  } else {
-                                     // For Combined or Mixed Top
                                      if (min < startTime.getTime() || max > endTime.getTime()) {
                                          this.loadSpecificRange(new Date(min), new Date(max));
                                      }
