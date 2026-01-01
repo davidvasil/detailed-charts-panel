@@ -1,4 +1,4 @@
-console.log("DetailedChartsPanel: v_1.4");
+console.log("DetailedChartsPanel: v_1.5");
 
 class DetailedChartsPanel extends HTMLElement {
   constructor() {
@@ -22,7 +22,7 @@ class DetailedChartsPanel extends HTMLElement {
     this.gridColumns = 1;
     this.stackedBars = false;
     this.showStats = true; 
-    this.showDonutSidebar = false; // New Setting
+    this.showDonutSidebar = false;
   }
 
   set hass(hass) {
@@ -206,12 +206,27 @@ class DetailedChartsPanel extends HTMLElement {
             .side-donut-wrapper { width: 100% !important; border-left: none !important; border-top: 1px solid var(--divider-color); padding-left: 0 !important; padding-top: 15px; }
         }
 
+        /* DRAG AND DROP STYLES */
         .split-chart-card {
             background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 8px; padding: 15px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 0; height: fit-content;
             flex-grow: 1;
+            transition: opacity 0.2s, border-color 0.2s;
         }
+        .split-chart-card.dragging { opacity: 0.4; }
+        .split-chart-card.drag-over { border: 2px dashed var(--accent-color); }
+
         .split-chart-header { font-weight: bold; font-size: 1.1em; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* HANDLE STYLE - NEW */
+        .drag-handle { 
+            cursor: grab; padding: 5px; color: var(--secondary-text-color); 
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 4px; transition: background 0.2s; margin-left: 10px;
+        }
+        .drag-handle:hover { background: rgba(128,128,128,0.1); color: var(--primary-text-color); }
+        .drag-handle:active { cursor: grabbing; }
+
         .split-canvas-container { height: 300px; position: relative; width: 100%; }
         .split-footer { display: flex; gap: 20px; margin-top: 10px; align-items: stretch; border-top: 1px solid var(--divider-color); padding-top: 15px; }
         .split-stats-box { flex-grow: 1; background: transparent; border-radius: 0; padding: 5px 0; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; text-align: center; border: none; }
@@ -617,7 +632,6 @@ class DetailedChartsPanel extends HTMLElement {
   updateDonutToggleVisibility() {
       const row = this.content.querySelector('#toggle-donut-row');
       const chartType = this.content.querySelector('#chart-type').value;
-      // Donut toggle only makes sense if main chart is NOT doughnut and mode is Combined/Mixed
       if (this.layoutMode !== 'split' && chartType !== 'doughnut') {
           row.style.display = 'flex';
       } else {
@@ -887,8 +901,6 @@ class DetailedChartsPanel extends HTMLElement {
               // 2. Update Top Stats HTML (if visible)
               const statsWrapper = this.content.querySelector('#stats-wrapper-top');
               if(statsWrapper) {
-                  // ... logic as before for stats box ...
-                  // Re-running full update logic for simplicity is safer
                   let allStatsHTML = '';
                   results.forEach((data, idx) => {
                       const conf = this.selectedSensors[idx];
@@ -915,17 +927,11 @@ class DetailedChartsPanel extends HTMLElement {
               // 3. Update Side Donut (if active)
               if (this.showDonutSidebar) {
                   const donutCanvas = this.shadowRoot.getElementById('canvas-side-donut');
-                  if (donutCanvas) {
-                      // We need to re-render the donut with new data
-                      // Easiest is to destroy and recreate or update dataset
-                      // Since we track chartInstances, the donut is the SECOND instance [1]
-                      const donutChart = this.chartInstances[1];
+                  if(donutCanvas) {
+                      const donutChart = this.chartInstances.find(c => c.canvas.id === 'canvas-side-donut');
                       if(donutChart) {
-                          // Update data
-                          // This requires re-calculating sums
-                          let newValues = [], newLabels = [], newColors = [];
+                          let newValues = [], newLabels = [], newColors = [], units = [];
                           let totalSum = 0;
-                          let units = [];
                           
                           results.forEach((data, idx) => {
                               const conf = this.selectedSensors[idx];
@@ -943,8 +949,8 @@ class DetailedChartsPanel extends HTMLElement {
                                   newLabels.push(this.cleanName(conf.entityId));
                                   newValues.push(sum);
                                   newColors.push(conf.color);
-                                  totalSum += sum;
                                   units.push(unit);
+                                  totalSum += sum;
                               }
                           });
                           
@@ -953,7 +959,6 @@ class DetailedChartsPanel extends HTMLElement {
                           donutChart.data.datasets[0].backgroundColor = newColors;
                           donutChart.update();
                           
-                          // Update total text
                           const totalContainer = this.shadowRoot.getElementById('doughnut-total-container');
                           if(totalContainer) {
                               const u = units.length > 0 ? units[0] : '';
@@ -974,7 +979,6 @@ class DetailedChartsPanel extends HTMLElement {
 
   // --- PANNING LOGIC (SINGLE BOTTOM CHART) ---
   async loadSingleSensorHistory(index, startTime, endTime) {
-      // Logic same as previous version (decoupled update)
       const sensor = this.selectedSensors[index];
       if (!sensor) return;
       const loader = this.content.querySelector('#loader');
@@ -984,8 +988,6 @@ class DetailedChartsPanel extends HTMLElement {
           this._sensorDataCache[index] = { data: newData, startTime: startTime, endTime: endTime };
 
           const canvasId = `split-canvas-${index}`;
-          // In mixed mode, index 0 is top chart, index 1 might be donut.
-          // We need to find the correct chart instance by canvas ID
           const targetChart = this.chartInstances.find(c => c.canvas.id === canvasId);
 
           if (targetChart) {
@@ -1001,7 +1003,6 @@ class DetailedChartsPanel extends HTMLElement {
 
               const footer = this.shadowRoot.getElementById(`footer-${index}`);
               if (footer) {
-                  // ... Update stats box HTML ...
                   const values = points.map(p => p.y);
                   const min = Math.min(...values); const max = Math.max(...values);
                   const avg = (values.reduce((a,b)=>a+b,0)/values.length).toFixed(2);
@@ -1026,11 +1027,11 @@ class DetailedChartsPanel extends HTMLElement {
   }
 
   async loadHistory() {
-      // Standard load...
       const chartType = this.content.querySelector('#chart-type').value;
       const loader = this.content.querySelector('#loader');
       const errDiv = this.content.querySelector('#error-msg');
       errDiv.style.display = 'none';
+      
       if (!this.libsLoaded || this.selectedSensors.length === 0) return;
 
       let st, et, dh;
@@ -1044,17 +1045,23 @@ class DetailedChartsPanel extends HTMLElement {
           dh = (et - st) / 3600000;
           if (st >= et) { this.showError("Enddatum muss nach Startdatum liegen."); return; }
       }
+
       if (chartType === 'scatter' && dh > 24.1) { this.showError("Scatter nur <= 24h."); return; }
 
       this._globalStartTime = st;
       this._globalEndTime = et;
+
       loader.style.display = 'block';
       this._sensorDataCache = []; 
 
       try {
           const promises = this.selectedSensors.map(s => this.fetchDataSmart(s.entityId, st, et));
           const results = await Promise.all(promises);
-          results.forEach(res => { this._sensorDataCache.push({ data: res, startTime: st, endTime: et }); });
+          
+          results.forEach(res => {
+              this._sensorDataCache.push({ data: res, startTime: st, endTime: et });
+          });
+
           this.updateChartFromCache();
       } catch (e) { console.error(e); this.showError(`Fehler: ${e.message}`); } finally { loader.style.display = 'none'; }
   }
@@ -1102,7 +1109,9 @@ class DetailedChartsPanel extends HTMLElement {
   }
 
   calculateEnergySum(values, isAggregated) {
-      if (isAggregated) return values.reduce((a, b) => a + b, 0);
+      if (isAggregated) {
+          return values.reduce((a, b) => a + b, 0);
+      }
       let sum = 0;
       for (let i = 1; i < values.length; i++) {
           const diff = values[i] - values[i-1];
@@ -1142,19 +1151,26 @@ class DetailedChartsPanel extends HTMLElement {
           } else {
               yVal = g.sum / g.count;
           }
+          
           return { x: new Date(dateStr).getTime(), y: yVal };
       });
   }
 
   processData(history, type, unit) {
       const isEnergy = unit && (unit.includes("Wh") || unit.includes("kWh"));
+      
       if (history.length > 1) {
           const start = new Date(history[0].last_changed).getTime();
           const end = new Date(history[history.length-1].last_changed).getTime();
           const hours = (end - start) / 3600000;
-          if (type === 'bar' && hours > 24) return this.aggregateToDaily(history, isEnergy);
+          
+          if (type === 'bar' && hours > 24) {
+              return this.aggregateToDaily(history, isEnergy);
+          }
       }
+
       if (type === 'bar') return this.aggregateToHourly(history);
+      
       if (history.length > 2000) {
           const step = Math.ceil(history.length / 2000);
           return history.filter((_, i) => i % step === 0 && !isNaN(parseFloat(_.state)))
@@ -1249,7 +1265,7 @@ class DetailedChartsPanel extends HTMLElement {
           
           if(totalContainer) {
               const u = units.length > 0 ? units[0] : '';
-              totalContainer.innerHTML = `Gesamt: ${totalSum.toFixed(2)} ${u}`; // UNIT ADDED HERE
+              totalContainer.innerHTML = `Gesamt: ${totalSum.toFixed(2)} ${u}`; 
               totalContainer.style.color = textColor;
           }
       }
@@ -1276,9 +1292,8 @@ class DetailedChartsPanel extends HTMLElement {
       });
       this.chartInstances.push(chart);
       
-      // Also show in statsWrapper if it exists and not hidden by styling (fallback)
+      // Also show in statsWrapper if it exists AND in main Donut View (Combined)
       if(statsWrapper && this.layoutMode === 'combined' && this.content.querySelector('#chart-type').value === 'doughnut') {
-         // Standard donut view (not sidebar)
          const u = units.length > 0 ? units[0] : '';
          statsWrapper.innerHTML = `<div style="text-align:center;width:100%;color:${textColor};padding:15px;font-size:1.5em;font-weight:bold;">Gesamt: ${totalSum.toFixed(2)} ${u}</div>`;
       }
@@ -1353,7 +1368,6 @@ class DetailedChartsPanel extends HTMLElement {
 
       if (chartType === 'doughnut') { this.renderDoughnut(cacheData, ctx, statsWrapper); return; }
 
-      // --- MAIN CHART RENDERING ---
       const datasets = [];
       let allStatsHTML = '';
       
@@ -1380,6 +1394,7 @@ class DetailedChartsPanel extends HTMLElement {
           if (unit && (unit.includes("Wh") || unit.includes("kWh"))) {
               const hours = (et - st) / 3600000;
               const isAggregated = (effectiveType === 'bar' && hours > 24);
+              
               displayVal = this.calculateEnergySum(values, isAggregated).toFixed(2);
               displayLabel = "SUMME";
           }
@@ -1435,18 +1450,61 @@ class DetailedChartsPanel extends HTMLElement {
 
           const card = document.createElement('div');
           card.className = 'split-chart-card';
+          // DRAG ATTRIBUTES REMOVED FROM CARD
+          card.dataset.index = idx; 
+
           const pct = 99 / this.gridColumns;
           card.style.flex = `1 1 calc(${pct}% - 20px)`;
           card.style.minWidth = '250px'; 
 
           const canvasId = `split-canvas-${idx}`;
           
+          // HANDLE ADDED HERE
           card.innerHTML = `
-             <div class="split-chart-header" style="color:${conf.color}"><span>${this.cleanName(conf.entityId)}</span></div>
+             <div class="split-chart-header" style="color:${conf.color}">
+                 <span>${this.cleanName(conf.entityId)}</span>
+                 <div class="drag-handle" draggable="true" title="Verschieben">
+                     <svg style="width:20px;height:20px" viewBox="0 0 24 24">
+                         <path fill="currentColor" d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+                     </svg>
+                 </div>
+             </div>
              <div class="split-canvas-container"><canvas id="${canvasId}"></canvas></div>
              <div class="split-footer" id="footer-${idx}"></div>
           `;
           gridWrapper.appendChild(card);
+          
+          // DRAG EVENT LISTENERS ON HANDLE
+          const handle = card.querySelector('.drag-handle');
+          handle.addEventListener('dragstart', (e) => {
+              e.dataTransfer.setData('text/plain', idx);
+              e.dataTransfer.effectAllowed = 'move';
+              // Force drag image to be the card
+              e.dataTransfer.setDragImage(card, 0, 0); 
+              card.classList.add('dragging');
+          });
+          handle.addEventListener('dragend', () => {
+              card.classList.remove('dragging');
+              this.shadowRoot.querySelectorAll('.split-chart-card').forEach(c => c.classList.remove('drag-over'));
+          });
+
+          // DROP EVENT LISTENERS ON CARD
+          card.addEventListener('dragover', (e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = 'move';
+              card.classList.add('drag-over');
+          });
+          card.addEventListener('dragleave', () => {
+              card.classList.remove('drag-over');
+          });
+          card.addEventListener('drop', (e) => {
+              e.preventDefault();
+              const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+              const toIndex = idx;
+              if (fromIndex !== toIndex) {
+                  this.reorderSensors(fromIndex, toIndex);
+              }
+          });
 
           let currentType = conf.typeOverride || globalChartType;
           const unit = this._hass.states[conf.entityId]?.attributes?.unit_of_measurement || '';
@@ -1521,6 +1579,21 @@ class DetailedChartsPanel extends HTMLElement {
       });
   }
 
+  // --- REORDER FUNCTION ---
+  reorderSensors(fromIndex, toIndex) {
+      const element = this.selectedSensors.splice(fromIndex, 1)[0];
+      this.selectedSensors.splice(toIndex, 0, element);
+
+      if(this._sensorDataCache.length > fromIndex) {
+          const cached = this._sensorDataCache.splice(fromIndex, 1)[0];
+          this._sensorDataCache.splice(toIndex, 0, cached);
+      }
+
+      this.saveSettings();
+      this.renderSensorListUI(); 
+      this.updateChartFromCache();
+  }
+
   createChartInstance(ctx, type, datasets, startTime, endTime, showZoomBtn, sensorIndex, hideLegend) {
       const styles = getComputedStyle(this);
       const textColor = styles.getPropertyValue('--primary-text-color').trim();
@@ -1564,6 +1637,7 @@ class DetailedChartsPanel extends HTMLElement {
                              onPanComplete: ({chart}) => { 
                                  const min = chart.scales.x.min;
                                  const max = chart.scales.x.max;
+                                 // Stop animation to prevent sticky behavior
                                  chart.stop();
                                  if (this.layoutMode !== 'combined' && sensorIndex !== null) {
                                      this.loadSingleSensorHistory(sensorIndex, new Date(min), new Date(max));
