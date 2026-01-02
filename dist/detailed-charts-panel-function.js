@@ -84,27 +84,45 @@ function aggregateToHourly(historyData) {
     return Object.keys(buckets).sort().map(timestamp => { const t = parseInt(timestamp); return { x: t, y: buckets[timestamp].sum / buckets[timestamp].count }; });
 }
 
-export function processData(history, type, unit) {
+export function processData(history, type, unit, startTime = null) {
     const isEnergy = unit && (unit.includes("Wh") || unit.includes("kWh"));
+    let dataPoints = [];
 
+    // 1. Basic Processing
     if (history.length > 1) {
         const start = new Date(history[0].last_changed).getTime();
         const end = new Date(history[history.length - 1].last_changed).getTime();
         const hours = (end - start) / 3600000;
 
         if (type === 'bar' && hours > 24) {
-            return aggregateToDaily(history, isEnergy);
+            dataPoints = aggregateToDaily(history, isEnergy);
         }
     }
 
-    if (type === 'bar') return aggregateToHourly(history);
-
-    if (history.length > 2000) {
-        const step = Math.ceil(history.length / 2000);
-        return history.filter((_, i) => i % step === 0 && !isNaN(parseFloat(_.state)))
-            .map(pt => ({ x: new Date(pt.last_changed).getTime(), y: parseFloat(pt.state) }));
+    if (dataPoints.length === 0) {
+        if (type === 'bar') {
+            dataPoints = aggregateToHourly(history);
+        } else if (history.length > 2000) {
+            const step = Math.ceil(history.length / 2000);
+            dataPoints = history.filter((_, i) => i % step === 0 && !isNaN(parseFloat(_.state)))
+                .map(pt => ({ x: new Date(pt.last_changed).getTime(), y: parseFloat(pt.state) }));
+        } else {
+            dataPoints = history.filter(pt => !isNaN(parseFloat(pt.state))).map(pt => ({ x: new Date(pt.last_changed).getTime(), y: parseFloat(pt.state) }));
+        }
     }
-    return history.filter(pt => !isNaN(parseFloat(pt.state))).map(pt => ({ x: new Date(pt.last_changed).getTime(), y: parseFloat(pt.state) }));
+
+    // 2. Fix Zero Line ("Null-Linie") Logic with Hard Cut
+    if (startTime && dataPoints.length > 0 && type !== 'bar' && type !== 'scatter') {
+        const firstPtTime = dataPoints[0].x;
+        const startTs = startTime.getTime();
+        
+        if (firstPtTime > startTs + 60000) {
+            dataPoints.unshift({ x: startTs, y: 0 });
+            dataPoints.splice(1, 0, { x: firstPtTime - 1, y: 0 });
+        }
+    }
+
+    return dataPoints;
 }
 
 /* --- HTML TEMPLATES (VIEWS) --- */
@@ -150,10 +168,22 @@ export function getSplitStatsHTML(displayLabel, color, displayVal, unit, min, av
     `;
 }
 
+// Helper for the icon button
+function getMonoButtonHTML() {
+    return `
+        <button id="toggle-mono-btn" class="chart-overlay-btn" title="Min/Max hervorheben (Monochrom)">
+            <svg style="width:20px;height:20px" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M7.5,5.6L5,7L7.5,8.4L10,7L7.5,5.6M19.5,15.4L22,14L19.5,12.6L17,14L19.5,15.4M22,2L20.6,4.5L22,7L19.5,5.6L17,7L18.4,4.5L17,2L19.5,3.4L22,2M13.34,12C13.5,12.58 13.78,13.08 14.15,13.5L3.6,23L2.2,21.6L13.34,12M15.4,14.8L16.8,16.2L12,21H10.6L15.4,14.8Z" />
+            </svg>
+        </button>
+    `;
+}
+
 export function getCombinedChartHTML(showStats) {
     return `
         <div id="resize-ghost"></div>
         <div class="chart-container-outer" id="chart-container-single">
+           ${getMonoButtonHTML()}
            <div class="canvas-wrapper"><canvas id="canvas-combined"></canvas></div>
            <div id="resize-handle"><div class="grip-lines"></div></div>
         </div>
@@ -179,12 +209,12 @@ export function getCombinedDoughnutHTML() {
 
 export function getSideBySideHTML(showStats) {
     return `
-        <div class="flex-main-wrapper" style="display: flex; gap: 10px; width: 100%;">
+        <div class="flex-main-wrapper" style="display: flex; gap: 10px; width: 100%; align-items: stretch;">
             <div class="main-chart-wrapper" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
                 <div id="resize-ghost"></div>
-                <div class="chart-container-outer" id="chart-container-single">
+                <div class="chart-container-outer side-by-side-mode" id="chart-container-single" style="height: auto; flex-grow: 1;">
+                   ${getMonoButtonHTML()}
                    <div class="canvas-wrapper"><canvas id="canvas-combined"></canvas></div>
-                   <div id="resize-handle"><div class="grip-lines"></div></div>
                 </div>
             </div>
             <div class="side-donut-wrapper" style="width: 30%; min-width: 300px; max-width: 400px; background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 8px; padding: 10px; display: flex; flex-direction: column;">
@@ -224,12 +254,15 @@ export function getPanelTemplate() {
             border-right: 1px solid var(--divider-color); 
             padding: 20px; display: flex; flex-direction: column; gap: 15px; 
             box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow-y: auto; 
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none; 
         }
-        .sidebar::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+        .sidebar::-webkit-scrollbar { display: none; }
+        
+        #doughnut-legend-container { scrollbar-width: none; }
+        #doughnut-legend-container::-webkit-scrollbar { display: none; }
+
         .sidebar > * { flex-shrink: 0; }
         
-        /* HEADER STYLES (Title + Loader) */
         .sidebar-header {
             display: flex;
             justify-content: space-between;
@@ -272,7 +305,7 @@ export function getPanelTemplate() {
             display: flex; flex-direction: column; gap: 8px; 
             max-height: 230px; 
             overflow-y: auto; 
-            padding: 5px 0; margin-bottom: 10px; 
+            padding: 5px 0; margin-bottom: 0px; 
             border-top: 1px solid var(--divider-color); padding-top: 15px; 
             scrollbar-width: none; 
         }
@@ -281,7 +314,7 @@ export function getPanelTemplate() {
         .sensor-color-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
         .sensor-name { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .remove-sensor { cursor: pointer; color: var(--error-color, #f44336); font-weight: bold; padding: 0 8px; }
-        .saved-views-section { margin-top: 20px; border-top: 1px solid var(--divider-color); padding-top: 15px; }
+        .saved-views-section { margin-top: 10px; border-top: 1px solid var(--divider-color); padding-top: 15px; }
         .saved-view-item { display: flex; align-items: center; gap: 10px; background: rgba(128, 128, 128, 0.1); padding: 10px; border-radius: 4px; font-size: 13px; margin-bottom: 8px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent; }
         .saved-view-item:hover { background: rgba(128, 128, 128, 0.2); border-color: var(--divider-color); }
         .saved-view-name { flex-grow: 1; font-weight: 500; }
@@ -291,7 +324,7 @@ export function getPanelTemplate() {
         .toggle-switch:checked { background: var(--accent-color); }
         .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
         .toggle-switch:checked::after { transform: translateX(16px); }
-        .slider-row { margin-top: 15px; border-top: 1px solid var(--divider-color); padding-top: 15px; display: none; }
+        .slider-row { margin-top: 15px; border-bottom: 1px solid var(--divider-color); padding: 5px 0 15px 0; display: none; }
         .slider-row.visible { display: block; }
         .slider-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
         input[type=range] { -webkit-appearance: none; width: 100%; height: 6px; background: var(--divider-color); border-radius: 3px; outline: none; padding: 0; border: none; margin-top: 5px; }
@@ -313,9 +346,9 @@ export function getPanelTemplate() {
         
         .custom-date-container { display: none; flex-direction: column; gap: 10px; }
         .custom-date-container.visible { display: flex; }
-        #load-btn { background-color: var(--btn-color); color: white; cursor: pointer; font-weight: 500; border: none; margin-top: 20px; padding: 15px; font-size: 14px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1.25px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background-color 0.2s; }
+        #load-btn { background-color: var(--btn-color); color: white; cursor: pointer; font-weight: 500; border: none; margin-top: 20px; padding: 15px; width: 100%; font-size: 14px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1.25px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background-color 0.2s; }
         #load-btn:hover { background-color: #757575; }
-        #reset-zoom-btn { background-color: var(--card-background-color); color: var(--primary-text-color); border: 1px solid var(--divider-color); margin-top: 10px; padding: 8px; font-size: 12px; width: 100%; border-radius: 4px; cursor: pointer; display: none; }
+        #reset-zoom-btn { background-color: var(--card-background-color); color: var(--primary-text-color); border: 1px solid var(--divider-color); margin-top: 5px; padding: 8px; font-size: 12px; width: 100%; border-radius: 4px; cursor: pointer; display: none; }
         
         .main-content { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; background-color: var(--primary-background-color); overflow-y: auto; position: relative; }
         
@@ -327,8 +360,11 @@ export function getPanelTemplate() {
         .stats-row span:first-child { color: var(--secondary-text-color); text-transform: uppercase; font-size: 0.8em; font-weight: 500; }
         .stats-row span:last-child { font-weight: 700; color: var(--primary-text-color); }
         .stats-main-val { font-size: 1.0em; color: var(--primary-text-color); font-weight: bold; }
+        
+        /* CANVAS WRAPPER with PADDING */
         .chart-container-outer { width: 100%; height: 450px; min-height: 200px; position: relative; background: var(--card-background-color); border-radius: 8px; padding: 15px; box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid var(--divider-color); display: flex; flex-direction: column; }
-        .canvas-wrapper { flex-grow: 1; position: relative; width: 100%; height: 100%; overflow: hidden; }
+        .canvas-wrapper { flex-grow: 1; position: relative; width: 100%; height: 100%; overflow: hidden; padding-top: 20px; }
+        
         #resize-handle { height: 14px; width: 100%; background: var(--card-background-color); cursor: ns-resize; display: flex; align-items: center; justify-content: center; border-top: 1px solid var(--divider-color); margin-top: 5px; }
         .grip-lines { width: 30px; height: 3px; border-top: 1px solid var(--secondary-text-color); border-bottom: 1px solid var(--secondary-text-color); opacity: 0.5; }
         #resize-ghost { position: absolute; left: 40px; right: 40px; height: 4px; background-color: var(--accent-color); opacity: 0.5; z-index: 100; display: none; pointer-events: none; cursor: ns-resize; }
@@ -389,15 +425,94 @@ export function getPanelTemplate() {
         .stat-current { font-size: 1.1em; font-weight: bold; }
         .stat-unit { font-size: 0.7em; font-weight: normal; opacity: 0.8; }
         
-        /* LOADER MOVED TO HEADER */
+        /* UPDATED OVERLAY BUTTON STYLE - STANDARD LOGIC (Inactive=Transparent, Active=Gray) */
+        .chart-overlay-btn {
+            position: absolute; 
+            top: 10px; 
+            left: 10px; 
+            z-index: 10;
+            background: transparent; 
+            border: 1px solid var(--divider-color);
+            color: var(--secondary-text-color); 
+            border-radius: 4px;
+            width: 36px; height: 36px; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .chart-overlay-btn:hover { background: rgba(0,0,0,0.05); color: var(--primary-text-color); }
+        .chart-overlay-btn.active { background: var(--btn-color); color: white; border-color: var(--btn-color); }
+
+        /* LOADER */
         .loader { border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid var(--accent-color); border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; display: none; margin: 0; }
         
         .error-msg { color: #f44336; background: rgba(244, 67, 54, 0.1); padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 13px; display: none; border: 1px solid rgba(244, 67, 54, 0.3); }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .donut-legend-item { display: flex; align-items: center; margin-bottom: 8px; font-size: 13px; cursor: pointer; transition: opacity 0.2s; }
+        
+        /* UPDATED DONUT LEGEND STYLES */
+        .donut-legend-item { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            margin-bottom: 0; 
+            font-size: 13px; 
+            cursor: pointer; 
+            transition: opacity 0.2s; 
+            padding: 8px 0;
+            border-bottom: 1px solid var(--divider-color);
+        }
+        .donut-legend-item:last-child { border-bottom: none; }
         .donut-legend-item:hover { opacity: 0.8; }
         .donut-legend-item.hidden { text-decoration: line-through; opacity: 0.5; }
-        .donut-legend-color { width: 12px; height: 12px; margin-right: 10px; flex-shrink:0; }
+        
+        .donut-legend-left { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+        .donut-legend-right { font-weight: bold; margin-left: 10px; white-space: nowrap; }
+        
+        .donut-legend-color { width: 12px; height: 12px; margin-right: 0; flex-shrink:0; border-radius: 50%; }
+
+        /* MODAL STYLES */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999; display: none; align-items: center; justify-content: center; }
+        .modal-content { background: var(--card-background-color); padding: 20px; border-radius: 8px; width: 500px; max-width: 90%; max-height: 80vh; display: flex; flex-direction: column; border: 1px solid var(--divider-color); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .modal-title { font-size: 1.2em; font-weight: bold; }
+        .modal-close { cursor: pointer; font-size: 1.5em; line-height: 1; opacity: 0.7; }
+        .modal-close:hover { opacity: 1; }
+        
+        .yaml-textarea { 
+            width: 100%; height: 200px; 
+            background: var(--secondary-background-color, #292929); 
+            color: var(--primary-text-color); 
+            border: 1px solid var(--divider-color); 
+            border-radius: 4px; padding: 10px; font-family: monospace; font-size: 12px; resize: none; margin-bottom: 15px; outline: none;
+        }
+        .modal-hint { font-size: 14px; color: orange; margin-bottom: 5px; }
+
+        /* CARD MODE STYLES */
+        :host([card-mode]) {
+            height: auto !important;
+            display: block;
+            background: var(--ha-card-background, var(--card-background-color, #1c1c1c));
+            box-shadow: var(--ha-card-box-shadow, 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2));
+            border-radius: var(--ha-card-border-radius, 12px);
+            padding: 16px;
+            color: var(--primary-text-color);
+        }
+        :host([card-mode]) .sidebar { display: none !important; }
+        :host([card-mode]) .container { height: auto; display: block; overflow: visible; }
+        :host([card-mode]) .main-content { padding: 0; overflow: visible; height: auto; background: transparent !important; }
+        :host([card-mode]) .chart-container-outer,
+        :host([card-mode]) .stats-card,
+        :host([card-mode]) .split-chart-card {
+            height: 350px;
+            box-shadow: none;
+            border: 1px solid rgba(128,128,128,0.2); 
+            background: transparent; 
+        }
+        :host([card-mode]) .stats-card { height: auto; }
+        :host([card-mode]) .side-donut-wrapper {
+            background: transparent !important;
+            box-shadow: none !important;
+            border: 1px solid rgba(128,128,128,0.2) !important;
+        }
       </style>
 
       <div class="container">
@@ -415,13 +530,19 @@ export function getPanelTemplate() {
           <div class="control-group add-sensor-row">
              <input type="color" id="color-input" class="color-picker" value="#03a9f4" title="Farbe wählen">
              <button id="add-btn" class="btn-icon" title="Hinzufügen">+</button>
-             <button id="clear-all-btn" class="btn-icon grey" title="Alles löschen"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg></button>
-             <button id="save-view-btn" class="btn-icon" style="margin-left:auto;" title="Ansicht speichern"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"/></svg></button>
+             <button id="clear-all-btn" class="btn-icon grey" title="Sensorliste löschen"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg></button>
+             
+             <div style="margin-left:auto; display:flex; gap:5px;">
+                <button id="copy-yaml-btn" class="btn-icon" title="YAML für Dashboard kopieren" style="background-color:#455a64;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/></svg>
+                </button>
+                <button id="save-view-btn" class="btn-icon" title="Ansicht speichern"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"/></svg></button>
+             </div>
           </div>
           <div id="sensor-list-container" class="sensor-list"><div style="color: var(--secondary-text-color); font-size: 12px; text-align: center; padding: 10px;">Liste leer.</div></div>
-          <div style="margin-top: 20px; border-top: 1px solid var(--divider-color); padding-top: 15px;">
-              <div class="toggle-row" id="toggle-fill-row"><span class="toggle-label">Fläche füllen</span><input type="checkbox" class="toggle-switch" id="fill-switch"></div>
-              <div class="control-group" style="margin-top:10px;">
+          <div style="margin-top: 0px; border-top: 1px solid var(--divider-color); padding-top: 15px;">
+              
+              <div class="control-group" style="margin-top:5px;">
                   <label>Ansicht (Layout)</label>
                   <select id="layout-select">
                       <option value="combined" selected>Kombiniert</option>
@@ -436,53 +557,71 @@ export function getPanelTemplate() {
                   <div class="slider-header"><label>Zoom Stufe</label><span id="zoom-value-display" style="font-weight:bold;">100%</span></div>
                   <input type="range" id="zoom-slider" min="0.5" max="1.5" step="0.1" value="1">
               </div>
-
               <div class="slider-row" id="grid-slider-row">
                   <div class="slider-header"><label>Spalten (Grid)</label><span id="grid-value-display" style="font-weight:bold;">1</span></div>
                   <input type="range" id="grid-slider" min="1" max="4" step="1" value="1">
               </div>
-              <div class="toggle-row" id="toggle-stacked-row" style="margin-top: 10px; display:none;"><span class="toggle-label">Stacked Bars</span><input type="checkbox" class="toggle-switch" id="stacked-switch"></div>
-          </div>
-          <div class="control-group" style="margin-top: 15px;">
-            <label>Darstellung (Global):</label>
-            <select id="chart-type">
-                <option value="line" selected>Line (Kurve)</option>
-                <option value="bar">Bar (Balken)</option>
-                <option value="doughnut">Donut (Verteilung)</option>
-                <option value="stepped">Stepped (Stufen)</option>
-                <option value="scatter">Scatter (Punkte)</option>
-            </select>
-          </div>
-          <label style="margin-top:15px;">Zeitraum Modus:</label>
-          <div class="mode-switch">
-              <div class="mode-btn active" id="btn-mode-relative">Relativ</div>
-              <div class="mode-btn" id="btn-mode-fixed">Kalender</div>
-          </div>
-          <div id="container-relative" class="control-group">
-            <select id="time-select">
-                <option value="1">Letzte 1 Stunde</option>
-                <option value="3">Letzte 3 Stunden</option>
-                <option value="6">Letzte 6 Stunden</option>
-                <option value="12">Letzte 12 Stunden</option>
-                <option value="24" selected>Letzte 24 Stunden</option>
-                <option value="48">Letzte 48 Stunden</option>
-                <option value="168">Letzte 7 Tage</option>
-                <option value="720">Letzte 30 Tage (Monat)</option>
-                <option value="2160">Letzte 3 Monate</option>
-                <option value="8760">Letztes Jahr</option>
-            </select>
-          </div>
-          <div id="container-fixed" class="custom-date-container">
-             <div><label>Von:</label><input type="datetime-local" id="date-start"></div>
-             <div><label>Bis:</label><input type="datetime-local" id="date-end"></div>
-          </div>
-          <button id="load-btn">Daten laden</button>
-          <button id="reset-zoom-btn">🔍 Zoom zurücksetzen</button>
+              
+          
+			  <div class="control-group" style="margin-top: 20px;">
+				<label>Darstellung (Global):</label>
+				<select id="chart-type">
+					<option value="line" selected>Line (Kurve)</option>
+					<option value="bar">Bar (Balken)</option>
+					<option value="doughnut">Donut (Verteilung)</option>
+					<option value="stepped">Stepped (Stufen)</option>
+					<option value="scatter">Scatter (Punkte)</option>
+				</select>
+			  </div>
+			  
+			  <div class="toggle-row" id="toggle-fill-row"><span class="toggle-label">Fläche füllen</span><input type="checkbox" class="toggle-switch" id="fill-switch"></div>          
+			  <div class="toggle-row" id="toggle-stacked-row" style="margin-top: 0px; display:none;"><span class="toggle-label">Stacked Bars</span><input type="checkbox" class="toggle-switch" id="stacked-switch"></div>
+		  </div>
+		  <div style="margin-top: 0px; border-top: 1px solid var(--divider-color); padding-top: 15px;">
+			  <label style="margin-top:5px;">Zeitraum Modus:</label>
+			  <div class="mode-switch">
+				  <div class="mode-btn active" id="btn-mode-relative">Relativ</div>
+				  <div class="mode-btn" id="btn-mode-fixed">Kalender</div>
+			  </div>
+			  <div id="container-relative" class="control-group">
+				<select id="time-select">
+					<option value="1">Letzte 1 Stunde</option>
+					<option value="3">Letzte 3 Stunden</option>
+					<option value="6">Letzte 6 Stunden</option>
+					<option value="12">Letzte 12 Stunden</option>
+					<option value="24" selected>Letzte 24 Stunden</option>
+					<option value="48">Letzte 48 Stunden</option>
+					<option value="168">Letzte 7 Tage</option>
+					<option value="720">Letzte 30 Tage (Monat)</option>
+					<option value="2160">Letzte 3 Monate</option>
+					<option value="8760">Letztes Jahr</option>
+				</select>
+			  </div>
+			  <div id="container-fixed" class="custom-date-container">
+				 <div><label>Von:</label><input type="datetime-local" id="date-start"></div>
+				 <div><label>Bis:</label><input type="datetime-local" id="date-end"></div>
+			  </div>
+			  <button id="load-btn">Daten laden</button>
+			  <button id="reset-zoom-btn">🔍 Zoom zurücksetzen</button>
+		  </div>	  
           <div class="saved-views-section"><label>Gespeicherte Ansichten</label><div id="saved-views-container"></div></div>
           
           <div class="error-msg" id="error-msg"></div>
         </div>
         <div class="main-content" id="main-content-area"></div>
+
+        <div class="modal-overlay" id="export-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="modal-title">YAML Export</span>
+                    <span class="modal-close" id="close-modal-btn">✕</span>
+                </div>
+                <div class="modal-hint">Dieser Code erstellt eine Karte in der <b>"Kombiniert"</b>-Ansicht.</div>
+                <textarea class="yaml-textarea" id="yaml-export-area" readonly></textarea>
+                <button id="modal-copy-action-btn" style="margin-top:0;">Kopieren</button>
+                <div id="copy-success-msg" style="display:none; color: var(--success-color, #4caf50); margin-top: 5px; text-align: center; font-weight: bold;">Kopieren erfolgreich!</div>
+            </div>
+        </div>
       </div>
     `;
 }
