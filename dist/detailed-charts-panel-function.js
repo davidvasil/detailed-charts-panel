@@ -3,7 +3,7 @@
 /* --- HELPER FUNCTIONS --- */
 
 export function cleanName(name) {
-    return name.replace(/^(sensor|binary_sensor)\./, '');
+    return name.replace(/^(sensor|binary_sensor|input_number)\./, '');
 }
 
 export function getRandomColor() {
@@ -88,7 +88,6 @@ export function processData(history, type, unit, startTime = null) {
     const isEnergy = unit && (unit.includes("Wh") || unit.includes("kWh"));
     let dataPoints = [];
 
-    // 1. Basic Processing
     if (history.length > 1) {
         const start = new Date(history[0].last_changed).getTime();
         const end = new Date(history[history.length - 1].last_changed).getTime();
@@ -111,7 +110,6 @@ export function processData(history, type, unit, startTime = null) {
         }
     }
 
-    // 2. Fix Zero Line ("Null-Linie") Logic with Hard Cut
     if (startTime && dataPoints.length > 0 && type !== 'bar' && type !== 'scatter') {
         const firstPtTime = dataPoints[0].x;
         const startTs = startTime.getTime();
@@ -168,7 +166,6 @@ export function getSplitStatsHTML(displayLabel, color, displayVal, unit, min, av
     `;
 }
 
-// Helper for the icon button
 function getMonoButtonHTML() {
     return `
         <button id="toggle-mono-btn" class="chart-overlay-btn" title="Min/Max hervorheben (Monochrom)">
@@ -193,7 +190,7 @@ export function getCombinedChartHTML(showStats) {
 
 export function getCombinedDoughnutHTML() {
     return `
-        <div class="chart-container-outer" id="chart-container-single" style="height: 450px;">
+        <div class="chart-container-outer" id="chart-container-single" style="height: 380px;">
            <div class="doughnut-container-flex" style="display: flex; height: 100%; width: 100%;">
                <div style="flex-grow: 1; position: relative; min-width: 60%;">
                   <canvas id="canvas-combined"></canvas>
@@ -208,13 +205,15 @@ export function getCombinedDoughnutHTML() {
 }
 
 export function getSideBySideHTML(showStats) {
+    // UPDATED: Added resize-handle and adjusted container styles for resizing
     return `
-        <div class="flex-main-wrapper" style="display: flex; gap: 10px; width: 100%; align-items: stretch;">
+        <div class="flex-main-wrapper" style="display: flex; gap: 10px; width: 100%; align-items: flex-start;">
             <div class="main-chart-wrapper" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
                 <div id="resize-ghost"></div>
-                <div class="chart-container-outer side-by-side-mode" id="chart-container-single" style="height: auto; flex-grow: 1;">
+                <div class="chart-container-outer side-by-side-mode" id="chart-container-single" style="height: 450px; flex-grow: 0;">
                    ${getMonoButtonHTML()}
                    <div class="canvas-wrapper"><canvas id="canvas-combined"></canvas></div>
+                   <div id="resize-handle"><div class="grip-lines"></div></div>
                 </div>
             </div>
             <div class="side-donut-wrapper" style="width: 30%; min-width: 300px; max-width: 400px; background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 8px; padding: 10px; display: flex; flex-direction: column;">
@@ -246,7 +245,7 @@ export function getPanelTemplate() {
           --btn-color: #616161; 
         }
         * { box-sizing: border-box; }
-        .container { display: flex; height: 100%; overflow: hidden; }
+        .container { display: flex; height: 100%; overflow: hidden; position: relative; }
         
         .sidebar { 
             width: var(--sidebar-width); min-width: var(--sidebar-width); 
@@ -254,24 +253,25 @@ export function getPanelTemplate() {
             border-right: 1px solid var(--divider-color); 
             padding: 20px; display: flex; flex-direction: column; gap: 15px; 
             box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow-y: auto; 
-            scrollbar-width: none; 
+            scrollbar-width: none;
+            transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease, opacity 0.2s; 
         }
         .sidebar::-webkit-scrollbar { display: none; }
         
+        .sidebar.collapsed {
+            width: 0; min-width: 0; padding: 0; opacity: 0; overflow: hidden; border-right: none;
+        }
+
         #doughnut-legend-container { scrollbar-width: none; }
         #doughnut-legend-container::-webkit-scrollbar { display: none; }
 
         .sidebar > * { flex-shrink: 0; }
         
         .sidebar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            flex-shrink: 0; 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0; 
         }
         
-        h2 { margin: 0; font-weight: 300; letter-spacing: 1px; font-size: 1.5em; }
+        h2 { margin: 0; font-weight: 300; letter-spacing: 1px; font-size: 1.5em; white-space: nowrap; }
         
         label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--secondary-text-color); margin-bottom: 4px; display: block; letter-spacing: 0.5px; }
         .control-group { margin-bottom: 5px; position: relative; }
@@ -301,6 +301,9 @@ export function getPanelTemplate() {
         .btn-icon:hover { background-color: #757575; }
         .btn-icon.grey { background-color: #757575; }
         .btn-icon.grey:hover { background-color: #616161; }
+        .btn-icon.transparent { background: transparent; color: var(--primary-text-color); border: 1px solid var(--divider-color); }
+        .btn-icon.transparent:hover { background: rgba(0,0,0,0.05); }
+
         .sensor-list { 
             display: flex; flex-direction: column; gap: 8px; 
             max-height: 230px; 
@@ -317,6 +320,10 @@ export function getPanelTemplate() {
         .saved-views-section { margin-top: 10px; border-top: 1px solid var(--divider-color); padding-top: 15px; }
         .saved-view-item { display: flex; align-items: center; gap: 10px; background: rgba(128, 128, 128, 0.1); padding: 10px; border-radius: 4px; font-size: 13px; margin-bottom: 8px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent; }
         .saved-view-item:hover { background: rgba(128, 128, 128, 0.2); border-color: var(--divider-color); }
+        
+        .saved-view-item.shared { border-left: 3px solid var(--accent-color); background: rgba(3, 169, 244, 0.05); }
+        .lock-icon { opacity: 0.5; font-size: 12px; padding: 0 8px; }
+
         .saved-view-name { flex-grow: 1; font-weight: 500; }
         .toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; cursor: pointer; }
         .toggle-label { font-size: 14px; color: var(--primary-text-color); }
@@ -350,7 +357,7 @@ export function getPanelTemplate() {
         #load-btn:hover { background-color: #757575; }
         #reset-zoom-btn { background-color: var(--card-background-color); color: var(--primary-text-color); border: 1px solid var(--divider-color); margin-top: 5px; padding: 8px; font-size: 12px; width: 100%; border-radius: 4px; cursor: pointer; display: none; }
         
-        .main-content { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; background-color: var(--primary-background-color); overflow-y: auto; position: relative; }
+        .main-content { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; background-color: var(--primary-background-color); overflow-y: auto; position: relative; transition: all 0.3s ease; }
         
         .stats-wrapper { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 15px; }
         .stats-card { padding: 10px 15px; background: var(--card-background-color); border-left: 5px solid transparent; border-radius: 4px; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid var(--divider-color); border-left-width: 5px; display: flex; flex-direction: column; gap: 2px; flex: 1 1 calc(19% - 15px); min-width: 200px; }
@@ -361,9 +368,8 @@ export function getPanelTemplate() {
         .stats-row span:last-child { font-weight: 700; color: var(--primary-text-color); }
         .stats-main-val { font-size: 1.0em; color: var(--primary-text-color); font-weight: bold; }
         
-        /* CANVAS WRAPPER with PADDING */
         .chart-container-outer { width: 100%; height: 450px; min-height: 200px; position: relative; background: var(--card-background-color); border-radius: 8px; padding: 15px; box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid var(--divider-color); display: flex; flex-direction: column; }
-        .canvas-wrapper { flex-grow: 1; position: relative; width: 100%; height: 100%; overflow: hidden; padding-top: 20px; }
+        .canvas-wrapper { flex-grow: 1; position: relative; width: 100%; height: 100%; min-height: 400px; overflow: hidden; padding-top: 18px; }
         
         #resize-handle { height: 14px; width: 100%; background: var(--card-background-color); cursor: ns-resize; display: flex; align-items: center; justify-content: center; border-top: 1px solid var(--divider-color); margin-top: 5px; }
         .grip-lines { width: 30px; height: 3px; border-top: 1px solid var(--secondary-text-color); border-bottom: 1px solid var(--secondary-text-color); opacity: 0.5; }
@@ -425,7 +431,6 @@ export function getPanelTemplate() {
         .stat-current { font-size: 1.1em; font-weight: bold; }
         .stat-unit { font-size: 0.7em; font-weight: normal; opacity: 0.8; }
         
-        /* UPDATED OVERLAY BUTTON STYLE - STANDARD LOGIC (Inactive=Transparent, Active=Gray) */
         .chart-overlay-btn {
             position: absolute; 
             top: 10px; 
@@ -442,13 +447,11 @@ export function getPanelTemplate() {
         .chart-overlay-btn:hover { background: rgba(0,0,0,0.05); color: var(--primary-text-color); }
         .chart-overlay-btn.active { background: var(--btn-color); color: white; border-color: var(--btn-color); }
 
-        /* LOADER */
         .loader { border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid var(--accent-color); border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; display: none; margin: 0; }
         
         .error-msg { color: #f44336; background: rgba(244, 67, 54, 0.1); padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 13px; display: none; border: 1px solid rgba(244, 67, 54, 0.3); }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* UPDATED DONUT LEGEND STYLES */
         .donut-legend-item { 
             display: flex; 
             align-items: center; 
@@ -469,24 +472,49 @@ export function getPanelTemplate() {
         
         .donut-legend-color { width: 12px; height: 12px; margin-right: 0; flex-shrink:0; border-radius: 50%; }
 
-        /* MODAL STYLES */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999; display: none; align-items: center; justify-content: center; }
-        .modal-content { background: var(--card-background-color); padding: 20px; border-radius: 8px; width: 500px; max-width: 90%; max-height: 80vh; display: flex; flex-direction: column; border: 1px solid var(--divider-color); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .modal-content { background: var(--card-background-color); padding: 20px; border-radius: 8px; width: 600px; max-width: 95%; max-height: 90vh; display: flex; flex-direction: column; border: 1px solid var(--divider-color); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .modal-title { font-size: 1.2em; font-weight: bold; }
         .modal-close { cursor: pointer; font-size: 1.5em; line-height: 1; opacity: 0.7; }
         .modal-close:hover { opacity: 1; }
         
         .yaml-textarea { 
-            width: 100%; height: 200px; 
+            width: 100%; height: 120px; 
             background: var(--secondary-background-color, #292929); 
             color: var(--primary-text-color); 
             border: 1px solid var(--divider-color); 
-            border-radius: 4px; padding: 10px; font-family: monospace; font-size: 12px; resize: none; margin-bottom: 15px; outline: none;
+            border-radius: 4px; padding: 10px; font-family: monospace; font-size: 12px; resize: none; margin-bottom: 5px; outline: none;
         }
-        .modal-hint { font-size: 14px; color: orange; margin-bottom: 5px; }
+        .modal-hint { font-size: 14px; color: orange; margin-bottom: 5px; font-weight: 500; }
+        
+        .copy-btn { background-color: var(--btn-color); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 500; width: 100%; margin-bottom: 15px; }
+        .copy-btn:hover { background-color: #757575; }
+        .copy-success-msg { color: var(--success-color, #4caf50); text-align: center; font-weight: bold; font-size: 12px; display: none; margin-bottom: 10px; }
 
-        /* CARD MODE STYLES */
+        #toggle-sidebar-btn { 
+            background: transparent; border: none; cursor: pointer; color: var(--secondary-text-color); 
+            padding: 5px; display: flex; align-items: center; justify-content: center; border-radius: 4px;
+        }
+        #toggle-sidebar-btn:hover { background: rgba(128,128,128,0.1); color: var(--primary-text-color); }
+
+        #open-sidebar-floating {
+            position: absolute; top: 10px; left: 10px; z-index: 50;
+            width: 40px; height: 40px;
+            background: var(--card-background-color);
+            border: 1px solid var(--divider-color);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            color: var(--primary-text-color);
+            transition: transform 0.2s, opacity 0.2s;
+            opacity: 0; pointer-events: none; transform: scale(0.8);
+        }
+        :host(.sidebar-hidden) #open-sidebar-floating {
+            opacity: 1; pointer-events: auto; transform: scale(1);
+        }
+
         :host([card-mode]) {
             height: auto !important;
             display: block;
@@ -497,6 +525,7 @@ export function getPanelTemplate() {
             color: var(--primary-text-color);
         }
         :host([card-mode]) .sidebar { display: none !important; }
+        :host([card-mode]) #open-sidebar-floating { display: none !important; }
         :host([card-mode]) .container { height: auto; display: block; overflow: visible; }
         :host([card-mode]) .main-content { padding: 0; overflow: visible; height: auto; background: transparent !important; }
         :host([card-mode]) .chart-container-outer,
@@ -516,10 +545,17 @@ export function getPanelTemplate() {
       </style>
 
       <div class="container">
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar-panel">
           <div class="sidebar-header">
               <h2>📉 Detailed Charts</h2>
-              <div class="loader" id="loader"></div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                  <div class="loader" id="loader"></div>
+                  <button id="toggle-sidebar-btn" title="Seitenleiste einklappen">
+                      <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" />
+                      </svg>
+                  </button>
+              </div>
           </div>
           
           <div class="control-group">
@@ -574,6 +610,16 @@ export function getPanelTemplate() {
 				</select>
 			  </div>
 			  
+              <div class="control-group" style="margin-top:10px;">
+                 <label>Referenzlinie (Wert):</label>
+                 <input id="threshold-input" type="number" step="any" placeholder="z.B. 500" title="Zeigt eine rote Linie bei diesem Wert an">
+              </div>
+              
+              <div class="toggle-row" id="toggle-autoscale-row" style="margin-top: 10px;">
+                 <span class="toggle-label">Auto-Scale (W ➡ kW)</span>
+                 <input type="checkbox" class="toggle-switch" id="autoscale-switch">
+              </div>
+
 			  <div class="toggle-row" id="toggle-fill-row"><span class="toggle-label">Fläche füllen</span><input type="checkbox" class="toggle-switch" id="fill-switch"></div>          
 			  <div class="toggle-row" id="toggle-stacked-row" style="margin-top: 0px; display:none;"><span class="toggle-label">Stacked Bars</span><input type="checkbox" class="toggle-switch" id="stacked-switch"></div>
 		  </div>
@@ -608,7 +654,15 @@ export function getPanelTemplate() {
           
           <div class="error-msg" id="error-msg"></div>
         </div>
-        <div class="main-content" id="main-content-area"></div>
+        
+        <div class="main-content" id="main-content-area">
+           </div>
+
+        <button id="open-sidebar-floating" title="Menü öffnen">
+            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
+            </svg>
+        </button>
 
         <div class="modal-overlay" id="export-modal">
             <div class="modal-content">
@@ -616,10 +670,16 @@ export function getPanelTemplate() {
                     <span class="modal-title">YAML Export</span>
                     <span class="modal-close" id="close-modal-btn">✕</span>
                 </div>
+                
                 <div class="modal-hint">Dieser Code erstellt eine Karte in der <b>"Kombiniert"</b>-Ansicht.</div>
                 <textarea class="yaml-textarea" id="yaml-export-area" readonly></textarea>
-                <button id="modal-copy-action-btn" style="margin-top:0;">Kopieren</button>
-                <div id="copy-success-msg" style="display:none; color: var(--success-color, #4caf50); margin-top: 5px; text-align: center; font-weight: bold;">Kopieren erfolgreich!</div>
+                <button class="copy-btn" id="copy-yaml-btn-action">Kopieren</button>
+                <div class="copy-success-msg" id="msg-yaml">Kopieren erfolgreich!</div>
+
+                <div class="modal-hint" style="margin-top:10px;">Unten findest du den JSON-Code für die <b>detailed-charts-views.js</b> Datei.</div>
+                <textarea class="yaml-textarea" id="json-export-area" readonly></textarea>
+                <button class="copy-btn" id="copy-json-btn-action">Kopieren</button>
+                <div class="copy-success-msg" id="msg-json">Kopieren erfolgreich!</div>
             </div>
         </div>
       </div>
