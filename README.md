@@ -22,15 +22,19 @@ Wenn euch das Panel gefällt, würde ich mich sehr über eine Sternebewertung �
 
 ## Features
 
-- ### 📉 **Interaktive Charts:** Stufenloser Zoom & Pan (Touch & Mausrad)
-- ### 🖱️ **Infinite Scrolling:** Daten werden beim Bewegen der Zeitachse automatisch nachgeladen
-- ### 📊 **Split View & Grid:** Wähle zwischen einem großen Chart oder einem Grid (1-4 Spalten)
-- ### 💾 **Auto-Save:** Sensoren, Farben und Ansichtseinstellungen bleiben erhalten
-- ### 🎨 **Modern UI:** Native Home Assistant Toggles, Gradient-Fills und Dark-Mode Support
-- ### ⚡ **Smart Loading:** Lädt nur benötigte Daten nach; sofortiges Update bei Änderungen
-- ### 📈 **Statistiken:** Live-Anzeige von Min / Max / Durchschnitt / Aktuell
-- ### 🛠️ **Quick Controls:** Sofortiges Umschalten zwischen Line- und Bar-Chart pro Sensor
-
+- **📉 Interaktive Charts:** Stufenloser Zoom & Pan (Touch & Mausrad) mit automatischem Nachladen der Daten (Infinite Scrolling).
+- **✨ Panel Modus und Card Modus** Zwei Möglichkeiten der Betrachtung, über komplettes Panel in HA Seitenmenü oder als Dashboard Card.
+- **⚡ Auto-Scale (W ➡ kW):** Rechnet Werte von `W`/`Wh` automatisch in `kW`/`kWh` um – kein Kopfrechnen mehr!
+- **🍩 Donut Sidebar:** Optionale Seitenleiste für die prozentuale Verteilung (ideal für Stromverbrauch).
+- **📊 Flexible Layouts:**
+    - *Combined:* Alles in einem Chart.
+    - *Grid:* 1 bis 4 Spalten nebeneinander.
+    - *Mixed:* Übersicht oben, Details unten.
+- **🔴 Thresholds:** Setze Warnlinie (z.B. bei 600W) als visuelle Referenz.
+- **💾 Duales Speichern:** Speichere Ansichten lokal im Browser oder global in einer Datei.
+- **📈 Live-Statistiken:** Min / Max / Durchschnitt / Summe / Aktuell – intelligent berechnet.
+- **🏗️ Drag & Drop:** Ordne Charts im Grid-Modus einfach per Maus neu an.
+- **🌑 Modern UI:** Voller Support für Home Assistant Themes (Light & Dark Mode).
 
 ---
 
