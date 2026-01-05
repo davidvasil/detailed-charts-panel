@@ -1,4 +1,4 @@
-console.log("DetailedChartsPanel: v_1.8");
+console.log("DetailedChartsPanel: v_1.9");
 
 import { 
     cleanName, 
@@ -51,6 +51,24 @@ class DetailedChartsPanel extends HTMLElement {
     this.autoScale = false; 
   }
 
+  // --- EDITOR SUPPORT ---
+  static getConfigElement() {
+    import('./detailed-charts-panel-editor.js');
+    return document.createElement('detailed-charts-panel-editor');
+  }
+
+  static getStubConfig() {
+    return {
+        sensors: [],
+        chartType: 'line',
+        timeMode: 'relative',
+        timeSelect: '24',
+        layoutMode: 'combined',
+        fillArea: false
+    };
+  }
+  // ----------------------
+
   // --- LOVELACE CARD CONFIGURATION ---
   setConfig(config) {
       this._config = config;
@@ -67,32 +85,35 @@ class DetailedChartsPanel extends HTMLElement {
       this.timeSelect = config.timeSelect || '24';
       this.fillArea = (config.fillArea === true);
       
-      this.layoutMode = 'combined';
-      this.gridColumns = 1; 
+      this.layoutMode = config.layoutMode || 'combined'; // FIX: Config Wert übernehmen
+      this.gridColumns = config.gridColumns || 1; 
       
       this.stackedBars = config.stackedBars !== undefined ? config.stackedBars : false;
       this.showStats = config.showStats !== undefined ? config.showStats : true;
       this.showDonutSidebar = config.showDonutSidebar || false;
       this.zoomLevel = config.zoomLevel || 1.0;
-      this.autoScale = config.autoScale || false; // NEU
+      this.autoScale = config.autoScale || false; 
       
-      this.content.querySelector('#chart-type').value = this.chartType;
-      this.content.querySelector('#time-select').value = this.timeSelect;
-      if(config.dateStart) this.content.querySelector('#date-start').value = config.dateStart;
-      if(config.dateEnd) this.content.querySelector('#date-end').value = config.dateEnd;
-      this.content.querySelector('#fill-switch').checked = this.fillArea;
-      
-      this.content.querySelector('#layout-select').value = 'combined'; 
-      this.content.querySelector('#stacked-switch').checked = this.stackedBars;
-      this.content.querySelector('#grid-slider').value = 1;
+      // Falls wir im Config-Mode sind, updaten wir die UI-Elemente
+      if(this.content.querySelector('#chart-type')) {
+          this.content.querySelector('#chart-type').value = this.chartType;
+          this.content.querySelector('#time-select').value = this.timeSelect;
+          if(config.dateStart) this.content.querySelector('#date-start').value = config.dateStart;
+          if(config.dateEnd) this.content.querySelector('#date-end').value = config.dateEnd;
+          this.content.querySelector('#fill-switch').checked = this.fillArea;
+          
+          this.content.querySelector('#layout-select').value = this.layoutMode; 
+          this.content.querySelector('#stacked-switch').checked = this.stackedBars;
+          this.content.querySelector('#grid-slider').value = this.gridColumns || 1;
 
-      this.content.querySelector('#stats-switch').checked = this.showStats;
-      this.content.querySelector('#donut-switch').checked = this.showDonutSidebar;
-      this.content.querySelector('#autoscale-switch').checked = this.autoScale; // NEU UI Update
-      
-      if(config.threshold) {
-          this.thresholdValue = config.threshold;
-          this.content.querySelector('#threshold-input').value = this.thresholdValue;
+          this.content.querySelector('#stats-switch').checked = this.showStats;
+          this.content.querySelector('#donut-switch').checked = this.showDonutSidebar;
+          this.content.querySelector('#autoscale-switch').checked = this.autoScale;
+          
+          if(config.threshold) {
+              this.thresholdValue = config.threshold;
+              this.content.querySelector('#threshold-input').value = this.thresholdValue;
+          }
       }
       
       if (this._hass && this.libsLoaded && !this._dataLoadedInit) {
@@ -196,16 +217,18 @@ class DetailedChartsPanel extends HTMLElement {
         }
     });
 
-    // NEU: Autoscale switch added to list
     const inputs = ['#chart-type', '#time-select', '#date-start', '#date-end', '#fill-switch', '#layout-select', '#stacked-switch', '#stats-switch', '#donut-switch', '#autoscale-switch'];
     inputs.forEach(id => {
-        this.content.querySelector(id).addEventListener('change', (e) => {
+        const el = this.content.querySelector(id);
+        if(!el) return;
+        el.addEventListener('change', (e) => {
             if (id === '#fill-switch') this.fillArea = e.target.checked;
             
             if (id === '#chart-type') {
                 if (e.target.value !== 'bar') {
                     this.stackedBars = false;
-                    this.content.querySelector('#stacked-switch').checked = false;
+                    const sw = this.content.querySelector('#stacked-switch');
+                    if(sw) sw.checked = false;
                     this.updateStackedVisibility();
                 }
             }
@@ -217,14 +240,11 @@ class DetailedChartsPanel extends HTMLElement {
             if (id === '#stacked-switch') this.stackedBars = e.target.checked;
             if (id === '#stats-switch') this.showStats = e.target.checked;
             if (id === '#donut-switch') this.showDonutSidebar = e.target.checked;
-            
-            // NEU
             if (id === '#autoscale-switch') this.autoScale = e.target.checked;
             
             this.updateStackedVisibility();
             if(!this._config) this.saveSettings();
             
-            // Trigger Chart update directly if data exists
             if (this._sensorDataCache.length > 0 && (id !== '#time-select' && id !== '#date-start' && id !== '#date-end')) {
                 this.updateChartFromCache();
             }
@@ -360,15 +380,17 @@ class DetailedChartsPanel extends HTMLElement {
       }
 
       yaml += `fillArea: ${this.fillArea}\n`;
-      yaml += `layoutMode: combined\n`;
+      yaml += `layoutMode: ${this.layoutMode}\n`; // FIX: Use class property
       yaml += `stackedBars: ${this.stackedBars}\n`;
       yaml += `showStats: ${this.showStats}\n`;
       yaml += `showDonutSidebar: ${this.showDonutSidebar}\n`;
       yaml += `zoomLevel: ${this.zoomLevel}\n`;
-      yaml += `autoScale: ${this.autoScale}\n`; // NEU
+      yaml += `autoScale: ${this.autoScale}\n`; 
       
       if(this.thresholdValue) yaml += `threshold: ${this.thresholdValue}\n`;
       
+      if(this.gridColumns > 1) yaml += `gridColumns: ${this.gridColumns}\n`;
+
       yaml += `sensors:\n`;
       this.selectedSensors.forEach(s => {
           yaml += `  - entityId: ${s.entityId}\n`;
@@ -387,7 +409,7 @@ class DetailedChartsPanel extends HTMLElement {
         layoutMode: this.layoutMode,
         gridColumns: this.gridColumns,
         zoomLevel: this.zoomLevel,
-        autoScale: this.autoScale, // NEU
+        autoScale: this.autoScale, 
         threshold: this.thresholdValue, 
         sensors: this.selectedSensors
       };
@@ -1138,15 +1160,11 @@ class DetailedChartsPanel extends HTMLElement {
       container.appendChild(wrapper);
       const chartContainer = wrapper.querySelector('#chart-container-single');
       
-      // FIX: Apply saved height even if Donut sidebar is active (as long as it's not the doughnut chart type itself)
-      if (chartType !== 'doughnut') {
+      if (!this.showDonutSidebar && chartType !== 'doughnut') {
            chartContainer.style.height = this.savedContainerHeight ? this.savedContainerHeight : '450px';
       }
 
-      // FIX: Init Resize Handler even if Donut sidebar is active
-      if (chartType !== 'doughnut') { 
-          this.initResizeHandler(wrapper.querySelector('#resize-handle'), chartContainer, wrapper.querySelector('#resize-ghost')); 
-      }
+      if (chartType !== 'doughnut' && !this.showDonutSidebar) { this.initResizeHandler(wrapper.querySelector('#resize-handle'), chartContainer, wrapper.querySelector('#resize-ghost')); }
 
       const ctx = wrapper.querySelector('#canvas-combined').getContext('2d');
       const statsWrapper = wrapper.querySelector('#stats-wrapper');
@@ -1180,7 +1198,6 @@ class DetailedChartsPanel extends HTMLElement {
           let points = processData(sensorDataObj.data, effectiveType, unit, st);
           if (!points.length) return;
           
-          // NEU V11.3: Manuelles Auto-Scale W -> kW
           if (this.autoScale) {
              if (unit === 'W') {
                  points = points.map(p => ({x: p.x, y: p.y / 1000}));
@@ -1354,7 +1371,6 @@ class DetailedChartsPanel extends HTMLElement {
           let unit = this._hass.states[conf.entityId]?.attributes?.unit_of_measurement || '';
           let points = processData(sensorDataObj.data, currentType, unit, st);
           
-          // NEU V11.3: Auto-Scale auch im Split View
           if (this.autoScale) {
              if (unit === 'W') {
                  points = points.map(p => ({x: p.x, y: p.y / 1000}));
@@ -1555,3 +1571,12 @@ class DetailedChartsPanel extends HTMLElement {
 }
 
 customElements.define('detailed-charts-panel', DetailedChartsPanel);
+
+// --- REGISTER CARD IN LOVELACE PICKER ---
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: "detailed-charts-panel",
+  name: "Detailed Charts Panel",
+  description: "Detaillierte Analyse-Charts mit Editor.",
+  preview: true // Optional, zeigt Vorschau im Picker wenn implementiert
+});

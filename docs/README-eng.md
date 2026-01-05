@@ -20,6 +20,7 @@ If you like this panel, I would be very happy about a star rating ⭐. 🤗
 ## Features
 
 - ### 📉 **Interactive Charts:** Seamless Zoom & Pan (Touch & Mouse Wheel)
+- ### ✨ **Panel Mode and Card Mode** Two ways to view the entire panel in the HA side menu or as a dashboard card.
 - ### 🖱️ **Infinite Scrolling:** Data is automatically loaded as you move along the timeline
 - ### 📊 **Split View & Grid:** Choose between one large combined chart or a grid (1-4 columns)
 - ### 💾 **Auto-Save:** Sensors, colors, and view settings are persisted automatically

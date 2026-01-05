@@ -29,7 +29,7 @@ panel_custom:
 2.  Erstelle den Ordner `/config/www/community/detailed-charts-panel/`.
 3.  Kopiere die Dateien aus der Source.zip aus dem Ordnder `/dist` dort hinein.
 4.  Füge unter **Einstellungen > Dashboards > Ressourcen** den Pfad `/local/community/detailed-charts-panel/detailed-charts-panel.js` als JavaScript-Modul hinzu.
-5.	Wichtig, füge wie in Methode 1 erklärt den Code in deine `configuration.yaml` ein und starte Home Assistant neu.
+5.	WICHTIG, füge wie in Methode 1 erklärt den Code in deine `configuration.yaml` ein und starte Home Assistant neu.
 
 ---
 
@@ -44,13 +44,14 @@ panel_custom:
     * Kopiere **alle heruntergeladenen Dateien aus dem Ordner `/dist`** in diesen neuen Ordner. Deine Ordnerstruktur sollte wie folgt aussehen:
         ```
         /config/www/community/detailed-charts-panel/detailed-charts-panel.js
+		/config/www/community/detailed-charts-panel/detailed-charts-panel-editor.js
 		/config/www/community/detailed-charts-panel/detailed-charts-panel-function.js
 		/config/www/community/detailed-charts-panel/detailed-charts-views.js
 		/config/www/community/detailed-charts-panel/chart.umd.min.js
 		/config/www/community/detailed-charts-panel/hammer.min.js
 		/config/www/community/detailed-charts-panel/chartjs-plugin-zoom.min.js
         ```
-
+		
 3.  **Ressource zu Home Assistant hinzufügen:**
     * Gehe in Home Assistant zu **Einstellungen > Dashboards**.
     * Klicke auf das Menü mit den drei Punkten oben rechts und wähle **Ressourcen**.
@@ -59,4 +60,4 @@ panel_custom:
     * Wähle als Ressourcentyp **JavaScript-Modul**.
     * Klicke auf **Erstellen**.
 
-5.	**Wichtig**, füge wie in Methode 1 erklärt den Code in deine `configuration.yaml` ein und starte Home Assistant neu.
+4.	WICHTIG, füge wie in Methode 1 erklärt den Code in deine `configuration.yaml` ein und starte Home Assistant neu.

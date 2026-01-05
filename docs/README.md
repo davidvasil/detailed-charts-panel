@@ -19,13 +19,14 @@ Wenn euch die Details-Charts gefallen, würde ich mich sehr über einen Stern �
 ## Features im Überblick
 
 - **📉 Interaktive Charts:** Stufenloser Zoom & Pan (Touch & Mausrad) mit automatischem Nachladen der Daten (Infinite Scrolling).
+- **✨ Panel Modus und Card Modus** Zwei Möglichkeiten der Betrachtung, über komplettes Panel in HA Seitenmenü oder als Dashboard Card.
 - **⚡ Auto-Scale (W ➡ kW):** Rechnet Werte von `W`/`Wh` automatisch in `kW`/`kWh` um – kein Kopfrechnen mehr!
 - **🍩 Donut Sidebar:** Optionale Seitenleiste für die prozentuale Verteilung (ideal für Stromverbrauch).
 - **📊 Flexible Layouts:**
     - *Combined:* Alles in einem Chart.
     - *Grid:* 1 bis 4 Spalten nebeneinander.
     - *Mixed:* Übersicht oben, Details unten.
-- **🔴 Thresholds:** Setze Warnlinien (z.B. bei 600W) als visuelle Referenz.
+- **🔴 Thresholds:** Setze Warnlinie (z.B. bei 600W) als visuelle Referenz.
 - **💾 Duales Speichern:** Speichere Ansichten lokal im Browser oder global in einer Datei.
 - **📈 Live-Statistiken:** Min / Max / Durchschnitt / Summe / Aktuell – intelligent berechnet.
 - **🏗️ Drag & Drop:** Ordne Charts im Grid-Modus einfach per Maus neu an.
@@ -33,11 +34,11 @@ Wenn euch die Details-Charts gefallen, würde ich mich sehr über einen Stern �
 
 Panel-View:
 
-<img src="images/example3.png" alt="Panel View" width="50%">
+<img src="images/details-chart-card-panel.png" alt="Panel View" width="50%">
 
 Card on Dashboard:
 
-<img src="images/example5-card.png" alt="Dashboard Card" width="50%">
+<img src="images/details-chart-card-2.png" alt="Dashboard Card" width="50%">
 
 
 ---
@@ -56,6 +57,15 @@ Egal welche Ansicht du wählst, das Panel berechnet live Statistiken für den ge
 * Min / Max: Der niedrigste und höchste Wert.
 * Ø (Avg): Der Durchschnittswert.
 * Summe / Aktuell: Intelligente Umschaltung! Bei Leistung (Watt) wird der aktuelle Wert gezeigt. Bei Energie (kWh) wird automatisch die Summe (Verbrauch/Ertrag) für den Zeitraum berechnet.
+
+✨ Panel Modus und Card Modus  
+Du kannst dir bequem über den Panel Modus mit Menüeintrag in der Seitenleiste ein komplettes Dashboard mit Übersichten erstellen oder einfach ein Dashboard Card erstellen.
+
+* Panel Modus: Komplette Übersicht auf einen Blick mit beliebigen Sensoren.
+* Panel Modus: Die Ansichten können gespeichert und zwischen verschiedenen Geräten ausgetauscht werden.
+* Card Modus: Kopieren Button im Panel Modus nutzen und akt. Ansicht auf das Dashboard in die details-chart-card einfügen.
+* Card Modus: Bequeme Konfiguration von Charts über die details-chart-card auf dem Dashboard.
+
 
 ⚡ Auto-Scale (W ➡ kW) NEU  
 Ein häufiges Problem: Deine Solaranlage liefert 4500 Watt, aber du willst "4,5 kW" lesen.  

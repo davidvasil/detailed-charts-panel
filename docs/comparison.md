@@ -12,10 +12,11 @@ Hier sind die Gründe, warum dieses Panel für Analysen besser geeignet ist:
 * **Standard HA:** Linienfarben sind oft zufällig oder fest vorgegeben. Typen wie Balken Chart können nicht ausgewählt werden.
 * **Detailed Charts:** Du entscheidest! Mische Balkendiagramme (für Energie) mit Linienverläufen (für SoC/Spannung) in einem Chart. Wähle Farben, fülle Flächen, stapele Balken (Stacked Bars) oder nutze Scatter-Plots für Rohdatenpunkte.
 
-### 2. Live-Interaktivität & "Labor-Modus"
+### 2. Live-Interaktivität & "Panel-Modus + Card Modus"
 Du musst nicht jedes Mal YAML-Code ändern, um eine Ansicht zu testen.
-* Klicke Sensoren zusammen.
-* Zoome stufenlos in Zeitbereiche.
+* Klicke Sensoren mit gewünschter Farbe zusammen.
+* Wähle Chartsansicht (line, bar, stepped, donut, scatter)
+* Zoome stufenlos in Zeitbereiche oder wähle Zeitbereiche aus.
 * Ändere die Skalierung (z.B. Watt zu Kilowatt) per Knopfdruck.
 * Analysiere die Daten *live*.
 
@@ -26,7 +27,7 @@ Das Panel rechnet für dich:
 * **Auto-Scale:** Schaltet Werte intelligent um, damit Diagramme lesbar bleiben.
 
 ### 4. Flexible Layouts
-Vom klassischen **Kombiniert-Modus** (alles in einem) über den **Grid-Modus** (Getrennt) bis hin zum **Mixed-Modus** (Übersicht oben, Details unten). Dazu gibt es optional eine Donut-Sidebar für die prozentuale Verteilung.
+Vom klassischen **Kombiniert-Modus** (alles in einem) über den **Grid-Modus** (Getrennt) bis hin zum **Mixed-Modus** (Übersicht oben, Details unten). Dazu gibt es optional eine Donut-Sidebar für die prozentuale Verteilung (ideal für Monats-/Wochen-Charts).
 
 ---
 
@@ -40,12 +41,24 @@ Hier passiert die Magie. Wenn du das Panel als Sidebar-Element (View) einbindest
 * Suchen & Finden: Durchsuche blitzschnell deine Sensoren.  
 * Drag & Drop: Ordne Charts im Split-View einfach per Maus neu an.  
 * Konfiguration: Stelle Zeiträume (relativ oder fester Kalender), Farben und Chart-Typen per UI ein.  
+* Speichern: Ansichten speichern und später wieder aufrufen.
+
+<img src="images/details-chart-card-panel.png" alt="Dashboard Card" width="50%">
 
 #### B. Der YAML Export (Für den Card Mode)  
 Du hast im Panel Mode die perfekte Ansicht für deine Solaranlage zusammengeklickt? Du willst genau diese Ansicht auf deinem Dashboard auf dem Tablet haben?  
 
 * Klicke auf den Kopieren-Button (📋).
 * Kopiere den generierten yaml Code aus der oberen Ansicht im Auswahlfenster.
-* Füge ihn in eine manuelle Standard-Lovelace-Karte ein.  
+* Füge ihn in eine details-chart-card oder manuelle Standard-Lovelace-Karte ein.  
  
-*Ergebnis:* Eine fest definierte Karte, genau so konfiguriert, wie du sie erstellt hast.
+*Ergebnis:* Eine fest definierte Card, genau so konfiguriert, wie du sie im Panel Modus erstellt hast.  
+
+<img src="images/details-chart-card-2.png" alt="Dashboard Card" width="50%">
+
+* Zweite Möglichkeit, konfiguriere deine Charts direkt in der Card im Dashboard.
+* Der Editor weißt entsprechend an.  
+
+*Ergebnis:* Eine custom Card, erstellt direkt im Dahsboard
+
+<img src="images/details-chart-card.png" alt="Dashboard Card" width="50%">

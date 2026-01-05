@@ -1,6 +1,6 @@
 # Ansichten Speichern
 
-Du kannst deine Konfigurationen speichern, um sie später schnell wieder aufzurufen. Es gibt zwei Methoden:
+Du kannst deine Konfigurationen im Panel Modus speichern, um sie später schnell wieder aufzurufen. Es gibt zwei Methoden:
 
 ## 1. Lokal (Browser Storage)
 Klicke auf das **Speichern-Symbol** 💾 in der Sidebar.
@@ -9,7 +9,7 @@ Klicke auf das **Speichern-Symbol** 💾 in der Sidebar.
 * **Nachteil:** Wenn du den Browser wechselst oder das Gerät wechselst, sind die Ansichten weg.
 
 ## 2. Global (JSON Export)
-Dies ist die "Profi-Methode", um Ansichten auf **allen Geräten** (Tablet, Handy, PC) verfügbar zu machen. Diese Ansichten erhalten ein **Schloss-Symbol 🔒**.
+Das ist die "Profi-Methode", um Ansichten auf **allen Geräten** (Tablet, Handy, PC) verfügbar zu machen. Diese Ansichten erhalten ein **Schloss-Icon 🔒**.
 
 ### Vorgehensweise:
 

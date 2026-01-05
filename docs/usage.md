@@ -13,6 +13,7 @@ Das Panel ist so konzipiert, dass du dich intuitiv von oben nach unten durch die
     * Wähle zwischen `Kombiniert`, `Getrennt (Grid)` oder `Mixed`.
     * Nutze im Grid-Modus den Slider, um die Spaltenanzahl (1-4) einzustellen.
     * Nutze den Zoom-Slider, um das komplette Panel in der Größe anzupassen.
+	* Definiere weitere Voreinstellungen für das Layout.
 
 3.  **Zeitraum festlegen:**
     * **Relativ:** (z.B. "Letzte 24h") für schnelle Checks.
@@ -20,7 +21,7 @@ Das Panel ist so konzipiert, dass du dich intuitiv von oben nach unten durch die
 
 4.  **Chart-Typ verfeinern:**
     * Wähle global `Line`, `Bar`, `Scatter` oder `Stepped`.
-	* Optional können eine Referenzlinie gesetzt oder die Fläche in Line Chart gefüllt werden.
+	* Optional können eine Referenzlinie gesetzt oder die Fläche in Line Chart gefüllt werden usw.
     * *Tipp:* Im Grid und Mixed-Modus kannst du für jeden Sensor einzeln zwischen Line und Bar umschalten.
 	* *Tipp:* Wenn du im Bar Chart View kwh Sensoren definiert hast und dann einen % Sensor wie (SoC Battery) hinzufügst, dann wird der Prozenztsensor als Line dargestellt.
 
@@ -30,20 +31,37 @@ Das Panel ist so konzipiert, dass du dich intuitiv von oben nach unten durch die
 
 Das Projekt ist dual konzipiert:
 
-### 1. Panel Modus (Der "Editor")
-Dies ist die Vollbild-Ansicht über die Seitenleiste (siehe Installation). Hier hast du alle Freiheiten: Suchen, Drag & Drop, Live-Analyse, Farben, Zeiten, usw. Dieser Modus ist dein "Labor", um Daten zu erforschen oder auch im "kombiniert" Modus eine Dashboard Card zu konfigurieren.
+### 1. Panel Modus ("Editor" & "Labor")
+Dies ist die Vollbild-Ansicht über die Seitenleiste (siehe Installation). Hier hast du alle Freiheiten: Suchen, Drag & Drop, Live-Analyse, Farben, Zeiten, usw. 
+Dieser Modus ist dein "Labor", um Daten zu erforschen oder auch im "kombiniert" Modus eine Dashboard Card zu konfigurieren. Es dient aber vor allen Dingen der ausführlichen Analyse eurer Daten.
 
-### 2. Card Modus (Für das Dashboard)
+* Suchen & Finden: Durchsuche blitzschnell deine Sensoren.  
+* Drag & Drop: Ordne Charts im Split-View einfach per Maus neu an.  
+* Konfiguration: Stelle Zeiträume (relativ oder fester Kalender), Farben und Chart-Typen per UI ein.  
+* Speichern: Ansichten speichern und später wieder aufrufen.
+
+<img src="images/details-chart-panel.png" alt="Dashboard Card" width="40%">
+
+Im Panel-Modus könnt ihr zudem auch über den Kopieren Button ein Json Datei erstellen, diese in die detail-charts-views.js einfügen und somit die Ansicht auf allen Endgeräten verfügbar machen.
+
+### 2. Card Modus ("Dashboard-Card")
 Du hast im Panel Modus eine perfekte Ansicht erstellt und möchtest diese fest auf deinem Dashboard haben? 
 
 1.  Konfiguriere deine Ansicht im Panel Mode (kombiniert) fertig.
 2.  Klicke in der Sidebar auf den Button **Kopieren** (📋 Icon).
-3.  Gehe zu deinem Dashboard, wähle "Karte hinzufügen" -> "Manuell".
+3.  Gehe zu deinem Dashboard, wähle "Karte hinzufügen" -> "details-chart-card".
 4.  Füge den kopierten Code ein.
 
-*Ergebnis:* Eine fest definierte Karte, die genau so aussieht wie deine "Labor" Ansicht.
+*Ergebnis:* Eine fest definierte Card, genau so konfiguriert, wie du sie im Panel Modus erstellt hast.  
 
-<img src="images/example5-card.png" alt="Dashboard Card" width="35%">
+<img src="images/details-chart-card-2.png" alt="Dashboard Card" width="50%">
+
+* Zweite Möglichkeit, konfiguriere deine Charts direkt in der Card im Dashboard.
+* Der Editor weißt entsprechend an.  
+
+*Ergebnis:* Eine custom Card, erstellt direkt im Dahsboard
+
+<img src="images/details-chart-card.png" alt="Dashboard Card" width="50%">
 
 **Beispiel-Code**
 Ein einfaches Beispiel für ein Linien Diagramm für die letzten 7 Tage:

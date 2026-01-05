@@ -32,3 +32,11 @@ Zeigt kWH Energy der letzten 7 Tage mit Batterie SoC im Hintergrund als Linie da
 Beispiel 2 zeigt Temperaturen der letzten 24h mit Referenzlinie 21 Grad an für schnellen Überblick.
 
 <img src="images/example2.png" alt="Combined Example" width="50%">
+
+Beispiel 3 zeigt eine Dashboard Card.
+
+<img src="images/details-chart-card-2.png" alt="Dashboard Card" width="50%">
+
+Beispiel 4 zeigt ebenfalls eine Dashboard Card.
+
+<img src="images/details-chart-card.png" alt="Dashboard Card" width="50%">

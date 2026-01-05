@@ -7,6 +7,7 @@ Das **Detailed Charts Panel** ist als **Custom Element** (Web Component) für Ho
 Der Code ist modular aufgebaut:
 
 * **`detailed-charts-panel.js` (Der Controller):** Die Hauptdatei mit der Logik für Verbindung zu HA, Event-Handling und State-Management.
+* **`detailed-charts-panel-editor.js` (Card-Editor):** Verantwortlich für das Layout und die Erstellung der Card auf dem Dashbaord.
 * **`detailed-charts-panel-function.js` (Worker & View):** Enthält Hilfsfunktionen für Datenverarbeitung (Aggregation), HTML-Template-Generierung und mathematische Berechnungen.
 * **`detailed-charts-views.js` (Konfiguration):** Eine JSON-basierte Datei für globale, schreibgeschützte Ansichten.
 
@@ -19,7 +20,7 @@ Das Panel nutzt eine **hybride Strategie** für maximale Performance:
 
 ## Bibliotheken
 
-Das Projekt nutzt bewährte Open-Source-Bibliotheken:
+Das Projekt nutzt bewährte Open-Source-Bibliotheken für die generierten Charts:
 * **Chart.js:** Für performantes Rendering auf HTML5 Canvas.
 * **Chart.js Plugin Zoom:** Für Zoom & Pan per Maus/Touch.
 * **Hammer.js:** Für die Erkennung von Touch-Gesten auf mobilen Geräten.
@@ -36,6 +37,12 @@ Dies ist die Hauptdatei. Sie definiert das Custom Element (HTMLElement). Hier li
 * Event-Handling (Klicks, Toggles, Slider)
 * State-Management (welche Sensoren sind ausgewählt, welcher Zeitbereich ist aktiv)
 * API-Aufrufe zum Laden der Daten.
+
+#### `detailed-charts-panel-editor.js` (Der Card-Editors)
+Diese Datei ist verantwortlich für das Layout und die Erstellung der Card auf dem Dashbaord:
+
+* Verbindung zur detailed-charts-panel.js & detailed-charts-panel-function.js
+* Card Layout und Verarbeitung der Funktionen aus den beiden genannten Dateien.
 
 #### `detailed-charts-panel-function.js` (Die Worker & Views)
 Diese Datei enthält reine Hilfsfunktionen ("Pure Functions"), die ausgelagert wurden, um den Hauptcode sauber zu halten:
