@@ -28,7 +28,7 @@ Das Projekt nutzt bewährte Open-Source-Bibliotheken für die generierten Charts
 ---
 
 ## Architektur Details
-Der Code ist in drei logische Module unterteilt, um Wartbarkeit und Übersichtlichkeit zu gewährleisten:
+Der Code ist in vier logische Module unterteilt, um Wartbarkeit und Übersichtlichkeit zu gewährleisten:
 
 #### `detailed-charts-panel.js` (Der Controller)
 Dies ist die Hauptdatei. Sie definiert das Custom Element (HTMLElement). Hier liegt die Logik für:

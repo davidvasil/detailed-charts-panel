@@ -34,11 +34,11 @@ Wenn euch die Details-Charts gefallen, würde ich mich sehr über einen Stern �
 
 Panel-View:
 
-<img src="images/details-chart-card-panel.png" alt="Panel View" width="50%">
+<img src="images/details-chart-panel.png" alt="Panel View" width="50%">
 
 Card on Dashboard:
 
-<img src="images/details-chart-card-2.png" alt="Dashboard Card" width="50%">
+<img src="images/details-chart-card-2.png" alt="Dashboard Card" width="45%">
 
 
 ---

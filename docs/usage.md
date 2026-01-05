@@ -40,7 +40,7 @@ Dieser Modus ist dein "Labor", um Daten zu erforschen oder auch im "kombiniert" 
 * Konfiguration: Stelle Zeiträume (relativ oder fester Kalender), Farben und Chart-Typen per UI ein.  
 * Speichern: Ansichten speichern und später wieder aufrufen.
 
-<img src="images/details-chart-panel.png" alt="Dashboard Card" width="40%">
+<img src="images/details-chart-panel.png" alt="Dashboard Card" width="55%">
 
 Im Panel-Modus könnt ihr zudem auch über den Kopieren Button ein Json Datei erstellen, diese in die detail-charts-views.js einfügen und somit die Ansicht auf allen Endgeräten verfügbar machen.
 
@@ -54,14 +54,14 @@ Du hast im Panel Modus eine perfekte Ansicht erstellt und möchtest diese fest a
 
 *Ergebnis:* Eine fest definierte Card, genau so konfiguriert, wie du sie im Panel Modus erstellt hast.  
 
-<img src="images/details-chart-card-2.png" alt="Dashboard Card" width="50%">
+<img src="images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
 
 * Zweite Möglichkeit, konfiguriere deine Charts direkt in der Card im Dashboard.
 * Der Editor weißt entsprechend an.  
 
 *Ergebnis:* Eine custom Card, erstellt direkt im Dahsboard
 
-<img src="images/details-chart-card.png" alt="Dashboard Card" width="50%">
+<img src="images/details-chart-card.png" alt="Dashboard Card" width="40%">
 
 **Beispiel-Code**
 Ein einfaches Beispiel für ein Linien Diagramm für die letzten 7 Tage:

@@ -43,7 +43,7 @@ Hier passiert die Magie. Wenn du das Panel als Sidebar-Element (View) einbindest
 * Konfiguration: Stelle Zeiträume (relativ oder fester Kalender), Farben und Chart-Typen per UI ein.  
 * Speichern: Ansichten speichern und später wieder aufrufen.
 
-<img src="images/details-chart-card-panel.png" alt="Dashboard Card" width="50%">
+<img src="images/details-chart-panel.png" alt="Dashboard Card" width="50%">
 
 #### B. Der YAML Export (Für den Card Mode)  
 Du hast im Panel Mode die perfekte Ansicht für deine Solaranlage zusammengeklickt? Du willst genau diese Ansicht auf deinem Dashboard auf dem Tablet haben?  
@@ -54,11 +54,12 @@ Du hast im Panel Mode die perfekte Ansicht für deine Solaranlage zusammengeklic
  
 *Ergebnis:* Eine fest definierte Card, genau so konfiguriert, wie du sie im Panel Modus erstellt hast.  
 
-<img src="images/details-chart-card-2.png" alt="Dashboard Card" width="50%">
+<img src="images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
 
 * Zweite Möglichkeit, konfiguriere deine Charts direkt in der Card im Dashboard.
-* Der Editor weißt entsprechend an.  
+* Der Editor weißt dich entsprechend an.  
+* Suche dazu einfach in HA Card Menü nach "details-chart-card"
 
 *Ergebnis:* Eine custom Card, erstellt direkt im Dahsboard
 
-<img src="images/details-chart-card.png" alt="Dashboard Card" width="50%">
+<img src="images/details-chart-card.png" alt="Dashboard Card" width="40%">
