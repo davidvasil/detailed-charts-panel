@@ -38,9 +38,9 @@ Das Projekt ist dual konzipiert. Es dient sowohl als Explorer (Panel) oder auch 
 #### A. Der Panel Mode (Der "Editor")  
 Hier passiert die Magie. Wenn du das Panel als Sidebar-Element (View) einbindest, erhältst du eine Vollbild-Anwendung.  
 
-* Suchen & Finden: Durchsuche blitzschnell deine Sensoren.  
-* Drag & Drop: Ordne Charts im Split-View einfach per Maus neu an.  
-* Konfiguration: Stelle Zeiträume (relativ oder fester Kalender), Farben und Chart-Typen per UI ein.  
+* Suchen & Finden: Durchsuche blitzschnell deine Sensoren.
+* Drag & Drop: Ordne Charts im Split-View einfach per Maus neu an.
+* Konfiguration: Stelle Zeiträume (relativ oder fester Kalender), Farben und Chart-Typen per UI ein.
 * Speichern: Ansichten speichern und später wieder aufrufen.
 
 <img src="images/details-chart-panel.png" alt="Dashboard Card" width="50%">
