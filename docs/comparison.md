@@ -33,7 +33,7 @@ Vom klassischen **Kombiniert-Modus** (alles in einem) über den **Grid-Modus** (
 
 ### 5. Panel Mode vs. Card Mode – Ein mächtiger Workflow
 
-Das Projekt ist dual konzipiert. Es dient sowohl als Explorer (Panel) oder auch als Anzeige (Dashboard-Card).  
+Das Projekt ist dual konzipiert. Es dient sowohl als Explorer (Panel) oder auch als Anzeige (Dashboard-Card).
 
 #### A. Der Panel Mode (Der "Editor")  
 Hier passiert die Magie. Wenn du das Panel als Sidebar-Element (View) einbindest, erhältst du eine Vollbild-Anwendung.
@@ -46,18 +46,18 @@ Hier passiert die Magie. Wenn du das Panel als Sidebar-Element (View) einbindest
 <img src="images/details-chart-panel.png" alt="Dashboard Card" width="50%">
 
 #### B. Der YAML Export (Für den Card Mode)  
-Du hast im Panel Mode die perfekte Ansicht für deine Solaranlage zusammengeklickt? Du willst genau diese Ansicht auf deinem Dashboard auf dem Tablet haben?  
+Du hast im Panel Mode die perfekte Ansicht für deine Solaranlage zusammengeklickt? Du willst genau diese Ansicht auf deinem Dashboard auf dem Tablet haben?
 
 * Klicke auf den Kopieren-Button (📋).
 * Kopiere den generierten yaml Code aus der oberen Ansicht im Auswahlfenster.
 * Füge ihn in eine details-chart-card oder manuelle Standard-Lovelace-Karte ein.
  
-*Ergebnis:* Eine fest definierte Card, genau so konfiguriert, wie du sie im Panel Modus erstellt hast.  
+*Ergebnis:* Eine fest definierte Card, genau so konfiguriert, wie du sie im Panel Modus erstellt hast.
 
 <img src="images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
 
 * Zweite Möglichkeit, konfiguriere deine Charts direkt in der Card im Dashboard.
-* Der Editor weißt dich entsprechend an.  
+* Der Editor weißt dich entsprechend an.
 * Suche dazu einfach in HA Card Menü nach "details-chart-card"
 
 *Ergebnis:* Eine custom Card, erstellt direkt im Dahsboard
