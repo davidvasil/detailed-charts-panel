@@ -19,7 +19,7 @@ Wenn euch die Details-Charts gefallen, würde ich mich sehr über einen Stern �
 ## Features im Überblick
 
 - **📉 Interaktive Charts:** Stufenloser Zoom & Pan (Touch & Mausrad) mit automatischem Nachladen der Daten (Infinite Scrolling).
-- **✨ Panel Modus und Card Modus** Zwei Möglichkeiten der Betrachtung, über komplettes Panel in HA Seitenmenü oder als Dashboard Card.
+- **✨ Panel Modus und Card Modus:** Zwei Möglichkeiten der Betrachtung, über komplettes Panel in HA Seitenmenü oder als Dashboard Card.
 - **⚡ Auto-Scale (W ➡ kW):** Rechnet Werte von `W`/`Wh` automatisch in `kW`/`kWh` um – kein Kopfrechnen mehr!
 - **🍩 Donut Sidebar:** Optionale Seitenleiste für die prozentuale Verteilung (ideal für Stromverbrauch).
 - **📊 Flexible Layouts:**

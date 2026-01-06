@@ -4,7 +4,7 @@ Deine Daten, endlich verständlich!
 
 Das Detailed Charts Panel ist weit mehr als nur eine einfache Verlaufskarte. Während die standardmäßige Home Assistant Historie gut ist, um mal eben zu schauen, ob das Licht an war, stößt sie bei der Analyse von Energie, Klima oder komplexen Sensor-Zusammenhängen schnell an ihre Grenzen.
 
-Dieses Projekt schließt hoffentlich die Lücke zwischen einfacher Anzeige und professioneller Datenanalyse – direkt in deinem Dashboard.
+Dieses Projekt schließt hoffentlich die Lücke zwischen einfacher Anzeige und professioneller Datenanalyse – direkt auf deinem Dashboard.
 
 Hier sind die Gründe, warum dieses Panel für Analysen besser geeignet ist:
 
