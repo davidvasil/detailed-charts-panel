@@ -36,7 +36,7 @@ Vom klassischen **Kombiniert-Modus** (alles in einem) über den **Grid-Modus** (
 Das Projekt ist dual konzipiert. Es dient sowohl als Explorer (Panel) oder auch als Anzeige (Dashboard-Card).  
 
 #### A. Der Panel Mode (Der "Editor")  
-Hier passiert die Magie. Wenn du das Panel als Sidebar-Element (View) einbindest, erhältst du eine Vollbild-Anwendung.  
+Hier passiert die Magie. Wenn du das Panel als Sidebar-Element (View) einbindest, erhältst du eine Vollbild-Anwendung.
 
 * Suchen & Finden: Durchsuche blitzschnell deine Sensoren.
 * Drag & Drop: Ordne Charts im Split-View einfach per Maus neu an.
@@ -50,7 +50,7 @@ Du hast im Panel Mode die perfekte Ansicht für deine Solaranlage zusammengeklic
 
 * Klicke auf den Kopieren-Button (📋).
 * Kopiere den generierten yaml Code aus der oberen Ansicht im Auswahlfenster.
-* Füge ihn in eine details-chart-card oder manuelle Standard-Lovelace-Karte ein.  
+* Füge ihn in eine details-chart-card oder manuelle Standard-Lovelace-Karte ein.
  
 *Ergebnis:* Eine fest definierte Card, genau so konfiguriert, wie du sie im Panel Modus erstellt hast.  
 
