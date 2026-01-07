@@ -42,12 +42,12 @@ Dieser Modus ist dein "Labor", um Daten zu erforschen oder auch im "kombiniert" 
 
 <img src="images/details-chart-panel.png" alt="Dashboard Card" width="55%">
 
-Im Panel-Modus könnt ihr zudem auch über den Kopieren Button ein Json Datei erstellen, diese in die detail-charts-views.js einfügen und somit die Ansicht auf allen Endgeräten verfügbar machen.
+Im Panel-Modus könnt ihr zudem auch über den Kopieren Button eine Json Datei erstellen, diese in die `detail-charts-views.js` einfügen und somit die Ansicht auf allen Endgeräten verfügbar machen.
 
 ### 2. Card Modus ("Dashboard-Card")
 Du hast im Panel Modus eine perfekte Ansicht erstellt und möchtest diese fest auf deinem Dashboard haben? 
 
-1.  Konfiguriere deine Ansicht im Panel Mode (kombiniert) fertig.
+1.  Konfiguriere deine Ansicht im Panel Mode.
 2.  Klicke in der Sidebar auf den Button **Kopieren** (📋 Icon).
 3.  Gehe zu deinem Dashboard, wähle "Karte hinzufügen" -> "details-chart-card".
 4.  Füge den kopierten Code ein.
@@ -56,10 +56,12 @@ Du hast im Panel Modus eine perfekte Ansicht erstellt und möchtest diese fest a
 
 <img src="images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
 
-* Zweite Möglichkeit, konfiguriere deine Charts direkt in der Card im Dashboard.
-* Der Editor weißt entsprechend an.  
+Zweite Möglichkeit:
 
-*Ergebnis:* Eine custom Card, erstellt direkt im Dahsboard
+1. Konfiguriere deine Charts direkt in der Card im Dashboard.
+2. Der Editor weißt die entsprechend Möglichkeiten an.  
+
+*Ergebnis:* Eine custom Card, erstellt direkt im Dahsboard.
 
 <img src="images/details-chart-card.png" alt="Dashboard Card" width="40%">
 
@@ -91,6 +93,25 @@ chartType: bar
 timeMode: fixed
 dateStart: "2025-12-23T22:35"
 dateEnd: "2025-12-24T23:35"
+fillArea: false
+layoutMode: combined
+stackedBars: false
+showStats: true
+showDonutSidebar: false
+zoomLevel: 0.9
+autoScale: false
+sensors:
+  - entityId: sensor.gunstigster_benzinpreis
+    color: "#59025f"
+```
+
+Dieses Beispiel hat einen **festen Start**, aber kein Ende und zeigt daher immer bis zum heutigen Tag die Werte an.
+
+```yml
+type: custom:detailed-charts-panel
+chartType: bar
+timeMode: fixed
+dateStart: "2026-01-01 00:00:00"
 fillArea: false
 layoutMode: combined
 stackedBars: false

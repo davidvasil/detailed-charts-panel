@@ -1,4 +1,5 @@
-console.log("DetailedChartsPanel: v_1.9");
+/* detailed-charts-panel.js */
+console.log("DetailedChartsPanel: v_2.0");
 
 import { 
     cleanName, 
@@ -35,7 +36,7 @@ class DetailedChartsPanel extends HTMLElement {
     
     this.chartInstances = []; 
     
-    // Settings
+    // Settings Defaults
     this.fillArea = false;
     this.layoutMode = 'combined'; 
     this.gridColumns = 1;
@@ -46,15 +47,14 @@ class DetailedChartsPanel extends HTMLElement {
     this.monochromeMode = false;
     this.sidebarCollapsed = false;
     this.thresholdValue = ""; 
-    
-    // NEU V11.3
     this.autoScale = false; 
   }
 
-  // --- EDITOR SUPPORT ---
-  static getConfigElement() {
-    import('./detailed-charts-panel-editor.js');
-    return document.createElement('detailed-charts-panel-editor');
+  // --- EDITOR SUPPORT (KORRIGIERT) ---
+  static async getConfigElement() {
+    // Importiert die Editor-Datei, damit der Custom Element Code geladen wird
+    await import("./detailed-charts-panel-editor.js");
+    return document.createElement("detailed-charts-panel-editor");
   }
 
   static getStubConfig() {
@@ -67,25 +67,27 @@ class DetailedChartsPanel extends HTMLElement {
         fillArea: false
     };
   }
-  // ----------------------
 
   // --- LOVELACE CARD CONFIGURATION ---
   setConfig(config) {
       this._config = config;
+      // Markiere als Card für CSS Styling
       this.setAttribute('card-mode', '');
       
+      // UI initialisieren falls noch nicht geschehen
       if (!this.content) {
           this.initUI();
           this.loadDependencies();
       }
 
+      // Konfiguration übernehmen (mit Fallbacks)
       this.selectedSensors = config.sensors || [];
       this.chartType = config.chartType || 'line';
       this.timeMode = config.timeMode || 'relative';
       this.timeSelect = config.timeSelect || '24';
       this.fillArea = (config.fillArea === true);
       
-      this.layoutMode = config.layoutMode || 'combined'; // FIX: Config Wert übernehmen
+      this.layoutMode = config.layoutMode || 'combined'; 
       this.gridColumns = config.gridColumns || 1; 
       
       this.stackedBars = config.stackedBars !== undefined ? config.stackedBars : false;
@@ -93,32 +95,61 @@ class DetailedChartsPanel extends HTMLElement {
       this.showDonutSidebar = config.showDonutSidebar || false;
       this.zoomLevel = config.zoomLevel || 1.0;
       this.autoScale = config.autoScale || false; 
-      
-      // Falls wir im Config-Mode sind, updaten wir die UI-Elemente
-      if(this.content.querySelector('#chart-type')) {
-          this.content.querySelector('#chart-type').value = this.chartType;
-          this.content.querySelector('#time-select').value = this.timeSelect;
-          if(config.dateStart) this.content.querySelector('#date-start').value = config.dateStart;
-          if(config.dateEnd) this.content.querySelector('#date-end').value = config.dateEnd;
-          this.content.querySelector('#fill-switch').checked = this.fillArea;
-          
-          this.content.querySelector('#layout-select').value = this.layoutMode; 
-          this.content.querySelector('#stacked-switch').checked = this.stackedBars;
-          this.content.querySelector('#grid-slider').value = this.gridColumns || 1;
+      this.thresholdValue = config.threshold || "";
 
-          this.content.querySelector('#stats-switch').checked = this.showStats;
-          this.content.querySelector('#donut-switch').checked = this.showDonutSidebar;
-          this.content.querySelector('#autoscale-switch').checked = this.autoScale;
+      // Wenn das Panel bereits gerendert ist (Shadow DOM existiert), aktualisieren wir die Eingabefelder live
+      if(this.content) {
+          const updateInput = (id, val, isCheck = false) => {
+              const el = this.content.querySelector(id);
+              if(el) { 
+                  if(isCheck) el.checked = val; 
+                  else el.value = val; 
+              }
+          };
+
+          updateInput('#chart-type', this.chartType);
+          updateInput('#time-select', this.timeSelect);
+          if(config.dateStart) updateInput('#date-start', config.dateStart);
+          if(config.dateEnd) updateInput('#date-end', config.dateEnd);
           
-          if(config.threshold) {
-              this.thresholdValue = config.threshold;
-              this.content.querySelector('#threshold-input').value = this.thresholdValue;
-          }
+          updateInput('#fill-switch', this.fillArea, true);
+          updateInput('#layout-select', this.layoutMode);
+          updateInput('#stacked-switch', this.stackedBars, true);
+          updateInput('#grid-slider', this.gridColumns); 
+          
+          const gridDisp = this.content.querySelector('#grid-value-display');
+          if(gridDisp) gridDisp.textContent = this.gridColumns;
+          
+          const zoomDisp = this.content.querySelector('#zoom-value-display');
+          if(zoomDisp) zoomDisp.textContent = Math.round(this.zoomLevel * 100) + '%';
+          updateInput('#zoom-slider', this.zoomLevel);
+
+          updateInput('#stats-switch', this.showStats, true);
+          updateInput('#donut-switch', this.showDonutSidebar, true);
+          updateInput('#autoscale-switch', this.autoScale, true);
+          updateInput('#threshold-input', this.thresholdValue);
+          
+          // Sichtbarkeiten aktualisieren
+          this.updateSliderVisibility();
+          this.updateStackedVisibility();
+          this.switchTimeMode(this.timeMode);
+          
+          // Render Sensorliste im Panel-Sidebar (nur zur Anzeige)
+          this.renderSensorListUI();
       }
       
-      if (this._hass && this.libsLoaded && !this._dataLoadedInit) {
-          this._dataLoadedInit = true;
-          this.loadHistory();
+      // Daten neu laden, wenn wir im Dashboard-Modus sind und Libs bereit sind
+      if (this._hass && this.libsLoaded) {
+          // Debounce, um Flackern beim Tippen im Editor zu verhindern
+          if(this._reloadTimeout) clearTimeout(this._reloadTimeout);
+          this._reloadTimeout = setTimeout(() => {
+              // Wenn Cache vorhanden und keine Zeitänderung, nur Chart updaten
+              if (this._sensorDataCache.length > 0 && !config.forceReload) {
+                  this.updateChartFromCache();
+              } else {
+                  this.loadHistory();
+              }
+          }, 500);
       }
   }
 
@@ -139,12 +170,15 @@ class DetailedChartsPanel extends HTMLElement {
       }
     }
     
-    if (this._hass && this._hass.states) {
+    // Sensoren laden für die Suche
+    if (this._hass && this._hass.states && !this._allSensorsLoaded) {
         this._allSensors = Object.keys(this._hass.states)
             .filter(k => k.startsWith('sensor.') || k.startsWith('binary_sensor.') || k.startsWith('input_number.'))
             .sort();
+        this._allSensorsLoaded = true;
     }
 
+    // Initial Load via Config
     if (this._config && this.libsLoaded && this.selectedSensors.length > 0 && !this._dataLoadedInit) {
         this._dataLoadedInit = true;
         this.loadHistory();
@@ -299,7 +333,7 @@ class DetailedChartsPanel extends HTMLElement {
         this.content.querySelector('#date-end').value = toLocalISO(now);
         this.content.querySelector('#date-start').value = toLocalISO(yesterday);
     }
-}
+  }
 
   toggleSidebar() {
       this.sidebarCollapsed = !this.sidebarCollapsed;
@@ -380,7 +414,7 @@ class DetailedChartsPanel extends HTMLElement {
       }
 
       yaml += `fillArea: ${this.fillArea}\n`;
-      yaml += `layoutMode: ${this.layoutMode}\n`; // FIX: Use class property
+      yaml += `layoutMode: ${this.layoutMode}\n`; 
       yaml += `stackedBars: ${this.stackedBars}\n`;
       yaml += `showStats: ${this.showStats}\n`;
       yaml += `showDonutSidebar: ${this.showDonutSidebar}\n`;
@@ -1578,5 +1612,5 @@ window.customCards.push({
   type: "detailed-charts-panel",
   name: "Detailed Charts Panel",
   description: "Detaillierte Analyse-Charts mit Editor.",
-  preview: true // Optional, zeigt Vorschau im Picker wenn implementiert
+  preview: true 
 });
