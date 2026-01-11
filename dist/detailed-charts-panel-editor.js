@@ -1,5 +1,5 @@
 /* detailed-charts-panel-editor.js */
-console.log("DetailedChartsPanelEditor: v_2.0");
+console.log("DetailedChartsPanelEditor: v_2.1");
 
 const fireEvent = (node, type, detail, options) => {
     options = options || {};
@@ -181,7 +181,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
 
         const c = this._config;
 
-        // --- SECTION 1, 2, 3 (Standard Options) ---
+        // --- SECTION 1: Darstellung ---
         const secDisp = document.createElement('div'); secDisp.className = 'section';
         secDisp.innerHTML = `<div class="section-title">Darstellung</div>`;
         const row1 = document.createElement('div'); row1.className = 'row';
@@ -195,6 +195,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
         secDisp.appendChild(this._createSelector('threshold', 'Referenzlinie (Wert)', { text: {} }, c.threshold || ''));
         container.appendChild(secDisp);
 
+        // --- SECTION 2: Zeitraum ---
         const secTime = document.createElement('div'); secTime.className = 'section';
         secTime.innerHTML = `<div class="section-title">Zeitraum</div>`;
         const rowTime = document.createElement('div'); rowTime.className = 'row';
@@ -209,20 +210,29 @@ class DetailedChartsPanelEditor extends HTMLElement {
         }
         container.appendChild(secTime);
 
+        // --- SECTION 3: Optionen ---
         const secOpt = document.createElement('div'); secOpt.className = 'section';
         secOpt.innerHTML = `<div class="section-title">Optionen</div>`;
         const rowOpt1 = document.createElement('div'); rowOpt1.className = 'row';
         rowOpt1.appendChild(this._createSelector('fillArea', 'Fläche füllen', { boolean: {} }, c.fillArea === true));
         rowOpt1.appendChild(this._createSelector('showStats', 'Statistiken', { boolean: {} }, c.showStats !== false));
         secOpt.appendChild(rowOpt1);
+        
         const rowOpt2 = document.createElement('div'); rowOpt2.className = 'row';
         rowOpt2.appendChild(this._createSelector('showDonutSidebar', 'Donut Sidebar', { boolean: {} }, c.showDonutSidebar === true));
         rowOpt2.appendChild(this._createSelector('autoScale', 'Auto-Scale', { boolean: {} }, c.autoScale === true));
         secOpt.appendChild(rowOpt2);
+
+        // NEUE OPTIONEN
+        const rowOpt3 = document.createElement('div'); rowOpt3.className = 'row';
+        rowOpt3.appendChild(this._createSelector('hideAxislabels', 'Achsen-Text aus', { boolean: {} }, c.hideAxislabels === true));
+        rowOpt3.appendChild(this._createSelector('hideGrid', 'Gitterlinien aus', { boolean: {} }, c.hideGrid === true));
+        secOpt.appendChild(rowOpt3);
+
         if(c.chartType === 'bar' && c.layoutMode !== 'split') secOpt.appendChild(this._createSelector('stackedBars', 'Stacked', { boolean: {} }, c.stackedBars === true));
         container.appendChild(secOpt);
 
-        // --- SENSOREN (MIT HA-SELECTOR) ---
+        // --- SECTION 4: Sensoren ---
         const secSens = document.createElement('div'); secSens.className = 'section';
         secSens.innerHTML = `<div class="section-title">Sensoren</div>`;
         const sensorList = document.createElement('div'); sensorList.className = 'sensor-list';
@@ -239,19 +249,19 @@ class DetailedChartsPanelEditor extends HTMLElement {
             colWrap.appendChild(colInp);
             row.appendChild(colWrap);
 
-            // 2. Entity Selector (HA-Selector statt Picker)
+            // 2. Entity Selector
             const selContainer = document.createElement('div'); 
             selContainer.className = 'selector-container';
             const entitySelector = document.createElement('ha-selector');
-            entitySelector.selector = { entity: {} }; // Schema für Entitäts-Wahl
+            entitySelector.selector = { entity: {} }; 
             entitySelector.value = s.entityId;
-            entitySelector.label = "Sensor"; // Label sorgt für korrekte Render-Höhe
+            entitySelector.label = "Sensor";
             entitySelector.hass = this._hass;
             entitySelector.addEventListener('value-changed', (e) => this._updateSensor(index, 'entityId', e.detail.value));
             selContainer.appendChild(entitySelector);
             row.appendChild(selContainer);
 
-            // 3. Hide Button (SVG)
+            // 3. Hide Button
             const btnHide = document.createElement('button');
             btnHide.className = 'icon-btn';
             btnHide.innerHTML = s.hidden ? ICONS.eyeClosed : ICONS.eyeOpen;
@@ -259,7 +269,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
             btnHide.onclick = () => this._updateSensor(index, 'hidden', !s.hidden);
             row.appendChild(btnHide);
 
-            // 4. Delete Button (SVG)
+            // 4. Delete Button
             const btnDel = document.createElement('button');
             btnDel.className = 'icon-btn delete';
             btnDel.innerHTML = ICONS.delete;

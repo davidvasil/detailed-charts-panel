@@ -1,5 +1,5 @@
 /* detailed-charts-panel.js */
-console.log("DetailedChartsPanel: v_2.0");
+console.log("DetailedChartsPanel: v_2.1");
 
 import { 
     cleanName, 
@@ -48,11 +48,14 @@ class DetailedChartsPanel extends HTMLElement {
     this.sidebarCollapsed = false;
     this.thresholdValue = ""; 
     this.autoScale = false; 
+    
+    // NEW DEFAULTS
+    this.hideAxislabels = false;
+    this.hideGrid = false;
   }
 
-  // --- EDITOR SUPPORT (KORRIGIERT) ---
+  // --- EDITOR SUPPORT ---
   static async getConfigElement() {
-    // Importiert die Editor-Datei, damit der Custom Element Code geladen wird
     await import("./detailed-charts-panel-editor.js");
     return document.createElement("detailed-charts-panel-editor");
   }
@@ -71,16 +74,13 @@ class DetailedChartsPanel extends HTMLElement {
   // --- LOVELACE CARD CONFIGURATION ---
   setConfig(config) {
       this._config = config;
-      // Markiere als Card für CSS Styling
       this.setAttribute('card-mode', '');
       
-      // UI initialisieren falls noch nicht geschehen
       if (!this.content) {
           this.initUI();
           this.loadDependencies();
       }
 
-      // Konfiguration übernehmen (mit Fallbacks)
       this.selectedSensors = config.sensors || [];
       this.chartType = config.chartType || 'line';
       this.timeMode = config.timeMode || 'relative';
@@ -96,8 +96,11 @@ class DetailedChartsPanel extends HTMLElement {
       this.zoomLevel = config.zoomLevel || 1.0;
       this.autoScale = config.autoScale || false; 
       this.thresholdValue = config.threshold || "";
+      
+      // NEW CONFIG MAPPING
+      this.hideAxislabels = config.hideAxislabels || false;
+      this.hideGrid = config.hideGrid || false;
 
-      // Wenn das Panel bereits gerendert ist (Shadow DOM existiert), aktualisieren wir die Eingabefelder live
       if(this.content) {
           const updateInput = (id, val, isCheck = false) => {
               const el = this.content.querySelector(id);
@@ -117,6 +120,10 @@ class DetailedChartsPanel extends HTMLElement {
           updateInput('#stacked-switch', this.stackedBars, true);
           updateInput('#grid-slider', this.gridColumns); 
           
+          // NEW UPDATES
+          updateInput('#hide-axis-switch', this.hideAxislabels, true);
+          updateInput('#hide-grid-switch', this.hideGrid, true);
+
           const gridDisp = this.content.querySelector('#grid-value-display');
           if(gridDisp) gridDisp.textContent = this.gridColumns;
           
@@ -129,21 +136,16 @@ class DetailedChartsPanel extends HTMLElement {
           updateInput('#autoscale-switch', this.autoScale, true);
           updateInput('#threshold-input', this.thresholdValue);
           
-          // Sichtbarkeiten aktualisieren
           this.updateSliderVisibility();
           this.updateStackedVisibility();
           this.switchTimeMode(this.timeMode);
           
-          // Render Sensorliste im Panel-Sidebar (nur zur Anzeige)
           this.renderSensorListUI();
       }
       
-      // Daten neu laden, wenn wir im Dashboard-Modus sind und Libs bereit sind
       if (this._hass && this.libsLoaded) {
-          // Debounce, um Flackern beim Tippen im Editor zu verhindern
           if(this._reloadTimeout) clearTimeout(this._reloadTimeout);
           this._reloadTimeout = setTimeout(() => {
-              // Wenn Cache vorhanden und keine Zeitänderung, nur Chart updaten
               if (this._sensorDataCache.length > 0 && !config.forceReload) {
                   this.updateChartFromCache();
               } else {
@@ -170,7 +172,6 @@ class DetailedChartsPanel extends HTMLElement {
       }
     }
     
-    // Sensoren laden für die Suche
     if (this._hass && this._hass.states && !this._allSensorsLoaded) {
         this._allSensors = Object.keys(this._hass.states)
             .filter(k => k.startsWith('sensor.') || k.startsWith('binary_sensor.') || k.startsWith('input_number.'))
@@ -178,7 +179,6 @@ class DetailedChartsPanel extends HTMLElement {
         this._allSensorsLoaded = true;
     }
 
-    // Initial Load via Config
     if (this._config && this.libsLoaded && this.selectedSensors.length > 0 && !this._dataLoadedInit) {
         this._dataLoadedInit = true;
         this.loadHistory();
@@ -195,7 +195,8 @@ class DetailedChartsPanel extends HTMLElement {
     this.content.querySelector('#add-btn').addEventListener('click', () => this.addSensor());
     this.content.querySelector('#clear-all-btn').addEventListener('click', () => this.clearAllSensors());
     this.content.querySelector('#save-view-btn').addEventListener('click', () => this.saveCurrentView());
-    this.content.querySelector('#load-btn').addEventListener('click', () => this.loadHistory());
+    // Load Btn listener removed (auto-load)
+    
     this.content.querySelector('#reset-zoom-btn').addEventListener('click', () => this.resetZoomAll());
     this.content.querySelector('#copy-yaml-btn').addEventListener('click', () => this.copyToClipboard());
     
@@ -251,7 +252,12 @@ class DetailedChartsPanel extends HTMLElement {
         }
     });
 
-    const inputs = ['#chart-type', '#time-select', '#date-start', '#date-end', '#fill-switch', '#layout-select', '#stacked-switch', '#stats-switch', '#donut-switch', '#autoscale-switch'];
+    const inputs = [
+        '#chart-type', '#time-select', '#date-start', '#date-end', 
+        '#fill-switch', '#layout-select', '#stacked-switch', 
+        '#stats-switch', '#donut-switch', '#autoscale-switch',
+        '#hide-axis-switch', '#hide-grid-switch' // NEW INPUTS
+    ];
     inputs.forEach(id => {
         const el = this.content.querySelector(id);
         if(!el) return;
@@ -275,6 +281,10 @@ class DetailedChartsPanel extends HTMLElement {
             if (id === '#stats-switch') this.showStats = e.target.checked;
             if (id === '#donut-switch') this.showDonutSidebar = e.target.checked;
             if (id === '#autoscale-switch') this.autoScale = e.target.checked;
+            
+            // NEW HANDLERS
+            if (id === '#hide-axis-switch') this.hideAxislabels = e.target.checked;
+            if (id === '#hide-grid-switch') this.hideGrid = e.target.checked;
             
             this.updateStackedVisibility();
             if(!this._config) this.saveSettings();
@@ -420,6 +430,8 @@ class DetailedChartsPanel extends HTMLElement {
       yaml += `showDonutSidebar: ${this.showDonutSidebar}\n`;
       yaml += `zoomLevel: ${this.zoomLevel}\n`;
       yaml += `autoScale: ${this.autoScale}\n`; 
+      yaml += `hideAxislabels: ${this.hideAxislabels}\n`;
+      yaml += `hideGrid: ${this.hideGrid}\n`;
       
       if(this.thresholdValue) yaml += `threshold: ${this.thresholdValue}\n`;
       
@@ -445,6 +457,8 @@ class DetailedChartsPanel extends HTMLElement {
         zoomLevel: this.zoomLevel,
         autoScale: this.autoScale, 
         threshold: this.thresholdValue, 
+        hideAxislabels: this.hideAxislabels,
+        hideGrid: this.hideGrid,
         sensors: this.selectedSensors
       };
       
@@ -529,8 +543,10 @@ class DetailedChartsPanel extends HTMLElement {
           showStats: this.showStats,
           showDonutSidebar: this.showDonutSidebar,
           zoomLevel: this.zoomLevel,
-          autoScale: this.autoScale, // NEU
-          threshold: this.thresholdValue 
+          autoScale: this.autoScale, 
+          threshold: this.thresholdValue,
+          hideAxislabels: this.hideAxislabels,
+          hideGrid: this.hideGrid
       };
       this.savedViews.push(viewConfig);
       localStorage.setItem(this.STORAGE_KEY_VIEWS, JSON.stringify(this.savedViews));
@@ -566,8 +582,11 @@ class DetailedChartsPanel extends HTMLElement {
       this.showStats = config.showStats !== undefined ? config.showStats : true;
       this.showDonutSidebar = config.showDonutSidebar || false;
       this.zoomLevel = config.zoomLevel || 1.0;
-      this.autoScale = config.autoScale || false; // NEU
+      this.autoScale = config.autoScale || false; 
       this.thresholdValue = config.threshold || ""; 
+      
+      this.hideAxislabels = config.hideAxislabels || false;
+      this.hideGrid = config.hideGrid || false;
 
       this.content.querySelector('#chart-type').value = config.chartType || 'line';
       this.content.querySelector('#time-select').value = config.timeSelect || '24';
@@ -585,7 +604,10 @@ class DetailedChartsPanel extends HTMLElement {
       this.content.querySelector('#zoom-value-display').textContent = Math.round(this.zoomLevel * 100) + '%';
       
       this.content.querySelector('#threshold-input').value = this.thresholdValue;
-      this.content.querySelector('#autoscale-switch').checked = this.autoScale; // NEU
+      this.content.querySelector('#autoscale-switch').checked = this.autoScale; 
+      
+      this.content.querySelector('#hide-axis-switch').checked = this.hideAxislabels;
+      this.content.querySelector('#hide-grid-switch').checked = this.hideGrid;
 
       this.updateSliderVisibility();
       this.updateStackedVisibility();
@@ -697,7 +719,9 @@ class DetailedChartsPanel extends HTMLElement {
               showDonutSidebar: this.showDonutSidebar,
               zoomLevel: this.zoomLevel,
               threshold: this.thresholdValue,
-              autoScale: this.autoScale // NEU
+              autoScale: this.autoScale,
+              hideAxislabels: this.hideAxislabels,
+              hideGrid: this.hideGrid
           };
           const singleContainer = this.content.querySelector('#chart-container-single');
           if (singleContainer) settings.containerHeight = singleContainer.style.height;
@@ -741,6 +765,10 @@ class DetailedChartsPanel extends HTMLElement {
               this.autoScale = settings.autoScale; 
               this.content.querySelector('#autoscale-switch').checked = settings.autoScale; 
           }
+          
+          // NEW LOAD LOGIC
+          if (settings.hideAxislabels !== undefined) { this.hideAxislabels = settings.hideAxislabels; this.content.querySelector('#hide-axis-switch').checked = settings.hideAxislabels; }
+          if (settings.hideGrid !== undefined) { this.hideGrid = settings.hideGrid; this.content.querySelector('#hide-grid-switch').checked = settings.hideGrid; }
           
           this.updateSliderVisibility();
           this.savedContainerHeight = settings.containerHeight; 
@@ -1226,8 +1254,15 @@ class DetailedChartsPanel extends HTMLElement {
           const useRightAxis = (unit === '%' || cleanName(conf.entityId).toLowerCase().includes('soc'));
           if (useRightAxis) hasSecondaryAxis = true;
 
+          // --- STEPPED LOGIC FIX ---
           let effectiveType = this.stackedBars ? 'bar' : chartType;
           if (useRightAxis) effectiveType = 'line'; 
+          
+          let isStepped = false;
+          if (effectiveType === 'stepped') {
+              effectiveType = 'line';
+              isStepped = true;
+          }
 
           let points = processData(sensorDataObj.data, effectiveType, unit, st);
           if (!points.length) return;
@@ -1310,7 +1345,7 @@ class DetailedChartsPanel extends HTMLElement {
               pointBorderColor: dsPointBorder,
               tension: 0.4, 
               cubicInterpolationMode: 'monotone', 
-              stepped: (effectiveType === 'stepped'),
+              stepped: isStepped, // FIXED: Correctly applied here
               yAxisID: useRightAxis ? 'y1' : 'y', 
               type: effectiveType 
           });
@@ -1336,7 +1371,11 @@ class DetailedChartsPanel extends HTMLElement {
       }
 
       if(statsWrapper) statsWrapper.innerHTML = allStatsHTML;
-      this.createChartInstance(ctx, this.stackedBars ? 'bar' : chartType, datasets, st, et, true, null, false, hasSecondaryAxis);
+      
+      // Use 'line' instead of 'stepped' for the chart type
+      const finalChartType = (this.stackedBars ? 'bar' : (chartType === 'stepped' ? 'line' : chartType));
+      
+      this.createChartInstance(ctx, finalChartType, datasets, st, et, true, null, false, hasSecondaryAxis);
 
       if (this.showDonutSidebar && chartType !== 'doughnut') {
           const donutCanvas = wrapper.querySelector('#canvas-side-donut');
@@ -1403,6 +1442,11 @@ class DetailedChartsPanel extends HTMLElement {
 
           let currentType = conf.typeOverride || globalChartType;
           let unit = this._hass.states[conf.entityId]?.attributes?.unit_of_measurement || '';
+          
+          // STEPPED LOGIC FOR SPLIT
+          let isStepped = false;
+          if (currentType === 'stepped') { currentType = 'line'; isStepped = true; }
+
           let points = processData(sensorDataObj.data, currentType, unit, st);
           
           if (this.autoScale) {
@@ -1457,7 +1501,6 @@ class DetailedChartsPanel extends HTMLElement {
               
               let newPoints = processData(sensorDataObj.data, newType, unit, sensorDataObj.startTime);
               
-              // Scale fix for dynamic chart update
               if (this.autoScale) {
                  if (unit === 'W' || unit === 'kW') newPoints = newPoints.map(p => ({x: p.x, y: p.y / 1000}));
                  if (unit === 'Wh' || unit === 'kWh') newPoints = newPoints.map(p => ({x: p.x, y: p.y / 1000}));
@@ -1471,13 +1514,39 @@ class DetailedChartsPanel extends HTMLElement {
                   bg = grad;
               }
               const pRadius = (newType === 'scatter') ? 4 : 0;
-              const dataset = { label: cleanName(conf.entityId), data: newPoints, borderColor: conf.color, backgroundColor: bg, fill: this.fillArea, borderWidth: (newType === 'bar') ? 0 : 2.5, categoryPercentage: 0.98, barPercentage: 0.98, pointRadius: pRadius, pointHoverRadius: 6, pointBackgroundColor: conf.color, tension: 0.4, cubicInterpolationMode: 'monotone' };
+              const dataset = { 
+                  label: cleanName(conf.entityId), 
+                  data: newPoints, 
+                  borderColor: conf.color, 
+                  backgroundColor: bg, 
+                  fill: this.fillArea, 
+                  borderWidth: (newType === 'bar') ? 0 : 2.5, 
+                  categoryPercentage: 0.98, 
+                  barPercentage: 0.98, 
+                  pointRadius: pRadius, 
+                  pointHoverRadius: 6, 
+                  pointBackgroundColor: conf.color, 
+                  tension: 0.4, 
+                  cubicInterpolationMode: 'monotone',
+                  stepped: isStepped 
+              };
               this.createChartInstance(ctx, newType, [dataset], sensorDataObj.startTime, sensorDataObj.endTime, false, idx, true);
           };
           btnLine.onclick = () => updateThisChart('line');
           btnBar.onclick = () => updateThisChart('bar');
           btnScatter.onclick = () => updateThisChart('scatter');
-          updateThisChart(currentType);
+          
+          const dataset = { 
+              label: cleanName(conf.entityId), 
+              data: points, 
+              borderColor: conf.color, 
+              backgroundColor: conf.color, // simplified for split initial load
+              fill: this.fillArea, 
+              borderWidth: (currentType === 'bar') ? 0 : 2.5, 
+              pointRadius: (currentType === 'scatter' ? 4 : 0),
+              stepped: isStepped 
+          };
+          this.createChartInstance(ctx, currentType, [dataset], st, et, false, idx, true);
       });
   }
 
@@ -1509,7 +1578,6 @@ class DetailedChartsPanel extends HTMLElement {
                               const val = c.parsed.y;
                               if(lbl === 'Limit') return `\u00A0\u00A0Limit: ${val}`;
                               
-                              // NEU: Tooltip Unit Fix
                               if (this.autoScale) {
                                   if (unit === 'W') unit = 'kW';
                                   if (unit === 'Wh') unit = 'kWh';
@@ -1541,23 +1609,39 @@ class DetailedChartsPanel extends HTMLElement {
               scales: {
                   x: {
                       type: 'linear', position: 'bottom', min: startTime.getTime(), max: endTime.getTime(), stacked: this.stackedBars, offset: false, 
-                      ticks: { color: secondaryText, maxTicksLimit: 8, callback: function(value) { const d = new Date(value); const diffHours = (endTime - startTime) / (1000 * 60 * 60); if (diffHours > 48) return d.toLocaleDateString('de-DE', {day: '2-digit', month: '2-digit'}); return d.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'}); } },
-                      grid: { color: gridColor, drawBorder: false, display: false } 
+                      ticks: { 
+                          display: !this.hideAxislabels, // NEW FEATURE
+                          color: secondaryText, maxTicksLimit: 8, 
+                          callback: function(value) { const d = new Date(value); const diffHours = (endTime - startTime) / (1000 * 60 * 60); if (diffHours > 48) return d.toLocaleDateString('de-DE', {day: '2-digit', month: '2-digit'}); return d.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'}); } 
+                      },
+                      grid: { 
+                          color: gridColor, drawBorder: false, 
+                          display: !this.hideGrid // NEW FEATURE (Note: might need customization based on chartjs version, typically display: false hides grid lines)
+                      } 
                   },
                   y: { 
                       type: 'linear',
                       position: 'left',
                       stacked: this.stackedBars, 
                       grace: '5%', 
-                      ticks: { color: secondaryText }, 
-                      grid: { color: gridColor, borderDash: [5, 5] } 
+                      ticks: { 
+                          display: !this.hideAxislabels, // NEW FEATURE
+                          color: secondaryText 
+                      }, 
+                      grid: { 
+                          color: gridColor, borderDash: [5, 5],
+                          display: !this.hideGrid // NEW FEATURE
+                      } 
                   },
                   y1: {
                       type: 'linear',
                       display: !!hasSecondaryAxis, 
                       position: 'right',
                       grid: { drawOnChartArea: false }, 
-                      ticks: { color: secondaryText, callback: function(value) { return value + '%'; } } 
+                      ticks: { 
+                          display: !this.hideAxislabels, // NEW FEATURE
+                          color: secondaryText, callback: function(value) { return value + '%'; } 
+                      } 
                   }
               }
           }

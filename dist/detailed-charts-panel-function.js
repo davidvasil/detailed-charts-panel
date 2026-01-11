@@ -205,7 +205,6 @@ export function getCombinedDoughnutHTML() {
 }
 
 export function getSideBySideHTML(showStats) {
-    // UPDATED: Added resize-handle and adjusted container styles for resizing
     return `
         <div class="flex-main-wrapper" style="display: flex; gap: 10px; width: 100%; align-items: flex-start;">
             <div class="main-chart-wrapper" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
@@ -353,8 +352,7 @@ export function getPanelTemplate() {
         
         .custom-date-container { display: none; flex-direction: column; gap: 10px; }
         .custom-date-container.visible { display: flex; }
-        #load-btn { background-color: var(--btn-color); color: white; cursor: pointer; font-weight: 500; border: none; margin-top: 20px; padding: 15px; width: 100%; font-size: 14px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1.25px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background-color 0.2s; }
-        #load-btn:hover { background-color: #757575; }
+        /* Load-Btn CSS removed or repurposed */
         #reset-zoom-btn { background-color: var(--card-background-color); color: var(--primary-text-color); border: 1px solid var(--divider-color); margin-top: 5px; padding: 8px; font-size: 12px; width: 100%; border-radius: 4px; cursor: pointer; display: none; }
         
         .main-content { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; background-color: var(--primary-background-color); overflow-y: auto; position: relative; transition: all 0.3s ease; }
@@ -621,7 +619,16 @@ export function getPanelTemplate() {
               </div>
 
 			  <div class="toggle-row" id="toggle-fill-row"><span class="toggle-label">Fläche füllen</span><input type="checkbox" class="toggle-switch" id="fill-switch"></div>          
-			  <div class="toggle-row" id="toggle-stacked-row" style="margin-top: 0px; display:none;"><span class="toggle-label">Stacked Bars</span><input type="checkbox" class="toggle-switch" id="stacked-switch"></div>
+              
+              <div class="toggle-row" id="toggle-axis-row" style="margin-top: 10px;">
+                 <span class="toggle-label">Achsen-Text ausblenden</span>
+                 <input type="checkbox" class="toggle-switch" id="hide-axis-switch">
+              </div>
+              <div class="toggle-row" id="toggle-grid-row" style="margin-top: 10px;">
+                 <span class="toggle-label">Gitterlinien ausblenden</span>
+                 <input type="checkbox" class="toggle-switch" id="hide-grid-switch">
+              </div>
+              <div class="toggle-row" id="toggle-stacked-row" style="margin-top: 10px; display:none;"><span class="toggle-label">Stacked Bars</span><input type="checkbox" class="toggle-switch" id="stacked-switch"></div>
 		  </div>
 		  <div style="margin-top: 0px; border-top: 1px solid var(--divider-color); padding-top: 15px;">
 			  <label style="margin-top:5px;">Zeitraum Modus:</label>
@@ -647,7 +654,6 @@ export function getPanelTemplate() {
 				 <div><label>Von:</label><input type="datetime-local" id="date-start"></div>
 				 <div><label>Bis:</label><input type="datetime-local" id="date-end"></div>
 			  </div>
-			  <button id="load-btn">Daten laden</button>
 			  <button id="reset-zoom-btn">🔍 Zoom zurücksetzen</button>
 		  </div>	  
           <div class="saved-views-section"><label>Gespeicherte Ansichten</label><div id="saved-views-container"></div></div>
@@ -675,7 +681,6 @@ export function getPanelTemplate() {
                 <textarea class="yaml-textarea" id="yaml-export-area" readonly></textarea>
                 <button class="copy-btn" id="copy-yaml-btn-action">Kopieren</button>
                 <div class="copy-success-msg" id="msg-yaml">Kopieren erfolgreich!</div>
-
                 <div class="modal-hint" style="margin-top:10px;">Unten findest du den JSON-Code für die <b>detailed-charts-views.js</b> Datei.</div>
                 <textarea class="yaml-textarea" id="json-export-area" readonly></textarea>
                 <button class="copy-btn" id="copy-json-btn-action">Kopieren</button>
