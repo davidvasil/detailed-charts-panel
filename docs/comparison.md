@@ -56,7 +56,9 @@ Du hast im Panel Mode die perfekte Ansicht für deine Solaranlage zusammengeklic
 
 <img src="images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
 
-* Zweite Möglichkeit, konfiguriere deine Charts direkt in der Card im Dashboard.
+#### Zweite Möglichkeit
+
+* Konfiguriere deine Charts direkt in der Card im Dashboard.
 * Der Editor weißt dich entsprechend an.
 * Suche dazu einfach in HA Card Menü nach "details-chart-card"
 
