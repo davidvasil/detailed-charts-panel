@@ -56,7 +56,7 @@ Du hast im Panel Mode die perfekte Ansicht für deine Solaranlage zusammengeklic
 
 <img src="images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
 
-#### Zweite Möglichkeit
+#### B.2. Der Card Editor (Dashboard)
 
 * Konfiguriere deine Charts direkt in der Card im Dashboard.
 * Der Editor weißt dich entsprechend an.
