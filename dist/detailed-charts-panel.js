@@ -1,5 +1,5 @@
 /* detailed-charts-panel.js */
-console.log("DetailedChartsPanel: v_2.1");
+console.log("DetailedChartsPanel: v_2.2");
 
 import { 
     cleanName, 
@@ -48,6 +48,7 @@ class DetailedChartsPanel extends HTMLElement {
     this.sidebarCollapsed = false;
     this.thresholdValue = ""; 
     this.autoScale = false; 
+    this.chartTension = 4; 
     
     // NEW DEFAULTS
     this.hideAxislabels = false;
@@ -96,6 +97,7 @@ class DetailedChartsPanel extends HTMLElement {
       this.zoomLevel = config.zoomLevel || 1.0;
       this.autoScale = config.autoScale || false; 
       this.thresholdValue = config.threshold || "";
+      this.chartTension = config.chartTension !== undefined ? config.chartTension : 4;
       
       // NEW CONFIG MAPPING
       this.hideAxislabels = config.hideAxislabels || false;
@@ -119,6 +121,7 @@ class DetailedChartsPanel extends HTMLElement {
           updateInput('#layout-select', this.layoutMode);
           updateInput('#stacked-switch', this.stackedBars, true);
           updateInput('#grid-slider', this.gridColumns); 
+          updateInput('#tension-slider', this.chartTension); 
           
           // NEW UPDATES
           updateInput('#hide-axis-switch', this.hideAxislabels, true);
@@ -126,6 +129,9 @@ class DetailedChartsPanel extends HTMLElement {
 
           const gridDisp = this.content.querySelector('#grid-value-display');
           if(gridDisp) gridDisp.textContent = this.gridColumns;
+          
+          const tensionDisp = this.content.querySelector('#tension-value-display');
+          if(tensionDisp) tensionDisp.textContent = this.chartTension;
           
           const zoomDisp = this.content.querySelector('#zoom-value-display');
           if(zoomDisp) zoomDisp.textContent = Math.round(this.zoomLevel * 100) + '%';
@@ -195,7 +201,6 @@ class DetailedChartsPanel extends HTMLElement {
     this.content.querySelector('#add-btn').addEventListener('click', () => this.addSensor());
     this.content.querySelector('#clear-all-btn').addEventListener('click', () => this.clearAllSensors());
     this.content.querySelector('#save-view-btn').addEventListener('click', () => this.saveCurrentView());
-    // Load Btn listener removed (auto-load)
     
     this.content.querySelector('#reset-zoom-btn').addEventListener('click', () => this.resetZoomAll());
     this.content.querySelector('#copy-yaml-btn').addEventListener('click', () => this.copyToClipboard());
@@ -328,6 +333,20 @@ class DetailedChartsPanel extends HTMLElement {
         if(!this._config) this.saveSettings();
         if (this._sensorDataCache.length > 0 && this.layoutMode !== 'combined') this.updateChartFromCache();
     });
+    
+    // NEW TENSION SLIDER
+    const tensionSlider = this.content.querySelector('#tension-slider');
+    if(tensionSlider) {
+        tensionSlider.addEventListener('input', (e) => {
+            this.chartTension = parseInt(e.target.value);
+            const disp = this.content.querySelector('#tension-value-display');
+            if(disp) disp.textContent = this.chartTension;
+        });
+        tensionSlider.addEventListener('change', (e) => {
+            if(!this._config) this.saveSettings();
+            if (this._sensorDataCache.length > 0) this.updateChartFromCache();
+        });
+    }
 
     const setMode = (mode) => { this.switchTimeMode(mode); if(!this._config) this.saveSettings(); };
     this.content.querySelector('#btn-mode-relative').addEventListener('click', () => setMode('relative'));
@@ -432,6 +451,7 @@ class DetailedChartsPanel extends HTMLElement {
       yaml += `autoScale: ${this.autoScale}\n`; 
       yaml += `hideAxislabels: ${this.hideAxislabels}\n`;
       yaml += `hideGrid: ${this.hideGrid}\n`;
+      yaml += `chartTension: ${this.chartTension}\n`;
       
       if(this.thresholdValue) yaml += `threshold: ${this.thresholdValue}\n`;
       
@@ -459,6 +479,7 @@ class DetailedChartsPanel extends HTMLElement {
         threshold: this.thresholdValue, 
         hideAxislabels: this.hideAxislabels,
         hideGrid: this.hideGrid,
+        chartTension: this.chartTension,
         sensors: this.selectedSensors
       };
       
@@ -473,9 +494,16 @@ class DetailedChartsPanel extends HTMLElement {
   applyZoom() {
       const scaler = this.content.querySelector('#content-scaler');
       if (scaler) {
-          scaler.style.transform = `scale(${this.zoomLevel})`;
-          scaler.style.transformOrigin = 'top left';
-          scaler.style.width = `calc(100% / ${this.zoomLevel})`;
+          // FIX for OFFSET: Only apply transform if zoomLevel is NOT 1.0
+          if (this.zoomLevel === 1.0) {
+              scaler.style.transform = 'none';
+              scaler.style.width = '100%';
+          } else {
+              scaler.style.transform = `scale(${this.zoomLevel})`;
+              scaler.style.transformOrigin = 'top left';
+              scaler.style.width = `calc(100% / ${this.zoomLevel})`;
+          }
+          scaler.style.zoom = ''; // Clear zoom property
       }
   }
 
@@ -546,7 +574,8 @@ class DetailedChartsPanel extends HTMLElement {
           autoScale: this.autoScale, 
           threshold: this.thresholdValue,
           hideAxislabels: this.hideAxislabels,
-          hideGrid: this.hideGrid
+          hideGrid: this.hideGrid,
+          chartTension: this.chartTension
       };
       this.savedViews.push(viewConfig);
       localStorage.setItem(this.STORAGE_KEY_VIEWS, JSON.stringify(this.savedViews));
@@ -584,6 +613,7 @@ class DetailedChartsPanel extends HTMLElement {
       this.zoomLevel = config.zoomLevel || 1.0;
       this.autoScale = config.autoScale || false; 
       this.thresholdValue = config.threshold || ""; 
+      this.chartTension = config.chartTension !== undefined ? config.chartTension : 4;
       
       this.hideAxislabels = config.hideAxislabels || false;
       this.hideGrid = config.hideGrid || false;
@@ -600,6 +630,12 @@ class DetailedChartsPanel extends HTMLElement {
       this.content.querySelector('#donut-switch').checked = this.showDonutSidebar;
       this.content.querySelector('#grid-slider').value = this.gridColumns;
       this.content.querySelector('#grid-value-display').textContent = this.gridColumns;
+      
+      const tSlider = this.content.querySelector('#tension-slider');
+      if(tSlider) tSlider.value = this.chartTension;
+      const tDisp = this.content.querySelector('#tension-value-display');
+      if(tDisp) tDisp.textContent = this.chartTension;
+      
       this.content.querySelector('#zoom-slider').value = this.zoomLevel;
       this.content.querySelector('#zoom-value-display').textContent = Math.round(this.zoomLevel * 100) + '%';
       
@@ -721,7 +757,8 @@ class DetailedChartsPanel extends HTMLElement {
               threshold: this.thresholdValue,
               autoScale: this.autoScale,
               hideAxislabels: this.hideAxislabels,
-              hideGrid: this.hideGrid
+              hideGrid: this.hideGrid,
+              chartTension: this.chartTension
           };
           const singleContainer = this.content.querySelector('#chart-container-single');
           if (singleContainer) settings.containerHeight = singleContainer.style.height;
@@ -765,6 +802,7 @@ class DetailedChartsPanel extends HTMLElement {
               this.autoScale = settings.autoScale; 
               this.content.querySelector('#autoscale-switch').checked = settings.autoScale; 
           }
+          this.chartTension = settings.chartTension !== undefined ? settings.chartTension : 4;
           
           // NEW LOAD LOGIC
           if (settings.hideAxislabels !== undefined) { this.hideAxislabels = settings.hideAxislabels; this.content.querySelector('#hide-axis-switch').checked = settings.hideAxislabels; }
@@ -781,7 +819,7 @@ class DetailedChartsPanel extends HTMLElement {
       const fix = this.content.querySelector('#container-fixed');
       const bRel = this.content.querySelector('#btn-mode-relative');
       const bFix = this.content.querySelector('#btn-mode-fixed');
-      if (mode === 'relative') { rel.style.display='block'; fix.classList.remove('visible'); bRel.classList.add('active'); bFix.classList.remove('active'); }
+      if (mode === 'relative') { rel.style.display='block'; fix.classList.remove('visible'); bRel.classList.add('active'); bFix.classList.remove('active'); bFix.classList.remove('active'); }
       else { rel.style.display='none'; fix.classList.add('visible'); bRel.classList.remove('active'); bFix.classList.add('active'); }
   }
 
@@ -826,15 +864,86 @@ class DetailedChartsPanel extends HTMLElement {
       if (this._sensorDataCache.length > 0) { this.updateChartFromCache(); } else { this.destroyAllCharts(); this.content.querySelector('#main-content-area').innerHTML = ''; }
   }
 
+  updateSensorColor(index, newColor) {
+      if(this.selectedSensors[index]) {
+          this.selectedSensors[index].color = newColor;
+          if(!this._config) this.saveSettings();
+          if (this._sensorDataCache.length > 0) this.updateChartFromCache();
+      }
+  }
+
   renderSensorListUI() {
       const container = this.content.querySelector('#sensor-list-container');
       if (this.selectedSensors.length === 0) { container.innerHTML = `<div style="color:var(--secondary-text-color);font-size:12px;text-align:center;padding:10px;">Liste leer.</div>`; return; }
       container.innerHTML = '';
+      
       this.selectedSensors.forEach((sensor, index) => {
           const item = document.createElement('div');
           item.className = 'sensor-item';
-          item.innerHTML = `<div class="sensor-color-dot" style="background-color:${sensor.color}"></div><div class="sensor-name" title="${sensor.entityId}">${cleanName(sensor.entityId)}</div><div class="remove-sensor">✕</div>`;
-          item.querySelector('.remove-sensor').addEventListener('click', () => this.removeSensor(index));
+          item.draggable = true;
+          item.dataset.index = index;
+
+          const colorInput = document.createElement('input');
+          colorInput.type = 'color';
+          colorInput.value = sensor.color;
+          colorInput.className = 'sensor-list-color-picker';
+          colorInput.title = "Farbe ändern";
+          colorInput.addEventListener('change', (e) => this.updateSensorColor(index, e.target.value));
+          // Prevent drag when interacting with color input
+          colorInput.addEventListener('click', (e) => e.stopPropagation());
+          colorInput.addEventListener('mousedown', (e) => e.stopPropagation());
+
+          const nameDiv = document.createElement('div');
+          nameDiv.className = 'sensor-name';
+          nameDiv.title = sensor.entityId;
+          nameDiv.textContent = cleanName(sensor.entityId);
+
+          const removeBtn = document.createElement('div');
+          removeBtn.className = 'remove-sensor';
+          removeBtn.textContent = '✕';
+          removeBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              this.removeSensor(index);
+          });
+          // Prevent drag start on remove button
+          removeBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+
+          item.appendChild(colorInput);
+          item.appendChild(nameDiv);
+          item.appendChild(removeBtn);
+
+          // DRAG & DROP HANDLERS
+          item.addEventListener('dragstart', (e) => {
+              e.dataTransfer.setData('text/plain', index);
+              e.dataTransfer.effectAllowed = 'move';
+              item.classList.add('dragging');
+          });
+
+          item.addEventListener('dragend', () => {
+              item.classList.remove('dragging');
+              container.querySelectorAll('.sensor-item').forEach(el => el.classList.remove('drag-over'));
+          });
+
+          item.addEventListener('dragover', (e) => {
+              e.preventDefault();
+              item.classList.add('drag-over');
+              e.dataTransfer.dropEffect = 'move';
+          });
+
+          item.addEventListener('dragleave', () => {
+              item.classList.remove('drag-over');
+          });
+
+          item.addEventListener('drop', (e) => {
+              e.preventDefault();
+              item.classList.remove('drag-over');
+              const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+              const toIndex = index;
+              if (fromIndex !== toIndex && !isNaN(fromIndex)) {
+                  this.reorderSensors(fromIndex, toIndex);
+              }
+          });
+
           container.appendChild(item);
       });
   }
@@ -1086,6 +1195,11 @@ class DetailedChartsPanel extends HTMLElement {
       scaler.style.transform = `scale(${this.zoomLevel})`;
       scaler.style.transformOrigin = 'top left';
       scaler.style.width = `calc(100% / ${this.zoomLevel})`;
+      // FIX OFFSET: Native scale at zoom 1.0
+      if (this.zoomLevel === 1.0) {
+          scaler.style.transform = 'none';
+          scaler.style.width = '100%';
+      }
       mainArea.appendChild(scaler);
 
       if (this.layoutMode === 'mixed') {
@@ -1226,8 +1340,8 @@ class DetailedChartsPanel extends HTMLElement {
            chartContainer.style.height = this.savedContainerHeight ? this.savedContainerHeight : '450px';
       }
 
-      if (chartType !== 'doughnut' && !this.showDonutSidebar) { this.initResizeHandler(wrapper.querySelector('#resize-handle'), chartContainer, wrapper.querySelector('#resize-ghost')); }
-
+      if (chartType !== 'doughnut') { this.initResizeHandler(wrapper.querySelector('#resize-handle'), chartContainer, wrapper.querySelector('#resize-ghost')); }
+	  
       const ctx = wrapper.querySelector('#canvas-combined').getContext('2d');
       const statsWrapper = wrapper.querySelector('#stats-wrapper');
 
@@ -1343,8 +1457,8 @@ class DetailedChartsPanel extends HTMLElement {
               pointHoverRadius: 6, 
               pointBackgroundColor: dsPointBg, 
               pointBorderColor: dsPointBorder,
-              tension: 0.4, 
-              cubicInterpolationMode: 'monotone', 
+              tension: this.chartTension / 10,
+              // REMOVED MONOTONE HERE TO FIX SMOOTHING
               stepped: isStepped, // FIXED: Correctly applied here
               yAxisID: useRightAxis ? 'y1' : 'y', 
               type: effectiveType 
@@ -1526,8 +1640,8 @@ class DetailedChartsPanel extends HTMLElement {
                   pointRadius: pRadius, 
                   pointHoverRadius: 6, 
                   pointBackgroundColor: conf.color, 
-                  tension: 0.4, 
-                  cubicInterpolationMode: 'monotone',
+                  tension: this.chartTension / 10,
+                  // REMOVED MONOTONE HERE TO FIX SMOOTHING
                   stepped: isStepped 
               };
               this.createChartInstance(ctx, newType, [dataset], sensorDataObj.startTime, sensorDataObj.endTime, false, idx, true);
@@ -1536,14 +1650,24 @@ class DetailedChartsPanel extends HTMLElement {
           btnBar.onclick = () => updateThisChart('bar');
           btnScatter.onclick = () => updateThisChart('scatter');
           
+          // ADDED GRADIENT LOGIC HERE
+          let bg = conf.color;
+          if (this.fillArea && currentType === 'line') {
+              const grad = ctx.createLinearGradient(0, 0, 0, 300);
+              grad.addColorStop(0, hexToRgba(conf.color, 0.5));
+              grad.addColorStop(1, hexToRgba(conf.color, 0.05));
+              bg = grad;
+          }
+
           const dataset = { 
               label: cleanName(conf.entityId), 
               data: points, 
               borderColor: conf.color, 
-              backgroundColor: conf.color, // simplified for split initial load
+              backgroundColor: bg, // Changed from conf.color to bg
               fill: this.fillArea, 
               borderWidth: (currentType === 'bar') ? 0 : 2.5, 
               pointRadius: (currentType === 'scatter' ? 4 : 0),
+              tension: this.chartTension / 10,
               stepped: isStepped 
           };
           this.createChartInstance(ctx, currentType, [dataset], st, et, false, idx, true);
@@ -1557,18 +1681,69 @@ class DetailedChartsPanel extends HTMLElement {
       const secondaryText = styles.getPropertyValue('--secondary-text-color').trim();
       const resetBtn = this.content.querySelector('#reset-zoom-btn');
 
+      // --- CUSTOM TOOLTIP POSITIONER (STATIC TOP RIGHT) ---
+      if (window.Chart && !window.Chart.Tooltip.positioners.fixedTopRight) {
+          window.Chart.Tooltip.positioners.fixedTopRight = function(elements, eventPosition) {
+              const chart = this.chart;
+              return {
+                  x: chart.chartArea.right,
+                  y: chart.chartArea.top
+              };
+          };
+      }
+
+      // --- CUSTOM PLUGIN: VERTICAL HOVER LINE ---
+      const verticalHoverLine = {
+          id: 'verticalHoverLine',
+          afterDraw: (chart) => {
+              if (chart.tooltip?._active?.length) {
+                  const activePoint = chart.tooltip._active[0];
+                  const ctx = chart.ctx;
+                  
+                  // Use element.x directly from the active point. 
+                  const x = activePoint.element.x;
+                  
+                  const topY = chart.chartArea.top;
+                  const bottomY = chart.chartArea.bottom;
+
+                  ctx.save();
+                  ctx.beginPath();
+                  ctx.moveTo(x, topY);
+                  ctx.lineTo(x, bottomY);
+                  ctx.lineWidth = 1;
+                  // Use accent color from styles or fallback to blue
+                  ctx.strokeStyle = styles.getPropertyValue('--accent-color').trim() || '#03a9f4';
+                  ctx.setLineDash([5, 5]); // Dashed line
+                  ctx.globalAlpha = 0.6;   // Slightly transparent
+                  ctx.stroke();
+                  ctx.restore();
+              }
+          }
+      };
+
       const chart = new window.Chart(ctx, {
           type: type === 'stepped' ? 'line' : type,
           data: { datasets },
+          plugins: [verticalHoverLine], // Plugin registered here
           options: {
               responsive: true, maintainAspectRatio: false,
-              interaction: { mode: 'index', intersect: false }, 
+              animation: { duration: 0 }, // Disable initial animation for snap
+              hover: { animationDuration: 0 }, // Disable hover animation for snap
+              interaction: { 
+                 mode: 'x',        // Shows all items at same X position
+                 intersect: false
+              }, 
               plugins: {
                   legend: { 
                       display: !hideLegend, position: 'top', align: 'end', 
                       labels: { color: textColor, usePointStyle: true, boxWidth: 8, boxPadding: 6, padding: 15, generateLabels: (chart) => { const original = Chart.defaults.plugins.legend.labels.generateLabels(chart); original.forEach(label => { label.text = '\u00A0\u00A0' + label.text; }); return original; } } 
                   },
                   tooltip: {
+                      // STATIC POSITION CONFIG
+                      position: 'fixedTopRight',
+                      xAlign: 'right',
+                      yAlign: 'top',
+                      
                       backgroundColor: 'rgba(20, 20, 20, 0.95)', titleColor: '#fff', bodyColor: '#bbb', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, padding: 12,
                       callbacks: {
                           title: (c) => new Date(c[0].parsed.x).toLocaleString('de-DE'), 

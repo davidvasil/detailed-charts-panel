@@ -20,6 +20,9 @@ Wenn euch das Panel gefällt, würde ich mich sehr über eine Sternebewertung �
 
 [![Wiki](https://img.shields.io/badge/📖_Doku-Wiki-blue?style=for-the-badge)](https://jayjojayson.github.io/detailed-charts-panel/)
 
+
+<img width="100%" height="auto" alt="detailed-charts-panel" src="https://github.com/jayjojayson/detailed-charts-panel/blob/main/docs/images/example1.png" />
+
 ## Features
 
 - **📉 Interaktive Charts:** Stufenloser Zoom & Pan (Touch & Mausrad) mit automatischem Nachladen der Daten.

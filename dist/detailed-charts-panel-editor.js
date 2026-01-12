@@ -1,5 +1,5 @@
 /* detailed-charts-panel-editor.js */
-console.log("DetailedChartsPanelEditor: v_2.1");
+console.log("DetailedChartsPanelEditor: v_2.2");
 
 const fireEvent = (node, type, detail, options) => {
     options = options || {};

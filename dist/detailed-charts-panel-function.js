@@ -215,7 +215,7 @@ export function getSideBySideHTML(showStats) {
                    <div id="resize-handle"><div class="grip-lines"></div></div>
                 </div>
             </div>
-            <div class="side-donut-wrapper" style="width: 30%; min-width: 300px; max-width: 400px; background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 8px; padding: 10px; display: flex; flex-direction: column;">
+            <div class="side-donut-wrapper" style="width: 30%; min-width: 300px; max-width: 400px; min-height: 450px; background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 8px; padding: 10px; display: flex; flex-direction: column;">
                 <div class="doughnut-container-flex" style="display: flex; flex-direction: column; height: 100%; width: 100%;">
                    <div style="flex-grow: 1; position: relative; min-height: 200px;">
                       <canvas id="canvas-side-donut"></canvas>
@@ -237,11 +237,14 @@ export function getPanelTemplate() {
         :host {
           display: block; height: 100vh;
           background-color: var(--primary-background-color);
+		  border-style: solid;
+		  border-width: var(--ha-card-border-width,1px);
+		  border-color: var(--ha-card-border-color,var(--divider-color,#e0e0e0));
           color: var(--primary-text-color);
           font-family: 'Roboto', 'Segoe UI', sans-serif;
           --sidebar-width: 320px;
           --accent-color: var(--primary-color, #03a9f4);
-          --btn-color: #616161; 
+          --btn-color: #616161; 		  
         }
         * { box-sizing: border-box; }
         .container { display: flex; height: 100%; overflow: hidden; position: relative; }
@@ -255,8 +258,7 @@ export function getPanelTemplate() {
             scrollbar-width: none;
             transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease, opacity 0.2s; 
         }
-        .sidebar::-webkit-scrollbar { display: none; }
-        
+        .sidebar::-webkit-scrollbar { display: none; }        
         .sidebar.collapsed {
             width: 0; min-width: 0; padding: 0; opacity: 0; overflow: hidden; border-right: none;
         }
@@ -264,8 +266,7 @@ export function getPanelTemplate() {
         #doughnut-legend-container { scrollbar-width: none; }
         #doughnut-legend-container::-webkit-scrollbar { display: none; }
 
-        .sidebar > * { flex-shrink: 0; }
-        
+        .sidebar > * { flex-shrink: 0; }        
         .sidebar-header {
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0; 
         }
@@ -312,10 +313,30 @@ export function getPanelTemplate() {
             scrollbar-width: none; 
         }
         .sensor-list::-webkit-scrollbar { display: none; }
-        .sensor-item { display: flex; align-items: center; gap: 10px; background: rgba(128, 128, 128, 0.1); padding: 8px; border-radius: 4px; font-size: 13px; }
-        .sensor-color-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-        .sensor-name { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .sensor-item { 
+            display: flex; align-items: center; gap: 10px; 
+            background: rgba(128, 128, 128, 0.1); 
+            padding: 8px; border-radius: 4px; font-size: 13px; 
+            cursor: grab; transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+            border: 1px solid transparent;
+        }
+        .sensor-item:active { cursor: grabbing; }
+        .sensor-item.dragging { opacity: 0.5; background: rgba(128,128,128,0.2); }
+        .sensor-item.drag-over { border-top: 2px solid var(--accent-color); }
+        
+        .sensor-list-color-picker {
+            width: 14px; height: 14px; border: none; padding: 0;
+            background: none; cursor: pointer; border-radius: 50%;
+            -webkit-appearance: none; appearance: none;
+            overflow: hidden; flex-shrink: 0;
+        }
+        .sensor-list-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+        .sensor-list-color-picker::-webkit-color-swatch { border: none; border-radius: 50%; padding: 0; }
+        
+        .sensor-name { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
         .remove-sensor { cursor: pointer; color: var(--error-color, #f44336); font-weight: bold; padding: 0 8px; }
+        
         .saved-views-section { margin-top: 10px; border-top: 1px solid var(--divider-color); padding-top: 15px; }
         .saved-view-item { display: flex; align-items: center; gap: 10px; background: rgba(128, 128, 128, 0.1); padding: 10px; border-radius: 4px; font-size: 13px; margin-bottom: 8px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent; }
         .saved-view-item:hover { background: rgba(128, 128, 128, 0.2); border-color: var(--divider-color); }
@@ -355,7 +376,7 @@ export function getPanelTemplate() {
         /* Load-Btn CSS removed or repurposed */
         #reset-zoom-btn { background-color: var(--card-background-color); color: var(--primary-text-color); border: 1px solid var(--divider-color); margin-top: 5px; padding: 8px; font-size: 12px; width: 100%; border-radius: 4px; cursor: pointer; display: none; }
         
-        .main-content { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; background-color: var(--primary-background-color); overflow-y: auto; position: relative; transition: all 0.3s ease; }
+        .main-content { flex-grow: 1; padding: 15px; display: flex; flex-direction: column; background-color: var(--primary-background-color); overflow-y: auto; position: relative; transition: all 0.3s ease; }
         
         .stats-wrapper { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 15px; }
         .stats-card { padding: 10px 15px; background: var(--card-background-color); border-left: 5px solid transparent; border-radius: 4px; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid var(--divider-color); border-left-width: 5px; display: flex; flex-direction: column; gap: 2px; flex: 1 1 calc(19% - 15px); min-width: 200px; }
@@ -533,7 +554,20 @@ export function getPanelTemplate() {
             box-shadow: none;
             border: 1px solid rgba(128,128,128,0.2); 
             background: transparent; 
+			margin-bottom: 90px;
         }
+		:host([card-mode]) .split-grid-wrapper { gap: 20px; }
+		
+		:host([card-mode]) .split-controls-box { display: none; }
+		:host([card-mode]) .drag-handle { display: none; }
+		
+		:host([card-mode]) .chart-container-outer {
+			height: 350px;
+			box-shadow: none;
+			border: 1px solid rgba(128,128,128,0.2);
+			background: transparent;
+			margin-bottom: 0px;
+		}
         :host([card-mode]) .stats-card { height: auto; }
         :host([card-mode]) .side-donut-wrapper {
             background: transparent !important;
@@ -594,6 +628,10 @@ export function getPanelTemplate() {
               <div class="slider-row" id="grid-slider-row">
                   <div class="slider-header"><label>Spalten (Grid)</label><span id="grid-value-display" style="font-weight:bold;">1</span></div>
                   <input type="range" id="grid-slider" min="1" max="4" step="1" value="1">
+              </div>
+              <div class="slider-row" id="tension-slider-row" style="display:block;">
+                  <div class="slider-header"><label>Linien-Glättung (0-5)</label><span id="tension-value-display" style="font-weight:bold;">4</span></div>
+                  <input type="range" id="tension-slider" min="0" max="5" step="1" value="4">
               </div>
               
           
@@ -673,15 +711,15 @@ export function getPanelTemplate() {
         <div class="modal-overlay" id="export-modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <span class="modal-title">YAML Export</span>
+                    <span class="modal-title">Code Export</span>
                     <span class="modal-close" id="close-modal-btn">✕</span>
                 </div>
                 
-                <div class="modal-hint">Dieser Code erstellt eine Karte in der <b>"Kombiniert"</b>-Ansicht.</div>
+                <div class="modal-hint">Dieser Code erstellt eine Card (yaml - Kopie für das Dashboard).</div>
                 <textarea class="yaml-textarea" id="yaml-export-area" readonly></textarea>
                 <button class="copy-btn" id="copy-yaml-btn-action">Kopieren</button>
                 <div class="copy-success-msg" id="msg-yaml">Kopieren erfolgreich!</div>
-                <div class="modal-hint" style="margin-top:10px;">Unten findest du den JSON-Code für die <b>detailed-charts-views.js</b> Datei.</div>
+                <div class="modal-hint" style="margin-top:10px;">Hier findest du den JSON-Code für die <b>detailed-charts-views.js</b> Datei. (Siehe Wiki!)</div>
                 <textarea class="yaml-textarea" id="json-export-area" readonly></textarea>
                 <button class="copy-btn" id="copy-json-btn-action">Kopieren</button>
                 <div class="copy-success-msg" id="msg-json">Kopieren erfolgreich!</div>
