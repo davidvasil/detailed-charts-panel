@@ -51,7 +51,7 @@ Du hast im Panel Mode die perfekte Ansicht für deine Solaranlage zusammengeklic
 * Klicke auf den Kopieren-Button (📋).
 * Kopiere den generierten yaml Code aus der oberen Ansicht im Auswahlfenster.
 * Füge ihn in eine details-chart-card oder manuelle Standard-Lovelace-Karte ein.
- 
+
 *Ergebnis:* Eine fest definierte Card, genau so konfiguriert, wie du sie im Panel Modus erstellt hast.
 
 <img src="images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
