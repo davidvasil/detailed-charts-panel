@@ -14,6 +14,8 @@ Das Panel ist so konzipiert, dass du dich intuitiv von oben nach unten durch die
     * Nutze im Grid-Modus den Slider, um die Spaltenanzahl (1-4) einzustellen.
     * Nutze den Zoom-Slider, um das komplette Panel in der Größe anzupassen.
 	* Definiere weitere Voreinstellungen für das Layout.
+    * Die erstellte Sensorliste kann nachträglich per drag & drop geändert werden.
+    * Du kannst über den Farbpunkt vor dem Sensor in der Liste die Farbe nachträgl. ändern.
 
 3.  **Zeitraum festlegen:**
     * **Relativ:** (z.B. "Letzte 24h") für schnelle Checks.
@@ -56,10 +58,11 @@ Du hast im Panel Modus eine perfekte Ansicht erstellt und möchtest diese fest a
 
 <img src="images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
 
-Zweite Möglichkeit:
+#### Zweite Möglichkeit:
 
 1. Konfiguriere deine Charts direkt in der Card im Dashboard.
-2. Der Editor weißt die entsprechend Möglichkeiten an.  
+2. Es stehen fast alle Optionen aus dem Panel auch für die Card auf dem Dashboard zur Verfügung.
+3. Der Editor zeigt dir alle entsprechenden Möglichkeiten an.  
 
 *Ergebnis:* Eine custom Card, erstellt direkt im Dahsboard.
 
