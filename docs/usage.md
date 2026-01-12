@@ -54,15 +54,19 @@ Du hast im Panel Modus eine perfekte Ansicht erstellt und möchtest diese fest a
 3.  Gehe zu deinem Dashboard, wähle "Karte hinzufügen" -> "details-chart-card".
 4.  Füge den kopierten Code ein.
 
+<img src="images/example4.png" alt="Dashboard Card" width="40%">
+
 *Ergebnis:* Eine fest definierte Card, genau so konfiguriert, wie du sie im Panel Modus erstellt hast.  
 
-<img src="images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
+<img src="images/details-chart-card-2.png" alt="Dashboard Card" width="40%"> 
 
 #### 2.1. Card Editor ("Dashboard-Card")
 
 1. Konfiguriere deine Charts direkt in der Card im Dashboard.
 2. Es stehen fast alle Optionen aus dem Panel auch für die Card auf dem Dashboard zur Verfügung.
 3. Der Editor zeigt dir alle entsprechenden Möglichkeiten an.  
+
+<img src="images/example5.png" alt="Dashboard Card" width="40%">
 
 *Ergebnis:* Eine custom Card, erstellt direkt im Dahsboard.
 
