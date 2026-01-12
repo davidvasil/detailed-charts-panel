@@ -58,7 +58,7 @@ Du hast im Panel Modus eine perfekte Ansicht erstellt und möchtest diese fest a
 
 <img src="images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
 
-#### Zweite Möglichkeit:
+#### 2.1. Card Editor ("Dashboard-Card")
 
 1. Konfiguriere deine Charts direkt in der Card im Dashboard.
 2. Es stehen fast alle Optionen aus dem Panel auch für die Card auf dem Dashboard zur Verfügung.
