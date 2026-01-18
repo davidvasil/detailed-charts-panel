@@ -43,7 +43,7 @@ Here the magic happens. If you integrate the panel as a sidebar element (View), 
 * Configuration: Set time periods (relative or fixed calendar), colors, and chart types via UI.
 * Save: Save views and recall them later.
 
-<img src="images/details-chart-panel.png" alt="Dashboard Card" width="50%">
+<img src="../images/details-chart-panel.png" alt="Dashboard Card" width="50%">
 
 #### B. The YAML Export (For Card Mode)
 You have clicked together the perfect view for your solar system in Panel Mode? You want exactly this view on your dashboard on your tablet?
@@ -54,7 +54,7 @@ You have clicked together the perfect view for your solar system in Panel Mode? 
 
 *Result:* A permanently defined card, configured exactly as you created it in Panel Mode.
 
-<img src="images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
+<img src="../images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
 
 #### B.2. The Card Editor (Dashboard)
 
@@ -64,4 +64,4 @@ You have clicked together the perfect view for your solar system in Panel Mode? 
 
 *Result:* A custom Card, created directly in the dashboard.
 
-<img src="images/details-chart-card.png" alt="Dashboard Card" width="40%">
+<img src="../images/details-chart-card.png" alt="Dashboard Card" width="40%">

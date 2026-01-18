@@ -43,7 +43,7 @@ This mode is your "laboratory" to explore data or to configure a Dashboard Card 
 * Configuration: Set time periods (relative or fixed calendar), colors, and chart types via UI.
 * Save: Save views and recall them later.
 
-<img src="images/details-chart-panel.png" alt="Dashboard Card" width="55%">
+<img src="../images/details-chart-panel.png" alt="Dashboard Card" width="55%">
 
 In Panel Mode, you can also create a JSON file via the Copy button, insert it into `detail-charts-views.js`, and thus make the view available on all end devices.
 *New* Experimental: Other Custom Cards can now also be imported. Copy the Yaml code of your card, then click on the Add Card button and paste your code. The card is only displayed in the Separated and Mixed views. But it can be placed anywhere there.
@@ -56,11 +56,11 @@ You have created a perfect view in Panel Mode and want to have it permanently on
 3.  Go to your dashboard, select "Add Card" -> "details-chart-card".
 4.  Paste the copied code.
 
-<img src="images/example4.png" alt="Dashboard Card" width="40%">
+<img src="../images/example4.png" alt="Dashboard Card" width="40%">
 
 *Result:* A permanently defined card, configured exactly as you created it in Panel Mode.
 
-<img src="images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
+<img src="../images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
 
 #### 2.1. Card Editor ("Dashboard Card")
 
@@ -72,7 +72,7 @@ You have created a perfect view in Panel Mode and want to have it permanently on
 
 *Result:* A custom Card, created directly in the dashboard.
 
-<img src="images/details-chart-card.png" alt="Dashboard Card" width="40%">
+<img src="../images/details-chart-card.png" alt="Dashboard Card" width="40%">
 
 **Example Code**
 A simple example for a line diagram for the last 7 days:
