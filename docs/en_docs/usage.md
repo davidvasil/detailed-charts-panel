@@ -56,11 +56,11 @@ You have created a perfect view in Panel Mode and want to have it permanently on
 3.  Go to your dashboard, select "Add Card" -> "details-chart-card".
 4.  Paste the copied code.
 
-<img src="../images/example4.png" alt="Dashboard Card" width="40%">
+<img src="https://raw.githubusercontent.com/jayjojayson/detailed-charts-panel/main/docs/images/example4.png" alt="Dashboard Card" width="40%">
 
 *Result:* A permanently defined card, configured exactly as you created it in Panel Mode.
 
-<img src="../images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
+<img src="https://raw.githubusercontent.com/jayjojayson/detailed-charts-panel/main/docs/images/details-chart-card-2.png" alt="Dashboard Card" width="40%">
 
 #### 2.1. Card Editor ("Dashboard Card")
 
@@ -68,11 +68,11 @@ You have created a perfect view in Panel Mode and want to have it permanently on
 2. Almost all options from the panel are also available for the card on the dashboard.
 3. The editor shows you all corresponding possibilities.
 
-<img src="images/example5.png" alt="Dashboard Card" width="40%">
+<img src="https://raw.githubusercontent.com/jayjojayson/detailed-charts-panel/main/docs/images/example5.png" alt="Dashboard Card" width="40%">
 
 *Result:* A custom Card, created directly in the dashboard.
 
-<img src="../images/details-chart-card.png" alt="Dashboard Card" width="40%">
+<img src="https://raw.githubusercontent.com/jayjojayson/detailed-charts-panel/main/docs/images/details-chart-card.png" alt="Dashboard Card" width="40%">
 
 **Example Code**
 A simple example for a line diagram for the last 7 days:

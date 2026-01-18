@@ -34,11 +34,11 @@ If you like the Detailed Charts, I would be very happy about a Star ⭐. 🤗
 
 Panel-View:
 
-<img src="../images/details-chart-panel.png" alt="Panel View" width="50%">
+<img src="https://raw.githubusercontent.com/jayjojayson/detailed-charts-panel/main/docs/images/details-chart-panel.png" alt="Panel View" width="50%">
 
 Card on Dashboard:
 
-<img src="../images/details-chart-card-2.png" alt="Dashboard Card" width="45%">
+<img src="https://raw.githubusercontent.com/jayjojayson/detailed-charts-panel/main/docs/images/details-chart-card-2.png" alt="Dashboard Card" width="45%">
 
 
 ---
