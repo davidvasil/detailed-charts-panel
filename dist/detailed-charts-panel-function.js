@@ -3,6 +3,7 @@
 /* --- HELPER FUNCTIONS --- */
 
 export function cleanName(name) {
+    if (!name) return '';
     return name.replace(/^(sensor|binary_sensor|input_number)\./, '');
 }
 
@@ -126,9 +127,11 @@ export function processData(history, type, unit, startTime = null) {
 /* --- HTML TEMPLATES (VIEWS) --- */
 
 export function createStatsCard(conf, min, avg, max, curr, unit, label) {
+    // --- UPDATED: Use alias if available ---
+    const name = conf.alias || cleanName(conf.entityId);
     return `
       <div class="stats-card" style="border-left-color: ${conf.color}">
-          <div class="stats-header" title="${cleanName(conf.entityId)}">${cleanName(conf.entityId)}</div>
+          <div class="stats-header" title="${name}">${name}</div>
           <div class="stats-row">
               <span>${label}:</span>
               <span class="stats-main-val" style="color:${conf.color}">${curr} ${unit}</span>
@@ -140,7 +143,22 @@ export function createStatsCard(conf, min, avg, max, curr, unit, label) {
    `;
 }
 
-export function getSplitCardHTML(index, color, name) {
+export function getSplitCardHTML(index, color, name, isCard) {
+    let contentHTML = '';
+    
+    if (isCard) {
+        contentHTML = `
+            <div class="split-card-container" id="custom-card-container-${index}"></div>
+        `;
+    } else {
+        contentHTML = `
+           <div class="split-canvas-container"><canvas id="split-canvas-${index}"></canvas></div>
+           <div class="split-footer" id="footer-${index}">
+               <div class="split-stats-box"></div>
+           </div>
+        `;
+    }
+
     return `
        <div class="split-chart-header" style="color:${color}">
            <span>${name}</span>
@@ -150,10 +168,7 @@ export function getSplitCardHTML(index, color, name) {
                </svg>
            </div>
        </div>
-       <div class="split-canvas-container"><canvas id="split-canvas-${index}"></canvas></div>
-       <div class="split-footer" id="footer-${index}">
-           <div class="split-stats-box"></div>
-       </div>
+       ${contentHTML}
     `;
 }
 
@@ -191,13 +206,13 @@ export function getCombinedChartHTML(showStats) {
 export function getCombinedDoughnutHTML() {
     return `
         <div class="chart-container-outer" id="chart-container-single" style="height: 380px;">
-           <div class="doughnut-container-flex" style="display: flex; height: 100%; width: 100%;">
-               <div style="flex-grow: 1; position: relative; min-width: 60%;">
+           <div class="doughnut-container-flex">
+               <div class="doughnut-chart-wrap">
                   <canvas id="canvas-combined"></canvas>
                </div>
-               <div class="doughnut-sidebar" style="width: 250px; display: flex; flex-direction: column; justify-content: center; padding-left: 20px;">
-                  <div id="doughnut-legend-container" style="overflow-y: auto; max-height: 80%;"></div>
-                  <div id="doughnut-total-container" style="margin-top: 20px; font-weight: bold; font-size: 1.4em;"></div>
+               <div class="doughnut-sidebar">
+                  <div id="doughnut-legend-container"></div>
+                  <div id="doughnut-total-container"></div>
                </div>
            </div>
         </div>
@@ -220,7 +235,7 @@ export function getSideBySideHTML(showStats) {
                    <div style="flex-grow: 1; position: relative; min-height: 200px;">
                       <canvas id="canvas-side-donut"></canvas>
                    </div>
-                   <div class="doughnut-sidebar" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--divider-color);">
+                   <div class="doughnut-sidebar" style="width: 100%; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--divider-color);">
                       <div id="doughnut-legend-container" style="overflow-y: auto; max-height: 150px;"></div>
                       <div id="doughnut-total-container" style="margin-top: 10px; font-weight: bold; font-size: 1.2em; text-align: center;"></div>
                    </div>
@@ -235,7 +250,9 @@ export function getPanelTemplate() {
     return `
       <style>
         :host {
-          display: block; height: 100vh;
+          display: flex;
+          flex-direction: column;
+          height: 100vh;
           background-color: var(--primary-background-color);
 		  border-style: solid;
 		  border-width: var(--ha-card-border-width,1px);
@@ -244,53 +261,66 @@ export function getPanelTemplate() {
           font-family: 'Roboto', 'Segoe UI', sans-serif;
           --sidebar-width: 320px;
           --accent-color: var(--primary-color, #03a9f4);
-          --btn-color: #616161; 		  
+          --btn-color: #616161; 
+          box-sizing: border-box; 		  
         }
+
+        /* --- MOBILE HEADER STYLES --- */
+        .mobile-top-header {
+            display: none; height: var(--header-height, 56px);
+            background-color: var(--app-header-background-color, var(--primary-color, #03a9f4));
+            color: var(--app-header-text-color, white);
+            align-items: center; justify-content: space-between; 
+            padding: 0 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            flex-shrink: 0; z-index: 101;
+        }
+        
+        .header-btn {
+            background: transparent; border: none; color: inherit; cursor: pointer; padding: 8px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .header-btn:hover { background-color: rgba(255, 255, 255, 0.1); }
+        .header-title { font-size: 20px; font-weight: 500; }
+
+        #mobile-open-sidebar-btn { display: none; }
+        :host(.sidebar-hidden) #mobile-open-sidebar-btn { display: flex; }
+
+        /* MOBILE FIX */
+        @media (max-width: 1280px) {
+            .mobile-top-header { display: flex; }
+            #open-sidebar-floating { display: none !important; }
+        }
+
         * { box-sizing: border-box; }
-        .container { display: flex; height: 100%; overflow: hidden; position: relative; }
+        .container { display: flex; flex: 1; overflow: hidden; position: relative; }
         
         .sidebar { 
             width: var(--sidebar-width); min-width: var(--sidebar-width); 
-            background-color: var(--card-background-color); 
-            border-right: 1px solid var(--divider-color); 
+            background-color: var(--card-background-color); border-right: 1px solid var(--divider-color); 
             padding: 20px; display: flex; flex-direction: column; gap: 15px; 
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow-y: auto; 
-            scrollbar-width: none;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow-y: auto; scrollbar-width: none;
             transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease, opacity 0.2s; 
         }
         .sidebar::-webkit-scrollbar { display: none; }        
-        .sidebar.collapsed {
-            width: 0; min-width: 0; padding: 0; opacity: 0; overflow: hidden; border-right: none;
-        }
+        .sidebar.collapsed { width: 0; min-width: 0; padding: 0; opacity: 0; overflow: hidden; border-right: none; }
 
-        #doughnut-legend-container { scrollbar-width: none; }
+        .doughnut-container-flex { display: flex; height: 100%; width: 100%; }
+        .doughnut-chart-wrap { flex-grow: 1; position: relative; min-width: 60%; }
+        .doughnut-sidebar { display: flex; flex-direction: column; justify-content: center; padding-left: 20px; }
+        #doughnut-legend-container { overflow-y: auto; max-height: 80%; scrollbar-width: none; }
         #doughnut-legend-container::-webkit-scrollbar { display: none; }
+        #doughnut-total-container { margin-top: 20px; font-weight: bold; font-size: 1.4em; }
 
         .sidebar > * { flex-shrink: 0; }        
-        .sidebar-header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0; 
-        }
-        
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0; }
         h2 { margin: 0; font-weight: 300; letter-spacing: 1px; font-size: 1.5em; white-space: nowrap; }
-        
         label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--secondary-text-color); margin-bottom: 4px; display: block; letter-spacing: 0.5px; }
         .control-group { margin-bottom: 5px; position: relative; }
         
-        input, select { 
-            padding: 12px 10px; border-radius: 4px; border: 1px solid var(--divider-color); 
-            background: var(--primary-background-color); color: var(--primary-text-color); 
-            font-family: inherit; font-size: 14px; width: 100%; outline: none; 
-            transition: border-color 0.2s, box-shadow 0.2s; -webkit-appearance: none; appearance: none;
-        }
+        input, select { padding: 12px 10px; border-radius: 4px; border: 1px solid var(--divider-color); background: var(--primary-background-color); color: var(--primary-text-color); font-family: inherit; font-size: 14px; width: 100%; outline: none; transition: border-color 0.2s, box-shadow 0.2s; -webkit-appearance: none; appearance: none; }
         input:focus, select:focus { border-color: var(--accent-color); }
         
-        .suggestions-list {
-            position: absolute; top: 100%; left: 0; right: 0;
-            background: var(--secondary-background-color, #2c2c2c); 
-            border: 1px solid var(--divider-color);
-            border-radius: 4px; max-height: 300px; overflow-y: auto; z-index: 100;
-            display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
+        .suggestions-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--secondary-background-color, #2c2c2c); border: 1px solid var(--divider-color); border-radius: 4px; max-height: 300px; overflow-y: auto; z-index: 100; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .suggestion-item { padding: 10px; border-bottom: 1px solid var(--divider-color); cursor: pointer; transition: background 0.2s; }
         .suggestion-item:hover { background: rgba(255, 255, 255, 0.1); }
         .s-name { font-weight: 500; font-size: 14px; color: var(--primary-text-color); }
@@ -304,46 +334,26 @@ export function getPanelTemplate() {
         .btn-icon.transparent { background: transparent; color: var(--primary-text-color); border: 1px solid var(--divider-color); }
         .btn-icon.transparent:hover { background: rgba(0,0,0,0.05); }
 
-        .sensor-list { 
-            display: flex; flex-direction: column; gap: 8px; 
-            max-height: 230px; 
-            overflow-y: auto; 
-            padding: 5px 0; margin-bottom: 0px; 
-            border-top: 1px solid var(--divider-color); padding-top: 15px; 
-            scrollbar-width: none; 
-        }
+        .sensor-list { display: flex; flex-direction: column; gap: 8px; max-height: 230px; overflow-y: auto; padding: 5px 0; margin-bottom: 0px; border-top: 1px solid var(--divider-color); padding-top: 15px; scrollbar-width: none; }
         .sensor-list::-webkit-scrollbar { display: none; }
-        
-        .sensor-item { 
-            display: flex; align-items: center; gap: 10px; 
-            background: rgba(128, 128, 128, 0.1); 
-            padding: 8px; border-radius: 4px; font-size: 13px; 
-            cursor: grab; transition: background 0.2s, border-color 0.2s, opacity 0.2s;
-            border: 1px solid transparent;
-        }
+        .sensor-item { display: flex; align-items: center; gap: 10px; background: rgba(128, 128, 128, 0.1); padding: 8px; border-radius: 4px; font-size: 13px; cursor: grab; transition: background 0.2s, border-color 0.2s, opacity 0.2s; border: 1px solid transparent; }
         .sensor-item:active { cursor: grabbing; }
         .sensor-item.dragging { opacity: 0.5; background: rgba(128,128,128,0.2); }
         .sensor-item.drag-over { border-top: 2px solid var(--accent-color); }
-        
-        .sensor-list-color-picker {
-            width: 14px; height: 14px; border: none; padding: 0;
-            background: none; cursor: pointer; border-radius: 50%;
-            -webkit-appearance: none; appearance: none;
-            overflow: hidden; flex-shrink: 0;
-        }
+        .sensor-item.is-card { border-left: 2px solid orange; }
+        .sensor-list-color-picker { width: 14px; height: 14px; border: none; padding: 0; background: none; cursor: pointer; border-radius: 50%; -webkit-appearance: none; appearance: none; overflow: hidden; flex-shrink: 0; }
         .sensor-list-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
         .sensor-list-color-picker::-webkit-color-swatch { border: none; border-radius: 50%; padding: 0; }
+        /* --- UPDATED CSS: Changed to pointer to indicate clickability --- */
+        .sensor-name { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+        .sensor-name:hover { text-decoration: underline; opacity: 0.8; }
         
-        .sensor-name { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
         .remove-sensor { cursor: pointer; color: var(--error-color, #f44336); font-weight: bold; padding: 0 8px; }
-        
         .saved-views-section { margin-top: 10px; border-top: 1px solid var(--divider-color); padding-top: 15px; }
         .saved-view-item { display: flex; align-items: center; gap: 10px; background: rgba(128, 128, 128, 0.1); padding: 10px; border-radius: 4px; font-size: 13px; margin-bottom: 8px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent; }
         .saved-view-item:hover { background: rgba(128, 128, 128, 0.2); border-color: var(--divider-color); }
-        
         .saved-view-item.shared { border-left: 3px solid var(--accent-color); background: rgba(3, 169, 244, 0.05); }
         .lock-icon { opacity: 0.5; font-size: 12px; padding: 0 8px; }
-
         .saved-view-name { flex-grow: 1; font-weight: 500; }
         .toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; cursor: pointer; }
         .toggle-label { font-size: 14px; color: var(--primary-text-color); }
@@ -357,23 +367,12 @@ export function getPanelTemplate() {
         input[type=range] { -webkit-appearance: none; width: 100%; height: 6px; background: var(--divider-color); border-radius: 3px; outline: none; padding: 0; border: none; margin-top: 5px; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent-color); cursor: pointer; transition: transform 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
         input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.1); }
-        
         .mode-switch { display: flex; gap: 0; margin-bottom: 10px; border: 1px solid var(--divider-color); border-radius: 4px; overflow: hidden; flex-shrink: 0; }
-        
-        .mode-btn { 
-            flex: 1; padding: 10px; font-size: 13px; text-align: center; cursor: pointer; 
-            background: var(--card-background-color); color: var(--secondary-text-color); 
-            transition: all 0.2s; font-weight: 500;
-            display: flex; align-items: center; justify-content: center;
-            min-height: 40px;
-        }
-        
+        .mode-btn { flex: 1; padding: 10px; font-size: 13px; text-align: center; cursor: pointer; background: var(--card-background-color); color: var(--secondary-text-color); transition: all 0.2s; font-weight: 500; display: flex; align-items: center; justify-content: center; min-height: 40px; }
         .mode-btn:first-child { border-right: 1px solid var(--divider-color); }
         .mode-btn.active { background: var(--btn-color); color: white; }
-        
         .custom-date-container { display: none; flex-direction: column; gap: 10px; }
         .custom-date-container.visible { display: flex; }
-        /* Load-Btn CSS removed or repurposed */
         #reset-zoom-btn { background-color: var(--card-background-color); color: var(--primary-text-color); border: 1px solid var(--divider-color); margin-top: 5px; padding: 8px; font-size: 12px; width: 100%; border-radius: 4px; cursor: pointer; display: none; }
         
         .main-content { flex-grow: 1; padding: 15px; display: flex; flex-direction: column; background-color: var(--primary-background-color); overflow-y: auto; position: relative; transition: all 0.3s ease; }
@@ -389,25 +388,78 @@ export function getPanelTemplate() {
         
         .chart-container-outer { width: 100%; height: 450px; min-height: 200px; position: relative; background: var(--card-background-color); border-radius: 8px; padding: 15px; box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid var(--divider-color); display: flex; flex-direction: column; }
         .canvas-wrapper { flex-grow: 1; position: relative; width: 100%; height: 100%; min-height: 400px; overflow: hidden; padding-top: 18px; }
-        
         #resize-handle { height: 14px; width: 100%; background: var(--card-background-color); cursor: ns-resize; display: flex; align-items: center; justify-content: center; border-top: 1px solid var(--divider-color); margin-top: 5px; }
         .grip-lines { width: 30px; height: 3px; border-top: 1px solid var(--secondary-text-color); border-bottom: 1px solid var(--secondary-text-color); opacity: 0.5; }
         #resize-ghost { position: absolute; left: 40px; right: 40px; height: 4px; background-color: var(--accent-color); opacity: 0.5; z-index: 100; display: none; pointer-events: none; cursor: ns-resize; }
         
-        .split-grid-wrapper { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
+        /* --- REVERTED TO FLEX FOR STRETCH BEHAVIOR --- */
+        .split-grid-wrapper { 
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px; width: 100%; 
+            align-items: stretch; /* WICHTIG: Stretch sorgt für gleiche Höhe */
+        }
         
+        /* --- CARD STYLE FIX FOR COLUMNS --- */
+        .split-chart-card { 
+            background: var(--card-background-color); 
+            border: 1px solid var(--divider-color); 
+            border-radius: 8px; padding: 15px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+            margin-bottom: 0; 
+            
+            /* Change from fit-content to height 100% to fill flex height */
+            height: auto; 
+            display: flex; 
+            flex-direction: column;
+            
+            /* CALCULATION: 100% / Cols, minus gap allowance */
+            /* flex: grow shrink basis */
+            /* shrink 0 PREVENTS crowding more than desired columns */
+            flex: 1 0 calc((100% / var(--grid-cols, 1)) - 15px);
+            min-width: 250px;
+            
+            transition: opacity 0.2s, border-color 0.2s; 
+        }
+        
+        /* --- CUSTOM CARD CONTAINER --- */
+        .split-card-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%; 
+            flex-grow: 1;
+            /* Do not hide overflow */
+            overflow: visible; 
+            /* Set minimal height to match charts */
+            min-height: 200px;
+            
+            --ha-card-background: transparent;
+            --ha-card-box-shadow: none;
+            --ha-card-border-width: 0px;
+        }
+        
+        .split-card-container > * {
+            width: 100% !important;
+            flex-grow: 1; 
+            margin: 0 !important;
+        }
+
         @media (max-width: 700px) { 
-            .split-grid-wrapper { grid-template-columns: 1fr; }
+            .split-chart-card { flex-basis: 100%; } /* Force single column */
             .stats-wrapper { grid-template-columns: 1fr; } 
-            .split-footer { flex-direction: column; }
+            .split-footer { flex-direction: column; padding-left: 15px; padding-right: 15px; }
+            .split-stats-box { padding-left: 5px; padding-right: 5px; }
             .split-controls-box { width: 100%; flex-direction: row; border-left: none; border-top: 1px solid var(--divider-color); padding-left: 0; padding-top: 10px; }
+            
             .doughnut-container-flex { flex-direction: column; }
-            .doughnut-sidebar { width: 100% !important; padding-left: 0 !important; margin-top: 20px; }
+            .doughnut-sidebar { width: 100% !important; padding: 0 15px !important; margin-top: 15px; box-sizing: border-box; }
+            .doughnut-chart-wrap { min-width: 0 !important; width: 100% !important; }
             .flex-main-wrapper { flex-direction: column; }
+            .main-chart-wrapper { width: 100% !important; flex: none !important; }
+            .chart-container-outer { width: 100% !important; }
             .side-donut-wrapper { width: 100% !important; border-left: none !important; border-top: 1px solid var(--divider-color); padding-left: 0 !important; padding-top: 15px; }
         }
         
-        .split-chart-card { background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 0; height: fit-content; flex-grow: 1; transition: opacity 0.2s, border-color 0.2s; }
         .split-chart-card.dragging { opacity: 0.4; }
         .split-chart-card.drag-over { border: 2px dashed var(--accent-color); }
         .split-chart-header { font-weight: bold; font-size: 1.1em; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
@@ -415,33 +467,12 @@ export function getPanelTemplate() {
         .drag-handle:hover { background: rgba(128,128,128,0.1); color: var(--primary-text-color); }
         .drag-handle:active { cursor: grabbing; }
         .split-canvas-container { height: 300px; position: relative; width: 100%; }
-        .split-footer { display: flex; gap: 20px; margin-top: 10px; align-items: stretch; border-top: 1px solid var(--divider-color); padding-top: 15px; }
-        .split-stats-box { flex-grow: 1; background: transparent; border-radius: 0; padding: 5px 0; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; text-align: center; border: none; }
         
-        .split-controls-box { 
-            width: auto; 
-            display: flex; 
-            flex-direction: row; 
-            gap: 5px; 
-            justify-content: flex-start; 
-            border-left: 1px solid var(--divider-color); 
-            padding-left: 15px; 
-            align-items: center;
-        }
-        .chart-toggle-btn { 
-            background: transparent; 
-            border: 1px solid var(--divider-color); 
-            color: var(--secondary-text-color); 
-            width: 32px; 
-            height: 32px; 
-            padding: 0; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            transition: all 0.2s; 
-        }
+        .split-footer { display: flex; gap: 20px; margin-top: 10px; align-items: stretch; border-top: 1px solid var(--divider-color); padding-top: 15px; }
+        
+        .split-stats-box { flex-grow: 1; background: transparent; border-radius: 0; padding: 5px 0; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; text-align: center; border: none; }
+        .split-controls-box { width: auto; display: flex; flex-direction: row; gap: 5px; justify-content: flex-start; border-left: 1px solid var(--divider-color); padding-left: 15px; align-items: center; }
+        .chart-toggle-btn { background: transparent; border: 1px solid var(--divider-color); color: var(--secondary-text-color); width: 32px; height: 32px; padding: 0; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .chart-toggle-btn:hover { background: rgba(0,0,0,0.05); color: var(--primary-text-color); }
         .chart-toggle-btn.active { background: var(--btn-color); color: white; border-color: var(--btn-color); }
         
@@ -450,45 +481,20 @@ export function getPanelTemplate() {
         .stat-current { font-size: 1.1em; font-weight: bold; }
         .stat-unit { font-size: 0.7em; font-weight: normal; opacity: 0.8; }
         
-        .chart-overlay-btn {
-            position: absolute; 
-            top: 10px; 
-            left: 10px; 
-            z-index: 10;
-            background: transparent; 
-            border: 1px solid var(--divider-color);
-            color: var(--secondary-text-color); 
-            border-radius: 4px;
-            width: 36px; height: 36px; 
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s;
-        }
+        .chart-overlay-btn { position: absolute; top: 10px; left: 10px; z-index: 10; background: transparent; border: 1px solid var(--divider-color); color: var(--secondary-text-color); border-radius: 4px; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .chart-overlay-btn:hover { background: rgba(0,0,0,0.05); color: var(--primary-text-color); }
         .chart-overlay-btn.active { background: var(--btn-color); color: white; border-color: var(--btn-color); }
 
         .loader { border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid var(--accent-color); border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; display: none; margin: 0; }
-        
         .error-msg { color: #f44336; background: rgba(244, 67, 54, 0.1); padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 13px; display: none; border: 1px solid rgba(244, 67, 54, 0.3); }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .donut-legend-item { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            margin-bottom: 0; 
-            font-size: 13px; 
-            cursor: pointer; 
-            transition: opacity 0.2s; 
-            padding: 8px 0;
-            border-bottom: 1px solid var(--divider-color);
-        }
+        .donut-legend-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0; font-size: 13px; cursor: pointer; transition: opacity 0.2s; padding: 8px 0; border-bottom: 1px solid var(--divider-color); }
         .donut-legend-item:last-child { border-bottom: none; }
         .donut-legend-item:hover { opacity: 0.8; }
         .donut-legend-item.hidden { text-decoration: line-through; opacity: 0.5; }
-        
         .donut-legend-left { display: flex; align-items: center; gap: 10px; overflow: hidden; }
         .donut-legend-right { font-weight: bold; margin-left: 10px; white-space: nowrap; }
-        
         .donut-legend-color { width: 12px; height: 12px; margin-right: 0; flex-shrink:0; border-radius: 50%; }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999; display: none; align-items: center; justify-content: center; }
@@ -498,83 +504,57 @@ export function getPanelTemplate() {
         .modal-close { cursor: pointer; font-size: 1.5em; line-height: 1; opacity: 0.7; }
         .modal-close:hover { opacity: 1; }
         
-        .yaml-textarea { 
-            width: 100%; height: 120px; 
-            background: var(--secondary-background-color, #292929); 
-            color: var(--primary-text-color); 
-            border: 1px solid var(--divider-color); 
-            border-radius: 4px; padding: 10px; font-family: monospace; font-size: 12px; resize: none; margin-bottom: 5px; outline: none;
-        }
+        .yaml-textarea { width: 100%; height: 120px; background: var(--secondary-background-color, #292929); color: var(--primary-text-color); border: 1px solid var(--divider-color); border-radius: 4px; padding: 10px; font-family: monospace; font-size: 12px; resize: none; margin-bottom: 5px; outline: none; }
         .modal-hint { font-size: 14px; color: orange; margin-bottom: 5px; font-weight: 500; }
-        
         .copy-btn { background-color: var(--btn-color); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 500; width: 100%; margin-bottom: 15px; }
         .copy-btn:hover { background-color: #757575; }
         .copy-success-msg { color: var(--success-color, #4caf50); text-align: center; font-weight: bold; font-size: 12px; display: none; margin-bottom: 10px; }
 
-        #toggle-sidebar-btn { 
-            background: transparent; border: none; cursor: pointer; color: var(--secondary-text-color); 
-            padding: 5px; display: flex; align-items: center; justify-content: center; border-radius: 4px;
-        }
+        #toggle-sidebar-btn { background: transparent; border: none; cursor: pointer; color: var(--secondary-text-color); padding: 5px; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
         #toggle-sidebar-btn:hover { background: rgba(128,128,128,0.1); color: var(--primary-text-color); }
 
         #open-sidebar-floating {
-            position: absolute; top: 10px; left: 10px; z-index: 50;
+            position: absolute; top: 70px; left: 10px; z-index: 50;
             width: 40px; height: 40px;
-            background: var(--card-background-color);
-            border: 1px solid var(--divider-color);
-            border-radius: 50%;
+            background: var(--card-background-color); border: 1px solid var(--divider-color); border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            color: var(--primary-text-color);
+            cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: var(--primary-text-color);
             transition: transform 0.2s, opacity 0.2s;
             opacity: 0; pointer-events: none; transform: scale(0.8);
         }
-        :host(.sidebar-hidden) #open-sidebar-floating {
-            opacity: 1; pointer-events: auto; transform: scale(1);
-        }
+        :host(.sidebar-hidden) #open-sidebar-floating { opacity: 1; pointer-events: auto; transform: scale(1); }
 
         :host([card-mode]) {
-            height: auto !important;
-            display: block;
+            height: auto !important; display: block;
             background: var(--ha-card-background, var(--card-background-color, #1c1c1c));
             box-shadow: var(--ha-card-box-shadow, 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2));
-            border-radius: var(--ha-card-border-radius, 12px);
-            padding: 16px;
-            color: var(--primary-text-color);
+            border-radius: var(--ha-card-border-radius, 12px); padding: 16px; color: var(--primary-text-color);
         }
         :host([card-mode]) .sidebar { display: none !important; }
         :host([card-mode]) #open-sidebar-floating { display: none !important; }
+        :host([card-mode]) .mobile-top-header { display: none !important; }
         :host([card-mode]) .container { height: auto; display: block; overflow: visible; }
         :host([card-mode]) .main-content { padding: 0; overflow: visible; height: auto; background: transparent !important; }
-        :host([card-mode]) .chart-container-outer,
-        :host([card-mode]) .stats-card,
-        :host([card-mode]) .split-chart-card {
-            height: 350px;
-            box-shadow: none;
-            border: 1px solid rgba(128,128,128,0.2); 
-            background: transparent; 
-			margin-bottom: 90px;
-        }
+        :host([card-mode]) .chart-container-outer, :host([card-mode]) .stats-card, :host([card-mode]) .split-chart-card { height: 350px; box-shadow: none; border: 1px solid rgba(128,128,128,0.2); background: transparent; margin-bottom: 90px; }
 		:host([card-mode]) .split-grid-wrapper { gap: 20px; }
-		
 		:host([card-mode]) .split-controls-box { display: none; }
 		:host([card-mode]) .drag-handle { display: none; }
-		
-		:host([card-mode]) .chart-container-outer {
-			height: 350px;
-			box-shadow: none;
-			border: 1px solid rgba(128,128,128,0.2);
-			background: transparent;
-			margin-bottom: 0px;
-		}
+		:host([card-mode]) .chart-container-outer { margin-bottom: 0px; }
         :host([card-mode]) .stats-card { height: auto; }
-        :host([card-mode]) .side-donut-wrapper {
-            background: transparent !important;
-            box-shadow: none !important;
-            border: 1px solid rgba(128,128,128,0.2) !important;
-        }
+        :host([card-mode]) .side-donut-wrapper { background: transparent !important; box-shadow: none !important; border: 1px solid rgba(128,128,128,0.2) !important; }
       </style>
+
+      <div class="mobile-top-header">
+          <div style="display:flex; align-items:center; gap:20px;">
+              <button id="ha-menu-btn" class="header-btn" title="Home Assistant Menü">
+                 <svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
+              </button>
+              <div class="header-title">Detailed Charts</div>
+          </div>
+          <button id="mobile-open-sidebar-btn" class="header-btn" title="Menü öffnen">
+             <svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
+          </button>
+      </div>
 
       <div class="container">
         <div class="sidebar" id="sidebar-panel">
@@ -597,7 +577,8 @@ export function getPanelTemplate() {
           </div>
           <div class="control-group add-sensor-row">
              <input type="color" id="color-input" class="color-picker" value="#03a9f4" title="Farbe wählen">
-             <button id="add-btn" class="btn-icon" title="Hinzufügen">+</button>
+             <button id="add-btn" class="btn-icon" title="Sensor hinzufügen">+</button>
+             <button id="add-card-btn" class="btn-icon" title="Custom Card hinzufügen" style="font-size:12px;width:auto;padding:0 8px;">Card +</button>
              <button id="clear-all-btn" class="btn-icon grey" title="Sensorliste löschen"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg></button>
              
              <div style="margin-left:auto; display:flex; gap:5px;">
@@ -609,7 +590,6 @@ export function getPanelTemplate() {
           </div>
           <div id="sensor-list-container" class="sensor-list"><div style="color: var(--secondary-text-color); font-size: 12px; text-align: center; padding: 10px;">Liste leer.</div></div>
           <div style="margin-top: 0px; border-top: 1px solid var(--divider-color); padding-top: 15px;">
-              
               <div class="control-group" style="margin-top:5px;">
                   <label>Ansicht (Layout)</label>
                   <select id="layout-select">
@@ -633,8 +613,6 @@ export function getPanelTemplate() {
                   <div class="slider-header"><label>Linien-Glättung (0-5)</label><span id="tension-value-display" style="font-weight:bold;">4</span></div>
                   <input type="range" id="tension-slider" min="0" max="5" step="1" value="4">
               </div>
-              
-          
 			  <div class="control-group" style="margin-top: 20px;">
 				<label>Darstellung (Global):</label>
 				<select id="chart-type">
@@ -645,19 +623,15 @@ export function getPanelTemplate() {
 					<option value="scatter">Scatter (Punkte)</option>
 				</select>
 			  </div>
-			  
               <div class="control-group" style="margin-top:10px;">
                  <label>Referenzlinie (Wert):</label>
                  <input id="threshold-input" type="number" step="any" placeholder="z.B. 500" title="Zeigt eine rote Linie bei diesem Wert an">
               </div>
-              
               <div class="toggle-row" id="toggle-autoscale-row" style="margin-top: 10px;">
                  <span class="toggle-label">Auto-Scale (W ➡ kW)</span>
                  <input type="checkbox" class="toggle-switch" id="autoscale-switch">
               </div>
-
 			  <div class="toggle-row" id="toggle-fill-row"><span class="toggle-label">Fläche füllen</span><input type="checkbox" class="toggle-switch" id="fill-switch"></div>          
-              
               <div class="toggle-row" id="toggle-axis-row" style="margin-top: 10px;">
                  <span class="toggle-label">Achsen-Text ausblenden</span>
                  <input type="checkbox" class="toggle-switch" id="hide-axis-switch">
@@ -695,12 +669,10 @@ export function getPanelTemplate() {
 			  <button id="reset-zoom-btn">🔍 Zoom zurücksetzen</button>
 		  </div>	  
           <div class="saved-views-section"><label>Gespeicherte Ansichten</label><div id="saved-views-container"></div></div>
-          
           <div class="error-msg" id="error-msg"></div>
         </div>
         
-        <div class="main-content" id="main-content-area">
-           </div>
+        <div class="main-content" id="main-content-area"></div>
 
         <button id="open-sidebar-floating" title="Menü öffnen">
             <svg style="width:24px;height:24px" viewBox="0 0 24 24">
@@ -714,7 +686,6 @@ export function getPanelTemplate() {
                     <span class="modal-title">Code Export</span>
                     <span class="modal-close" id="close-modal-btn">✕</span>
                 </div>
-                
                 <div class="modal-hint">Dieser Code erstellt eine Card (yaml - Kopie für das Dashboard).</div>
                 <textarea class="yaml-textarea" id="yaml-export-area" readonly></textarea>
                 <button class="copy-btn" id="copy-yaml-btn-action">Kopieren</button>
@@ -723,6 +694,18 @@ export function getPanelTemplate() {
                 <textarea class="yaml-textarea" id="json-export-area" readonly></textarea>
                 <button class="copy-btn" id="copy-json-btn-action">Kopieren</button>
                 <div class="copy-success-msg" id="msg-json">Kopieren erfolgreich!</div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="import-card-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="modal-title">Custom Card Import</span>
+                    <span class="modal-close" id="close-import-modal-btn">✕</span>
+                </div>
+                <div class="modal-hint">Füge hier den YAML oder JSON Code deiner Custom Card ein.</div>
+                <textarea class="yaml-textarea" id="card-import-area" style="height: 300px;"></textarea>
+                <button class="copy-btn" id="import-card-confirm-btn" style="margin-top:10px;">Card hinzufügen</button>
             </div>
         </div>
       </div>

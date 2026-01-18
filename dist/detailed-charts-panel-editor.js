@@ -1,5 +1,5 @@
 /* detailed-charts-panel-editor.js */
-console.log("DetailedChartsPanelEditor: v_2.2");
+console.log("DetailedChartsPanelEditor: v_2.3");
 
 const fireEvent = (node, type, detail, options) => {
     options = options || {};
@@ -223,7 +223,6 @@ class DetailedChartsPanelEditor extends HTMLElement {
         rowOpt2.appendChild(this._createSelector('autoScale', 'Auto-Scale', { boolean: {} }, c.autoScale === true));
         secOpt.appendChild(rowOpt2);
 
-        // NEUE OPTIONEN
         const rowOpt3 = document.createElement('div'); rowOpt3.className = 'row';
         rowOpt3.appendChild(this._createSelector('hideAxislabels', 'Achsen-Text aus', { boolean: {} }, c.hideAxislabels === true));
         rowOpt3.appendChild(this._createSelector('hideGrid', 'Gitterlinien aus', { boolean: {} }, c.hideGrid === true));

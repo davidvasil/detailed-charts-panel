@@ -44,8 +44,9 @@ panel_custom:
     * Kopiere **alle heruntergeladenen Dateien aus dem Ordner `/dist`** in diesen neuen Ordner. Deine Ordnerstruktur sollte wie folgt aussehen:
         ```
         /config/www/community/detailed-charts-panel/detailed-charts-panel.js
-		/config/www/community/detailed-charts-panel/detailed-charts-panel-editor.js
+		/config/www/community/detailed-charts-panel/detailed-charts-panel-logic.js
 		/config/www/community/detailed-charts-panel/detailed-charts-panel-function.js
+		/config/www/community/detailed-charts-panel/detailed-charts-panel-editor.js
 		/config/www/community/detailed-charts-panel/detailed-charts-views.js
 		/config/www/community/detailed-charts-panel/chart.umd.min.js
 		/config/www/community/detailed-charts-panel/hammer.min.js

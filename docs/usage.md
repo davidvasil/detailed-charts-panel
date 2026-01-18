@@ -16,6 +16,7 @@ Das Panel ist so konzipiert, dass du dich intuitiv von oben nach unten durch die
 	* Definiere weitere Voreinstellungen für das Layout.
     * Die erstellte Sensorliste kann nachträglich per drag & drop geändert werden.
     * Du kannst über den Farbpunkt vor dem Sensor in der Liste die Farbe nachträgl. ändern.
+	* Bei Klick auf einen Sensornamen in der Liste kann dieser beliebig angepasst werden.
 
 3.  **Zeitraum festlegen:**
     * **Relativ:** (z.B. "Letzte 24h") für schnelle Checks.
@@ -45,6 +46,7 @@ Dieser Modus ist dein "Labor", um Daten zu erforschen oder auch im "kombiniert" 
 <img src="images/details-chart-panel.png" alt="Dashboard Card" width="55%">
 
 Im Panel-Modus könnt ihr zudem auch über den Kopieren Button eine Json Datei erstellen, diese in die `detail-charts-views.js` einfügen und somit die Ansicht auf allen Endgeräten verfügbar machen.
+*Neu* Experimentell: Es können jetzt auch andere Custom Cards importiert werden. Kopiert dazu den Yaml Code eurer Card, klickt anschließend auf den Button Card hinzufügen und fügt euren Code ein. Die Card wird nur in der Getrennt- und Mixed-Ansicht angezeigt. Kann dort aber beliebig platziert werden.
 
 ### 2. Card Modus ("Dashboard-Card")
 Du hast im Panel Modus eine perfekte Ansicht erstellt und möchtest diese fest auf deinem Dashboard haben? 
