@@ -12,6 +12,4 @@
 
 * Beispiele
   * [Ansichten Panel/Card](examples.md)
-   
-* Info
-  * [English? Right-click to translate](README.md "Use your browser's translate feature")
+
