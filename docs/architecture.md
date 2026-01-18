@@ -7,7 +7,7 @@ Das **Detailed Charts Panel** ist als **Custom Element** (Web Component) für Ho
 Der Code ist modular aufgebaut:
 
 * **`detailed-charts-panel.js` (Der Controller):** Dies ist die Startdatei und das Gesicht des Panels
-* **`detailed-charts-panel-logic.js` (Das Gehirn / Die Engine) Hier findet die "Arbeit" statt, die nicht mit Klicks zu tun hat
+* **`detailed-charts-panel-logic.js` (Das Gehirn / Die Engine):** Hier findet die "Arbeit" statt, die nicht mit Klicks zu tun hat
 * **`detailed-charts-panel-function.js` (Die Werkzeugkiste & Templates):** Enthält Hilfsfunktionen für Datenverarbeitung (Aggregation)
 * **`detailed-charts-panel-editor.js` (Card-Editor):** Verantwortlich für das Layout und die Erstellung der Card auf dem Dashbaord
 * **`detailed-charts-views.js` (Konfiguration):** Eine JSON-basierte Datei für globale, schreibgeschützte Ansichten
