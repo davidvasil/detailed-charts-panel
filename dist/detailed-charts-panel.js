@@ -754,6 +754,14 @@ class DetailedChartsPanel extends DetailedChartsLogic {
       if (!stored) return;
       try {
           const settings = JSON.parse(stored);
+          
+          // FIX: In Card Mode (this._config is set), do not load settings from localStorage
+          // as they overwrite the YAML configuration.
+          if (this._config) {
+               if (settings.containerHeight) this.savedContainerHeight = settings.containerHeight;
+               return; 
+          }
+
           if (settings.sensors) { 
              // Deduplicate logic for loaded settings
              const uniqueSensors = [];
