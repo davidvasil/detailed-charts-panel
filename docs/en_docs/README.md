@@ -18,19 +18,22 @@ If you like the Detailed Charts, I would be very happy about a Star ⭐. 🤗
 
 ## Features at a Glance
 
-- **📉 Interactive Charts:** Continuous Zoom & Pan (Touch & Mouse Wheel) with automatic reloading of data (Infinite Scrolling).
-- **✨ Panel Mode and Card Mode:** Two ways of viewing, via complete panel in HA side menu or as a Dashboard Card.
-- **⚡ Auto-Scale (W ➡ kW):** Automatically converts values from `W`/`Wh` to `kW`/`kWh` – no more mental arithmetic!
-- **🍩 Donut Sidebar:** Optional sidebar for percentage distribution (ideal for power consumption).
+- **📉 Interactive Charts:** Smooth zoom & pan (touch & mouse wheel) with automatic data reloading.
+- **✨ Panel Mode & Card Mode:** Two viewing options — full panel view or as a dashboard card.
+- **⚡ Auto-Scale (W ➡ kW):** Automatically converts values from `W`/`Wh` to `kW`/`kWh` — no mental math required!
+- **🍩 Donut Sidebar:** Optional sidebar showing percentage distribution (ideal for power consumption).
 - **📊 Flexible Layouts:**
-    - *Combined:* Everything in one chart.
+    - *Combined:* Everything in a single chart.
     - *Grid:* 1 to 4 columns side by side.
-    - *Mixed:* Overview top, details bottom.
-- **🔴 Thresholds:** Set warning line (e.g., at 600W) as a visual reference.
-- **💾 Dual Saving:** Save views locally in the browser or globally in a file.
-- **📈 Live Statistics:** Min / Max / Average / Sum / Current – calculated intelligently.
-- **🏗️ Drag & Drop:** Simply rearrange charts in Grid mode with the mouse.
-- **🌑 Modern UI:** Full support for Home Assistant Themes (Light & Dark Mode).
+    - *Mixed:* Overview on top, details below.
+- **🔴 Thresholds:** Set warning lines (e.g. at 600 W) as visual references.
+- **💾 Dual Storage:** Save views locally in the browser or globally in a file.
+- **📈 Live Statistics:** Min / Max / Average / Sum / Current — intelligently calculated.
+- **🏗️ Drag & Drop:** Easily rearrange charts in grid mode using drag & drop.
+- **🌑 Modern UI:** Full support for Home Assistant themes (light & dark mode).
+- **🟢 Binary Sensors:** Automatic detection and visualization of binary sensors (e.g. heating, windows).
+- **🎯 Precision & Rounding:** Values in tooltips and statistics respect the sensor’s `display_precision` setting from Home Assistant.
+- **💡 Smart Tooltips:** The info popup automatically moves away from the cursor to avoid covering the chart.
 
 Panel-View:
 
@@ -66,6 +69,10 @@ You can conveniently create a complete dashboard with overviews via the Panel Mo
 * Card Mode: Use the Copy button in Panel Mode and insert current view onto the dashboard into the details-chart-card.
 * Card Mode: Convenient configuration of charts via the details-chart-card on the dashboard.
 
+
+🟢 Binary Sensors  
+Automatic detection and visualization of binary sensors (e.g., heating, windows).  
+These are displayed as semi-transparent background areas (On/Off).
 
 ⚡ Auto-Scale (W ➡ kW) NEW
 A common problem: Your solar system delivers 4500 Watts, but you want to read "4.5 kW".

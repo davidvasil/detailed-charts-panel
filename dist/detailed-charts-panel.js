@@ -1,5 +1,5 @@
 /* detailed-charts-panel.js */
-console.log("DetailedChartsPanel: v_2.3");
+console.log("DetailedChartsPanel: v_2.4");
 
 import { 
     cleanName, 
@@ -35,6 +35,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
   // --- LOVELACE CARD CONFIGURATION ---
   setConfig(config) {
+      const oldConfig = this._config;
       this._config = config;
       this.setAttribute('card-mode', '');
       
@@ -43,7 +44,22 @@ class DetailedChartsPanel extends DetailedChartsLogic {
           this.loadDependencies();
       }
 
-      this.selectedSensors = config.sensors || [];
+      // Deduplicate sensors by entityId to prevent double tooltips
+      const uniqueSensors = [];
+      const seenIds = new Set();
+      (config.sensors || []).forEach(s => {
+          if (!s) return;
+          if (!s.isCard && s.entityId) {
+             if (!seenIds.has(s.entityId)) {
+                 seenIds.add(s.entityId);
+                 uniqueSensors.push(s);
+             }
+          } else {
+             uniqueSensors.push(s); 
+          }
+      });
+      this.selectedSensors = uniqueSensors;
+
       this.chartType = config.chartType || 'line';
       this.timeMode = config.timeMode || 'relative';
       this.timeSelect = config.timeSelect || '24';
@@ -106,17 +122,35 @@ class DetailedChartsPanel extends DetailedChartsLogic {
           this.switchTimeMode(this.timeMode);
           
           this.renderSensorListUI();
+
+          // FIX: If config changed (Editor), sync to localStorage to prevent loadSettings from reverting it
+          if (oldConfig) {
+             const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'threshold', 'hideAxislabels', 'hideGrid'];
+             let hasChanged = keysToCheck.some(k => oldConfig[k] !== config[k]);
+             if (!hasChanged) {
+                 if (JSON.stringify(config.sensors) !== JSON.stringify(oldConfig.sensors)) hasChanged = true;
+             }
+             if (hasChanged) {
+                 this.saveSettings();
+             }
+          }
       }
       
-      if (this._hass && this.libsLoaded) {
-          if(this._reloadTimeout) clearTimeout(this._reloadTimeout);
-          this._reloadTimeout = setTimeout(() => {
-              if (this._sensorDataCache.length > 0 && !config.forceReload) {
+      // Force update of internal state for LayoutMode if changed via Editor
+      if (this.libsLoaded) {
+          // If we have data, we can just re-render the chart with new settings
+          if (this._sensorDataCache.length > 0) {
+              if(this._reloadTimeout) clearTimeout(this._reloadTimeout);
+              this._reloadTimeout = setTimeout(() => {
                   this.updateChartFromCache();
-              } else {
+              }, 100);
+          } else if (this._hass) {
+              // No data yet, load it
+              if(this._reloadTimeout) clearTimeout(this._reloadTimeout);
+              this._reloadTimeout = setTimeout(() => {
                   this.loadHistory();
-              }
-          }, 500);
+              }, 500);
+          }
       }
   }
 
@@ -154,6 +188,15 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             .filter(k => k.startsWith('sensor.') || k.startsWith('binary_sensor.') || k.startsWith('input_number.'))
             .sort();
         this._allSensorsLoaded = true;
+    }
+    
+    // Ensure persistence: Load settings if we haven't already, even if setConfig was called.
+    // However, avoid overwriting if loadHistory already started or if we assume setConfig provided the truth.
+    // The issue is that setConfig prevents loadSettings call because this._config is true.
+    // But if persistence is desired, loadSettings should run at least once.
+    if (!this._settingsLoaded && !this._loadSettingsFailed) {
+        this._settingsLoaded = true; // Mark as attempted
+        this.loadSettings();
     }
 
     if (this._config && this.libsLoaded && this.selectedSensors.length > 0 && !this._dataLoadedInit) {
@@ -711,7 +754,24 @@ class DetailedChartsPanel extends DetailedChartsLogic {
       if (!stored) return;
       try {
           const settings = JSON.parse(stored);
-          if (settings.sensors) { this.selectedSensors = settings.sensors; this.renderSensorListUI(); }
+          if (settings.sensors) { 
+             // Deduplicate logic for loaded settings
+             const uniqueSensors = [];
+             const seenIds = new Set();
+             (settings.sensors || []).forEach(s => {
+                  if (!s) return;
+                  if (!s.isCard && s.entityId) {
+                     if (!seenIds.has(s.entityId)) {
+                         seenIds.add(s.entityId);
+                         uniqueSensors.push(s);
+                     }
+                  } else {
+                     uniqueSensors.push(s); 
+                  }
+             });
+             this.selectedSensors = uniqueSensors; 
+             this.renderSensorListUI(); 
+          }
           if (settings.chartType) this.content.querySelector('#chart-type').value = settings.chartType;
           if (settings.timeSelect) this.content.querySelector('#time-select').value = settings.timeSelect;
           if (settings.dateStart) this.content.querySelector('#date-start').value = settings.dateStart;

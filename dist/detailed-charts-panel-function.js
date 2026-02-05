@@ -39,11 +39,24 @@ export function calculateEnergySum(values, isAggregated) {
 
 /* --- DATA PROCESSING --- */
 
+function parseState(val) {
+    if (val === null || val === undefined) return NaN;
+    if (typeof val === 'string') {
+        const v = val.trim().toLowerCase();
+        if (v === 'on' || v === 'home' || v === 'detected' || v === 'open' || v === 'connected' || v === 'running') return 1.0;
+        if (v === 'off' || v === 'not_home' || v === 'clear' || v === 'closed' || v === 'disconnected') return 0.0;
+    }
+    if (val === true) return 1.0;
+    if (val === false) return 0.0;
+    return parseFloat(val);
+}
+
 function aggregateToDaily(historyData, isEnergy) {
     const groups = {};
     historyData.forEach(pt => {
-        if (isNaN(parseFloat(pt.state))) return;
-        const val = parseFloat(pt.state);
+        const pVal = parseState(pt.state);
+        if (isNaN(pVal)) return;
+        const val = pVal;
         const d = new Date(pt.last_changed);
         const key = d.toISOString().split('T')[0];
 
@@ -77,15 +90,28 @@ function aggregateToDaily(historyData, isEnergy) {
 function aggregateToHourly(historyData) {
     const buckets = {};
     historyData.forEach(pt => {
-        if (isNaN(parseFloat(pt.state))) return;
+        const pVal = parseState(pt.state);
+        if (isNaN(pVal)) return;
         const date = new Date(pt.last_changed); date.setMinutes(0, 0, 0); const key = date.getTime();
         if (!buckets[key]) buckets[key] = { sum: 0, count: 0 };
-        buckets[key].sum += parseFloat(pt.state); buckets[key].count++;
+        buckets[key].sum += pVal; buckets[key].count++;
     });
     return Object.keys(buckets).sort().map(timestamp => { const t = parseInt(timestamp); return { x: t, y: buckets[timestamp].sum / buckets[timestamp].count }; });
 }
 
 export function processData(history, type, unit, startTime = null) {
+    // 1. Deduplicate History (Fix for double tooltip values)
+    const uniqueHistory = [];
+    const seenTimes = new Set();
+    history.forEach(pt => {
+        const t = new Date(pt.last_changed).getTime();
+        if(!seenTimes.has(t)) {
+            seenTimes.add(t);
+            uniqueHistory.push(pt);
+        }
+    });
+    history = uniqueHistory;
+
     const isEnergy = unit && (unit.includes("Wh") || unit.includes("kWh"));
     let dataPoints = [];
 
@@ -104,10 +130,10 @@ export function processData(history, type, unit, startTime = null) {
             dataPoints = aggregateToHourly(history);
         } else if (history.length > 2000) {
             const step = Math.ceil(history.length / 2000);
-            dataPoints = history.filter((_, i) => i % step === 0 && !isNaN(parseFloat(_.state)))
-                .map(pt => ({ x: new Date(pt.last_changed).getTime(), y: parseFloat(pt.state) }));
+            dataPoints = history.filter((_, i) => i % step === 0 && !isNaN(parseState(_.state)))
+                .map(pt => ({ x: new Date(pt.last_changed).getTime(), y: parseState(pt.state) }));
         } else {
-            dataPoints = history.filter(pt => !isNaN(parseFloat(pt.state))).map(pt => ({ x: new Date(pt.last_changed).getTime(), y: parseFloat(pt.state) }));
+            dataPoints = history.filter(pt => !isNaN(parseState(pt.state))).map(pt => ({ x: new Date(pt.last_changed).getTime(), y: parseState(pt.state) }));
         }
     }
 

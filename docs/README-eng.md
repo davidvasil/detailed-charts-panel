@@ -23,15 +23,22 @@ If you like this panel, I would be very happy about a star rating ⭐. 🤗
 
 ## Features
 
-- ### 📉 **Interactive Charts:** Seamless Zoom & Pan (Touch & Mouse Wheel)
-- ### ✨ **Panel Mode and Card Mode** Two ways to view the entire panel in the HA side menu or as a dashboard card.
-- ### 🖱️ **Infinite Scrolling:** Data is automatically loaded as you move along the timeline
-- ### 📊 **Split View & Grid:** Choose between one large combined chart or a grid (1-4 columns)
-- ### 💾 **Auto-Save:** Sensors, colors, and view settings are persisted automatically
-- ### 🎨 **Modern UI:** Native Home Assistant toggles, gradient fills, and Dark Mode support
-- ### ⚡ **Smart Loading:** Only loads necessary data; instant updates on changes
-- ### 📈 **Statistics:** Live display of Min / Max / Average / Current values
-- ### 🛠️ **Quick Controls:** Instantly toggle between Line and Bar charts per sensor
+- **📉 Interactive Charts:** Smooth zoom & pan (touch & mouse wheel) with automatic data reloading.
+- **✨ Panel Mode & Card Mode:** Two viewing options — full panel view or as a dashboard card.
+- **⚡ Auto-Scale (W ➡ kW):** Automatically converts values from `W`/`Wh` to `kW`/`kWh` — no mental math required!
+- **🍩 Donut Sidebar:** Optional sidebar showing percentage distribution (ideal for power consumption).
+- **📊 Flexible Layouts:**
+    - *Combined:* Everything in a single chart.
+    - *Grid:* 1 to 4 columns side by side.
+    - *Mixed:* Overview on top, details below.
+- **🔴 Thresholds:** Set warning lines (e.g. at 600 W) as visual references.
+- **💾 Dual Storage:** Save views locally in the browser or globally in a file.
+- **📈 Live Statistics:** Min / Max / Average / Sum / Current — intelligently calculated.
+- **🏗️ Drag & Drop:** Easily rearrange charts in grid mode using drag & drop.
+- **🌑 Modern UI:** Full support for Home Assistant themes (light & dark mode).
+- **🟢 Binary Sensors:** Automatic detection and visualization of binary sensors (e.g. heating, windows).
+- **🎯 Precision & Rounding:** Values in tooltips and statistics respect the sensor’s `display_precision` setting from Home Assistant.
+- **💡 Smart Tooltips:** The info popup automatically moves away from the cursor to avoid covering the chart.
 
 
 ---

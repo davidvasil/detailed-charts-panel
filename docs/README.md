@@ -18,8 +18,8 @@ Wenn euch die Details-Charts gefallen, würde ich mich sehr über einen Stern �
 
 ## Features im Überblick
 
-- **📉 Interaktive Charts:** Stufenloser Zoom & Pan (Touch & Mausrad) mit automatischem Nachladen der Daten (Infinite Scrolling).
-- **✨ Panel Modus und Card Modus:** Zwei Möglichkeiten der Betrachtung, über komplettes Panel in HA Seitenmenü oder als Dashboard Card.
+- **📉 Interaktive Charts:** Stufenloser Zoom & Pan (Touch & Mausrad) mit automatischem Nachladen der Daten.
+- **✨ Panel Modus & Card Modus:** Zwei Möglichkeiten der Betrachtung, komplettes Panel oder als Dashboard Card.
 - **⚡ Auto-Scale (W ➡ kW):** Rechnet Werte von `W`/`Wh` automatisch in `kW`/`kWh` um – kein Kopfrechnen mehr!
 - **🍩 Donut Sidebar:** Optionale Seitenleiste für die prozentuale Verteilung (ideal für Stromverbrauch).
 - **📊 Flexible Layouts:**
@@ -31,6 +31,9 @@ Wenn euch die Details-Charts gefallen, würde ich mich sehr über einen Stern �
 - **📈 Live-Statistiken:** Min / Max / Durchschnitt / Summe / Aktuell – intelligent berechnet.
 - **🏗️ Drag & Drop:** Ordne Charts im Grid-Modus einfach per Maus neu an.
 - **🌑 Modern UI:** Voller Support für Home Assistant Themes (Light & Dark Mode).
+- **🟢 Binary Sensoren:** Automatische Erkennung und Darstellung von binären Sensoren (z.B. Heizung, Fenster).
+- **🎯 Präzision & Rundung:** Werte in Tooltips und Statistiken verwenden `display_precision` Einstellung des Sensors aus HA.
+- **💡 Intelligente Tooltips:** Info-Fenster weicht dem Mauszeiger automatisch aus, um den Chart nicht zu verdecken. 
 
 Panel-View:
 
@@ -66,6 +69,9 @@ Du kannst dir bequem über den Panel Modus mit Menüeintrag in der Seitenleiste 
 * Card Modus: Kopieren Button im Panel Modus nutzen und akt. Ansicht auf das Dashboard in die details-chart-card einfügen.
 * Card Modus: Bequeme Konfiguration von Charts über die details-chart-card auf dem Dashboard.
 
+🟢 Binary Sensoren  
+Automatische Erkennung und Darstellung von binären Sensoren (z.B. Heizung, Fenster).  
+Diese werden als halbtransparente Flächen im Hintergrund visualisiert (An/Aus).
 
 ⚡ Auto-Scale (W ➡ kW) NEU  
 Ein häufiges Problem: Deine Solaranlage liefert 4500 Watt, aber du willst "4,5 kW" lesen.  
