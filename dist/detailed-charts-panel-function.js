@@ -8,9 +8,9 @@ export function cleanName(name) {
 }
 
 export function getRandomColor() {
-    const l = '0123456789ABCDEF'; 
-    let c = '#'; 
-    for (let i = 0; i < 6; i++) c += l[Math.floor(Math.random() * 16)]; 
+    const l = '0123456789ABCDEF';
+    let c = '#';
+    for (let i = 0; i < 6; i++) c += l[Math.floor(Math.random() * 16)];
     return c;
 }
 
@@ -105,7 +105,7 @@ export function processData(history, type, unit, startTime = null) {
     const seenTimes = new Set();
     history.forEach(pt => {
         const t = new Date(pt.last_changed).getTime();
-        if(!seenTimes.has(t)) {
+        if (!seenTimes.has(t)) {
             seenTimes.add(t);
             uniqueHistory.push(pt);
         }
@@ -140,7 +140,7 @@ export function processData(history, type, unit, startTime = null) {
     if (startTime && dataPoints.length > 0 && type !== 'bar' && type !== 'scatter') {
         const firstPtTime = dataPoints[0].x;
         const startTs = startTime.getTime();
-        
+
         if (firstPtTime > startTs + 60000) {
             dataPoints.unshift({ x: startTs, y: 0 });
             dataPoints.splice(1, 0, { x: firstPtTime - 1, y: 0 });
@@ -171,7 +171,7 @@ export function createStatsCard(conf, min, avg, max, curr, unit, label) {
 
 export function getSplitCardHTML(index, color, name, isCard) {
     let contentHTML = '';
-    
+
     if (isCard) {
         contentHTML = `
             <div class="split-card-container" id="custom-card-container-${index}"></div>
@@ -188,10 +188,15 @@ export function getSplitCardHTML(index, color, name, isCard) {
     return `
        <div class="split-chart-header" style="color:${color}">
            <span>${name}</span>
-           <div class="drag-handle" draggable="true" title="Verschieben">
-               <svg style="width:20px;height:20px" viewBox="0 0 24 24">
-                   <path fill="currentColor" d="M10,9h4V6h3l-5-5l-5,5h3V9z M9,10H6V6l-5,5l5,5v-3h3V10z M14,10v3h3l5-5l-5-5v3h-3z M10,15h4v3h-3l5,5l5-5h-3V15z M13,14h-2v2h2V14z"></path>
-               </svg>
+           <div style="display:flex; gap:10px; align-items:center;">
+               <button class="values-toggle-btn" id="values-btn-${index}" title="Werte anzeigen" style="display:none;">
+                  <svg style="width:18px;height:18px" viewBox="0 0 24 24"><path fill="currentColor" d="M7,13H21V11H7M7,19H21V17H7M7,7H21V5H7M2,11H3.8L2,13.1V14H5V13H3.2L5,10.9V10H2M3,8H4V4H2V5H3M2,17H4.2L2,17.5V18.5L4.2,19H2V20H5V19L2.8,18.5V17.5L5,17V16H2V17Z" /></svg>
+               </button>
+               <div class="drag-handle" draggable="true" title="Verschieben">
+                   <svg style="width:20px;height:20px" viewBox="0 0 24 24">
+                       <path fill="currentColor" d="M10,9h4V6h3l-5-5l-5,5h3V9z M9,10H6V6l-5,5l5,5v-3h3V10z M14,10v3h3l5-5l-5-5v3h-3z M10,15h4v3h-3l5,5l5-5h-3V15z M13,14h-2v2h2V14z"></path>
+                   </svg>
+               </div>
            </div>
        </div>
        ${contentHTML}
@@ -433,6 +438,7 @@ export function getPanelTemplate() {
             border-radius: 8px; padding: 15px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
             margin-bottom: 0; 
+            overflow: hidden; /* Prevent chart overflow during updates */
             
             /* Change from fit-content to height 100% to fill flex height */
             height: auto; 
@@ -561,13 +567,16 @@ export function getPanelTemplate() {
         :host([card-mode]) .mobile-top-header { display: none !important; }
         :host([card-mode]) .container { height: auto; display: block; overflow: visible; }
         :host([card-mode]) .main-content { padding: 0; overflow: visible; height: auto; background: transparent !important; }
-        :host([card-mode]) .chart-container-outer, :host([card-mode]) .stats-card, :host([card-mode]) .split-chart-card { height: 350px; box-shadow: none; border: 1px solid rgba(128,128,128,0.2); background: transparent; margin-bottom: 90px; }
-		:host([card-mode]) .split-grid-wrapper { gap: 20px; }
+        :host([card-mode]) .chart-container-outer, :host([card-mode]) .stats-card, :host([card-mode]) .split-chart-card { height: 350px; box-shadow: none; border: 1px solid rgba(128,128,128,0.2); background: transparent; margin-bottom: 10px; overflow: hidden; }
+		:host([card-mode]) .split-grid-wrapper { gap: 20px; padding-bottom: 0; margin-bottom: 0; }
+		:host([card-mode]) .split-chart-card:last-child { margin-bottom: 0; }
 		:host([card-mode]) .split-controls-box { display: none; }
 		:host([card-mode]) .drag-handle { display: none; }
 		:host([card-mode]) .chart-container-outer { margin-bottom: 0px; }
         :host([card-mode]) .stats-card { height: auto; }
         :host([card-mode]) .side-donut-wrapper { background: transparent !important; box-shadow: none !important; border: 1px solid rgba(128,128,128,0.2) !important; }
+        :host([card-mode]) .main-content { padding-bottom: 0; }
+        :host([card-mode]) .split-canvas-container { overflow: hidden; }
       </style>
 
       <div class="mobile-top-header">
@@ -603,9 +612,8 @@ export function getPanelTemplate() {
           </div>
           <div class="control-group add-sensor-row">
              <input type="color" id="color-input" class="color-picker" value="#03a9f4" title="Farbe wählen">
-             <button id="add-btn" class="btn-icon" title="Sensor hinzufügen">+</button>
-             <button id="add-card-btn" class="btn-icon" title="Custom Card hinzufügen" style="font-size:12px;width:auto;padding:0 8px;">Card +</button>
              <button id="clear-all-btn" class="btn-icon grey" title="Sensorliste löschen"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg></button>
+             <button id="add-card-btn" class="btn-icon" title="Custom Card hinzufügen" style="font-size:12px;width:auto;padding:0 8px;">Card +</button>
              
              <div style="margin-left:auto; display:flex; gap:5px;">
                 <button id="copy-yaml-btn" class="btn-icon" title="YAML für Dashboard kopieren" style="background-color:#455a64;">
@@ -650,8 +658,12 @@ export function getPanelTemplate() {
 				</select>
 			  </div>
               <div class="control-group" style="margin-top:10px;">
-                 <label>Referenzlinie (Wert):</label>
+                 <label>Referenzlinie 1 (Wert):</label>
                  <input id="threshold-input" type="number" step="any" placeholder="z.B. 500" title="Zeigt eine rote Linie bei diesem Wert an">
+              </div>
+              <div class="control-group" style="margin-top:10px;">
+                 <label>Referenzlinie 2 (Wert):</label>
+                 <input id="threshold2-input" type="number" step="any" placeholder="z.B. 1000" title="Zeigt eine hellblaue Linie bei diesem Wert an">
               </div>
               <div class="toggle-row" id="toggle-autoscale-row" style="margin-top: 10px;">
                  <span class="toggle-label">Auto-Scale (W ➡ kW)</span>
