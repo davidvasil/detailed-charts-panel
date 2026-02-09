@@ -1,5 +1,17 @@
 # Nutzung & Bedienung
 
+
+<iframe width="560" height="315"
+  src="https://www.youtube.com/embed/o3h9qdb1-Fk"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen>
+</iframe>
+
+
+[![Watch the video](https://img.youtube.com/vi/o3h9qdb1-Fk/0.jpg)](https://www.youtube.com/watch?v=o3h9qdb1-Fk)
+
+
 ## Schritt-für-Schritt Anleitung
 
 Das Panel ist so konzipiert, dass du dich intuitiv von oben nach unten durch die Sidebar klickst:
