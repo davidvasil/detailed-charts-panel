@@ -1,6 +1,6 @@
 # Nutzung & Bedienung
 
-Video mit allen Details. Bitte entschuldigt die Mikroqualität. :)
+Video mit allen Details. Bitte entschuldigt die Mikroqualität. :)  
 [![Watch the video](https://img.youtube.com/vi/o3h9qdb1-Fk/0.jpg)](https://www.youtube.com/watch?v=o3h9qdb1-Fk)
 
 
