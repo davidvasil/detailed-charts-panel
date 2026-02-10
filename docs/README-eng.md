@@ -17,7 +17,7 @@ The panel automatically saves your settings (selected sensors, colors, view opti
 
 If you like this panel, I would be very happy about a star rating ⭐. 🤗
 
-[![Wiki](https://img.shields.io/badge/📖_Doku-Wiki-blue?style=for-the-badge)](https://jayjojayson.github.io/detailed-charts-panel/)
+[![Wiki](https://img.shields.io/badge/📖_Doku-Wiki-blue?style=for-the-badge)](https://jayjojayson.github.io/detailed-charts-panel/#/en_docs/)
 
 <img width="100%" height="auto" alt="detailed-charts-panel" src="https://github.com/jayjojayson/detailed-charts-panel/blob/main/docs/images/example1.png" />
 
