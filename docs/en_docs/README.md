@@ -19,6 +19,7 @@ If you like the Detailed Charts, I would be very happy about a Star ⭐. 🤗
 ## Features at a Glance
 
 - **📉 Interactive Charts:** Smooth zoom & pan (touch & mouse wheel) with automatic data reloading.
+- **📉 Short-Term & Long-Term Charts:** Supports short-term and long-term data analysis.
 - **✨ Panel Mode & Card Mode:** Two viewing options — full panel view or as a dashboard card.
 - **⚡ Auto-Scale (W ➡ kW):** Automatically converts values from `W`/`Wh` to `kW`/`kWh` — no mental math required!
 - **🍩 Donut Sidebar:** Optional sidebar showing percentage distribution (ideal for power consumption).

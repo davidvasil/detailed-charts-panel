@@ -26,6 +26,7 @@ Wenn euch das Panel gefällt, würde ich mich sehr über eine Sternebewertung �
 ## Features
 
 - **📉 Interaktive Charts:** Stufenloser Zoom & Pan (Touch & Mausrad) mit automatischem Nachladen der Daten.
+- **📉 Short-Term & Long-Term Charts:** Unterstütz die Kurz- und Langezeitedaten-Auswertung.
 - **✨ Panel Modus & Card Modus:** Zwei Möglichkeiten der Betrachtung, komplettes Panel oder als Dashboard Card.
 - **⚡ Auto-Scale (W ➡ kW):** Rechnet Werte von `W`/`Wh` automatisch in `kW`/`kWh` um – kein Kopfrechnen mehr!
 - **🍩 Donut Sidebar:** Optionale Seitenleiste für die prozentuale Verteilung (ideal für Stromverbrauch).
