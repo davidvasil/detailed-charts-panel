@@ -2,89 +2,86 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![GitHub release](https://img.shields.io/github/v/release/jayjojayson/detailed-charts-panel?include_prereleases&sort=semver&color=blue&style=flat-square)](https://github.com/jayjojayson/detailed-charts-panel/releases/)
 ![Panel Size](https://img.shields.io/badge/Panel%20Size-427%20kB-blue)
-[![README English](https://img.shields.io/badge/README-Eng-orange)](https://github.com/jayjojayson/detailed-charts-panel/blob/main/docs/README-eng.md)
+[![README Deutsch](https://img.shields.io/badge/README-DE-orange)](https://github.com/jayjojayson/detailed-charts-panel/blob/main/docs/README-de.md)
 [![Support](https://img.shields.io/badge/%20-Support%20Me-steelblue?style=flat&logo=paypal&logoColor=white)](https://www.paypal.me/quadFlyerFW)
 [![stars](https://img.shields.io/github/stars/jayjojayson/detailed-charts-panel)](https://github.com/jayjojayson/detailed-charts-panel/stargazers)
 
 
-
 # Detailed Charts Panel
-Interaktive High-Performance Charts für Home Assistant
+Interactive High-Performance Charts for Home Assistant
 
 
-Das 📉 **Detailed Charts Panel** ist eine leistungsstarke Visualisierungslösung für Home Assistant, um historische Daten deiner Sensoren tiefgehend zu analysieren. Es bietet Funktionen, die weit über die Standard-History hinausgehen, wie z.B. Zoom, Pan, Grid-Layouts, verschiedene Diagrammtype und eine fortbestehende Konfiguration. Zudem läuft alles rein lokal mit Hilfe der Websocket Api von Home Assistant.
+The 📉 **Detailed Charts Panel** is a powerful visualization solution for Home Assistant, allowing for in-depth analysis of historical data from your sensors. It offers features that go far beyond standard history, such as zoom, pan, grid layouts, various chart types, and persistent configuration. Furthermore, everything runs entirely locally using the Home Assistant WebSocket API.
 
-Das Panel speichert deine Einstellungen (ausgewählte Sensoren, Farben, Ansichten) automatisch im Browser (Local Storage), sodass du deine Analyseumgebung nach einem Neustart sofort wieder vorfindest.
+The panel automatically saves your settings (selected sensors, colors, view options) in the browser (Local Storage), ensuring your analysis environment is ready immediately after a reload.
 
-Wenn euch das Panel gefällt, würde ich mich sehr über eine Sternebewertung ⭐ freuen. 🤗
+If you like this panel, I would be very happy about a star rating ⭐. 🤗
 
-[![Wiki](https://img.shields.io/badge/📖_Doku-Wiki-blue?style=for-the-badge)](https://jayjojayson.github.io/detailed-charts-panel/)
-
+[![Wiki](https://img.shields.io/badge/📖_Doku-Wiki-blue?style=for-the-badge)](https://jayjojayson.github.io/detailed-charts-panel/#/en_docs/)
 
 <img width="100%" height="auto" alt="detailed-charts-panel" src="https://github.com/jayjojayson/detailed-charts-panel/blob/main/docs/images/example1.png" />
 
 ## Features
 
-- **📉 Interaktive Charts:** Stufenloser Zoom & Pan (Touch & Mausrad) mit automatischem Nachladen der Daten.
-- **📉 Vorjahresvergleich:** Vergleiche aktuelle Daten direkt mit dem Vorjahr (als graue Hinterlegung).
-- **📉 Short-Term & Long-Term Charts:** Unterstütz die Kurz- und Langezeitedaten-Auswertung.
-- **🌍 Mehrsprachig:** Komplette Übersetzung in Deutsch und Englisch.
-- **✨ Panel Modus & Card Modus:** Zwei Möglichkeiten der Betrachtung, komplettes Panel oder als Dashboard Card.
-- **⚡ Auto-Scale (W ➡ kW):** Rechnet Werte von `W`/`Wh` automatisch in `kW`/`kWh` um – kein Kopfrechnen mehr!
-- **🍩 Donut Sidebar:** Optionale Seitenleiste für die prozentuale Verteilung (ideal für Stromverbrauch).
+- **📉 Interactive Charts:** Smooth zoom & pan (touch & mouse wheel) with automatic data reloading.
+- **📉 Previous Year Comparison:** Compare current data directly with the previous year.
+- **📉 Short-Term & Long-Term Charts:** Supports short-term and long-term data analysis.
+- **🌍 Multilingual:** Full translation support for English and German.
+- **✨ Panel Mode & Card Mode:** Two viewing options — full panel view or as a dashboard card.
+- **⚡ Auto-Scale (W ➡ kW):** Automatically converts values from `W`/`Wh` to `kW`/`kWh` — no mental math required!
+- **🍩 Donut Sidebar:** Optional sidebar showing percentage distribution (ideal for power consumption).
 - **📊 Flexible Layouts:**
-    - *Combined:* Alles in einem Chart.
-    - *Grid:* 1 bis 4 Spalten nebeneinander.
-    - *Mixed:* Übersicht oben, Details unten.
-- **🔴 Thresholds:** Setze Warnlinie (z.B. bei 600W) als visuelle Referenz.
-- **💾 Duales Speichern:** Speichere Ansichten lokal im Browser oder global in einer Datei.
-- **📈 Live-Statistiken:** Min / Max / Durchschnitt / Summe / Aktuell – intelligent berechnet.
-- **🏗️ Drag & Drop:** Ordne Charts im Grid-Modus einfach per Maus neu an.
-- **🌑 Modern UI:** Voller Support für Home Assistant Themes (Light & Dark Mode).
-- **🟢 Binary Sensoren:** Automatische Erkennung und Darstellung von binären Sensoren (z.B. Heizung, Fenster).
-- **🎯 Präzision & Rundung:** Werte in Tooltips und Statistiken verwenden `display_precision` Einstellung des Sensors aus HA.
-- **💡 Intelligente Tooltips:** Info-Fenster weicht dem Mauszeiger automatisch aus, um den Chart nicht zu verdecken. 
+    - *Combined:* Everything in a single chart.
+    - *Grid:* 1 to 4 columns side by side.
+    - *Mixed:* Overview on top, details below.
+- **🔴 Thresholds:** Set warning lines (e.g. at 600 W) as visual references.
+- **💾 Dual Storage:** Save views locally in the browser or globally in a file.
+- **📈 Live Statistics:** Min / Max / Average / Sum / Current — intelligently calculated.
+- **🏗️ Drag & Drop:** Easily rearrange charts in grid mode using drag & drop.
+- **🌑 Modern UI:** Full support for Home Assistant themes (light & dark mode).
+- **🟢 Binary Sensors:** Automatic detection and visualization of binary sensors (e.g. heating, windows).
+- **🎯 Precision & Rounding:** Values in tooltips and statistics respect the sensor’s `display_precision` setting from Home Assistant.
+- **💡 Smart Tooltips:** The info popup automatically moves away from the cursor to avoid covering the chart.
 
 
 ---
 
-
 ## Installation
 
-### HACS (Empfohlen)
+### HACS (Recommended)
 
-- Das github über den Link in Home Assistant einfügen.
+- Add this repository via the link in Home Assistant.
  
   [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jayjojayson&repository=detailed-charts-panel&category=plugin)
 
-- Das "Detailed Charts Panel" sollte nun in HACS verfügbar sein. Klicke auf "INSTALLIEREN" ("INSTALL").
-- Die Ressource wird automatisch zu deiner Lovelace-Konfiguration hinzugefügt.
+- The "Detailed Charts Panel" should now be available in HACS. Click on "INSTALL".
+- The resource will be automatically added to your Lovelace configuration.
 
 <details>
-  <summary> <b>Manuelle Installation über Hacs</b></summary>  
+  <summary> <b>Manual Installation via HACS</b></summary>  
 
-### Manuelle Installation über Hacs 
-Öffne HACS in Home Assistant.
+### Manual Installation via HACS
+Open HACS in Home Assistant.
 
-- Gehe zu "Frontend" und klicke auf die drei Punkte in der oberen rechten Ecke.
-- Wähle "Benutzerdefinierte Repositories" ("Custom repositories") aus.
-- Füge die URL zu diesem GitHub-Repository hinzu und wähle "Lovelace" als Kategorie.
-- Klicke auf "HINZUFÜGEN" ("ADD").
-- Das "Detailed Charts Panel" sollte nun in HACS verfügbar sein. Klicke auf "INSTALLIEREN" ("INSTALL").
-- Die Ressource wird automatisch zu deiner Lovelace-Konfiguration hinzugefügt.
+- Go to "Frontend" and click the three dots in the upper right corner.
+- Select "Custom repositories".
+- Paste the URL of this GitHub repository and select "Lovelace" as the category.
+- Click "ADD".
+- The "Detailed Charts Panel" should now be available in HACS. Click on "INSTALL".
+- The resource will be automatically added to your Lovelace configuration.
 </details>
 
 <details>
-  <summary> <b>Manuelle Installation in HA</b></summary>  
+  <summary> <b>Manual Installation in HA</b></summary>  
  
-### Manuelle Installation in HA
-1.  **Dateien herunterladen:**
-    * Lade alle Dateien aus diesem Repository herunter (insbesondere `.js` Dateien).
-    * **Wichtig:** Da dieses Panel externe Bibliotheken nutzt, stelle sicher, dass `chart.umd.min.js`, `hammer.min.js` und `chartjs-plugin-zoom.min.js` ebenfalls heruntergeladen werden.
+### Manual Installation in HA
+1.  **Download Files:**
+    * Download all files from this repository (especially the `.js` files).
+    * **Important:** Since this panel uses external libraries, ensure that `chart.umd.min.js`, `hammer.min.js`, and `chartjs-plugin-zoom.min.js` are also downloaded.
 
-2.  **Dateien in Home Assistant hochladen:**
-    * Erstelle einen neuen Ordner namens `detailed-charts-panel` im `www/community`-Verzeichnis deiner Home Assistant-Konfiguration.
-    * Kopiere **alle heruntergeladenen Dateien** in diesen neuen Ordner. Deine Ordnerstruktur sollte wie folgt aussehen:
+2.  **Upload Files to Home Assistant:**
+    * Create a new folder named `detailed-charts-panel` in the `www/community` directory of your Home Assistant configuration.
+    * Copy **all downloaded files** into this new folder. Your folder structure should look like this:
         ```
         /config/www/community/detailed-charts-panel/detailed-charts-panel.js
         /config/www/community/detailed-charts-panel/detailed-charts-panel-logic.js
@@ -99,20 +96,20 @@ Wenn euch das Panel gefällt, würde ich mich sehr über eine Sternebewertung �
         /config/www/community/detailed-charts-panel/chartjs-plugin-zoom.min.js
         ```
 
-3.  **Ressource zu Home Assistant hinzufügen:**
-    * Gehe in Home Assistant zu **Einstellungen > Dashboards**.
-    * Klicke auf das Menü mit den drei Punkten oben rechts und wähle **Ressourcen**.
-    * Klicke auf **+ Ressource hinzufügen**.
-    * Gebe als URL `/local/community/detailed-charts-panel/detailed-charts-panel.js` ein.
-    * Wähle als Ressourcentyp **JavaScript-Modul**.
-    * Klicke auf **Erstellen**.
+4.  **Add Resource to Home Assistant:**
+    * Go to Home Assistant **Settings > Dashboards**.
+    * Click the three dots menu in the top right corner and select **Resources**.
+    * Click **+ Add Resource**.
+    * Enter the URL `/local/community/detailed-charts-panel/detailed-charts-panel.js`.
+    * Select **JavaScript Module** as the resource type.
+    * Click **Create**.
 </details>
 
 ---
 
-## WICHTIG!
+## IMPORTANT!
 
-Damit das Dashboard in der Sidebar angezeigt werden kann, müsst ihr in der configuration.yaml am Anfang diesen Code einfügen:
+To display the dashboard in the sidebar, you must add the following code to the beginning of your configuration.yaml:
 
 ```yaml
 panel_custom:
