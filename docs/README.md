@@ -19,7 +19,9 @@ Wenn euch die Details-Charts gefallen, würde ich mich sehr über einen Stern �
 ## Features im Überblick
 
 - **📉 Interaktive Charts:** Stufenloser Zoom & Pan (Touch & Mausrad) mit automatischem Nachladen der Daten.
+- **📉 Vorjahresvergleich:** Vergleiche aktuelle Daten direkt mit dem Vorjahr (als graue Hinterlegung).
 - **📉 Short-Term & Long-Term Charts:** Unterstütz die Kurz- und Langezeitedaten-Auswertung.
+- **🌍 Mehrsprachig:** Komplette Übersetzung in Deutsch und Englisch.
 - **✨ Panel Modus & Card Modus:** Zwei Möglichkeiten der Betrachtung, komplettes Panel oder als Dashboard Card.
 - **⚡ Auto-Scale (W ➡ kW):** Rechnet Werte von `W`/`Wh` automatisch in `kW`/`kWh` um – kein Kopfrechnen mehr!
 - **🍩 Donut Sidebar:** Optionale Seitenleiste für die prozentuale Verteilung (ideal für Stromverbrauch).
@@ -99,6 +101,13 @@ Willst du sehen, wann dein Balkonkraftwerk über 600W produziert hat?
 
 * Trage bei Referenzlinie den Wert 600 ein. 
 * Eine gestrichelte rote Linie erscheint im Chart bei genau diesem Wert als Orientierungshilfe.  
+
+📉 Vorjahresvergleich
+Möchtest du sehen, wie sich dein Stromverbrauch oder Ertrag im Vergleich zum letzten Jahr entwickelt hat?
+
+* Aktiviere den Schalter "Vorjahresvergleich" in der Sidebar.
+* Die Daten vom exakt gleichen Zeitraum vor einem Jahr werden als graue Balken oder Linien im Hintergrund eingeblendet.
+* Ideal um Trends zu erkennen!
 
 💾 Speichern & Laden  
 Lokal speichern: Das Diskette-Symbol 💾 speichert die aktuelle Ansicht im Browser.  

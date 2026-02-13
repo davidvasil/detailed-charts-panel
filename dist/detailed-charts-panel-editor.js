@@ -1,5 +1,5 @@
 /* detailed-charts-panel-editor.js */
-console.log("DetailedChartsPanelEditor: v_2.3");
+console.log("DetailedChartsPanelEditor: v_2.6");
 
 const fireEvent = (node, type, detail, options) => {
     options = options || {};
@@ -21,7 +21,7 @@ const loadJsYaml = async () => {
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js';
         document.head.appendChild(script);
         await new Promise(r => { script.onload = r; });
-    } catch(e) {}
+    } catch (e) { }
 };
 
 // --- SVG ICONS ---
@@ -30,6 +30,8 @@ const ICONS = {
     eyeClosed: `<svg viewBox="0 0 24 24" style="width:24px;height:24px"><path fill="currentColor" d="M11.83,9L15,12.16C15,12.11 15,12.05 15,12A3,3 0 0,0 12,9C11.94,9 11.89,9 11.83,9M7.53,9.8L9.08,11.35C9.03,11.56 9,11.77 9,12A3,3 0 0,0 12,15C12.22,15 12.44,14.97 12.65,14.92L14.2,16.47C13.53,16.8 12.79,17 12,17A5,5 0 0,1 7,12C7,11.21 7.2,10.47 7.53,9.8M2,4.27L4.28,6.55L4.73,7C3.08,8.3 1.78,10 1,12C2.73,16.39 7,19.5 12,19.5C13.55,19.5 15.03,19.2 16.38,18.66L16.81,19.08L19.73,22L21,20.73L3.27,3L2,4.27Z" /></svg>`,
     delete: `<svg viewBox="0 0 24 24" style="width:24px;height:24px"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg>`
 };
+
+import { t } from './detailed-charts-panel-langs.js';
 
 class DetailedChartsPanelEditor extends HTMLElement {
     constructor() {
@@ -144,8 +146,8 @@ class DetailedChartsPanelEditor extends HTMLElement {
             </style>
             <div class="wrapper">
                 <div class="tabs">
-                    <div class="tab active" id="tabVisual">Visuell</div>
-                    <div class="tab" id="tabYaml">YAML</div>
+                    <div class="tab active" id="tabVisual">${t('visual')}</div>
+                    <div class="tab" id="tabYaml">${t('yaml')}</div>
                 </div>
                 <div id="visual-container" class="content-area"></div>
                 <div id="yaml-container" class="content-area" style="display:none;"></div>
@@ -177,65 +179,65 @@ class DetailedChartsPanelEditor extends HTMLElement {
     _updateVisuals() {
         if (!this._rendered || this._mode !== 'visual') return;
         const container = this.shadowRoot.getElementById('visual-container');
-        container.innerHTML = ''; 
+        container.innerHTML = '';
 
         const c = this._config;
 
         // --- SECTION 1: Darstellung ---
         const secDisp = document.createElement('div'); secDisp.className = 'section';
-        secDisp.innerHTML = `<div class="section-title">Darstellung</div>`;
+        secDisp.innerHTML = `<div class="section-title">${t('presentation')}</div>`;
         const row1 = document.createElement('div'); row1.className = 'row';
-        row1.appendChild(this._createSelector('chartType', 'Chart Typ', { select: { mode: "dropdown", options: [ { label: 'Line (Kurve)', value: 'line' }, { label: 'Bar (Balken)', value: 'bar' }, { label: 'Scatter (Punkte)', value: 'scatter' }, { label: 'Doughnut (Donut)', value: 'doughnut' }, { label: 'Stepped (Stufen)', value: 'stepped' } ]}}, c.chartType || 'line'));
-        row1.appendChild(this._createSelector('layoutMode', 'Layout', { select: { mode: "dropdown", options: [ { label: 'Kombiniert', value: 'combined' }, { label: 'Grid (Split)', value: 'split' }, { label: 'Mixed', value: 'mixed' } ]}}, c.layoutMode || 'combined'));
+        row1.appendChild(this._createSelector('chartType', t('chartTypeLabel'), { select: { mode: "dropdown", options: [{ label: t('line'), value: 'line' }, { label: t('bar'), value: 'bar' }, { label: t('scatter'), value: 'scatter' }, { label: t('doughnut'), value: 'doughnut' }, { label: t('stepped'), value: 'stepped' }] } }, c.chartType || 'line'));
+        row1.appendChild(this._createSelector('layoutMode', t('layoutLabel'), { select: { mode: "dropdown", options: [{ label: t('combined'), value: 'combined' }, { label: t('split'), value: 'split' }, { label: t('mixed'), value: 'mixed' }] } }, c.layoutMode || 'combined'));
         secDisp.appendChild(row1);
         const row2 = document.createElement('div'); row2.className = 'row';
-        row2.appendChild(this._createSelector('zoomLevel', 'Zoom', { number: { min: 0.5, max: 2.0, step: 0.1, mode: "box" } }, c.zoomLevel ?? 1.0));
-        if(c.layoutMode !== 'combined') row2.appendChild(this._createSelector('gridColumns', 'Spalten', { number: { min: 1, max: 6, step: 1, mode: "box" } }, c.gridColumns ?? 1));
+        row2.appendChild(this._createSelector('zoomLevel', t('zoomLabel'), { number: { min: 0.5, max: 2.0, step: 0.1, mode: "box" } }, c.zoomLevel ?? 1.0));
+        if (c.layoutMode !== 'combined') row2.appendChild(this._createSelector('gridColumns', t('columnsLabel'), { number: { min: 1, max: 6, step: 1, mode: "box" } }, c.gridColumns ?? 1));
         secDisp.appendChild(row2);
-        secDisp.appendChild(this._createSelector('threshold', 'Referenzlinie (Wert)', { text: {} }, c.threshold || ''));
+        secDisp.appendChild(this._createSelector('threshold', t('thresholdLabel'), { text: {} }, c.threshold || ''));
         container.appendChild(secDisp);
 
         // --- SECTION 2: Zeitraum ---
         const secTime = document.createElement('div'); secTime.className = 'section';
-        secTime.innerHTML = `<div class="section-title">Zeitraum</div>`;
+        secTime.innerHTML = `<div class="section-title">${t('timePeriod')}</div>`;
         const rowTime = document.createElement('div'); rowTime.className = 'row';
-        rowTime.appendChild(this._createSelector('timeMode', 'Modus', { select: { mode: "dropdown", options: [ { label: 'Relativ', value: 'relative' }, { label: 'Fix (Kalender)', value: 'fixed' } ]}}, c.timeMode || 'relative'));
-        if(c.timeMode === 'relative') rowTime.appendChild(this._createSelector('timeSelect', 'Fenster', { select: { mode: "dropdown", options: [ { label: '1 Std', value: '1' }, { label: '3 Std', value: '3' }, { label: '6 Std', value: '6' }, { label: '12 Std', value: '12' }, { label: '24 Std', value: '24' }, { label: '48 Std', value: '48' }, { label: '7 Tage', value: '168' }, { label: '30 Tage', value: '720' }, { label: 'Jahr', value: '8760' } ]}}, c.timeSelect || '24'));
+        rowTime.appendChild(this._createSelector('timeMode', t('modeLabel'), { select: { mode: "dropdown", options: [{ label: t('relative'), value: 'relative' }, { label: t('calendar'), value: 'fixed' }] } }, c.timeMode || 'relative'));
+        if (c.timeMode === 'relative') rowTime.appendChild(this._createSelector('timeSelect', t('windowLabel'), { select: { mode: "dropdown", options: [{ label: t('lastHour'), value: '1' }, { label: t('last3Hours'), value: '3' }, { label: t('last6Hours'), value: '6' }, { label: t('last12Hours'), value: '12' }, { label: t('last24Hours'), value: '24' }, { label: t('last48Hours'), value: '48' }, { label: t('last7Days'), value: '168' }, { label: t('last30Days'), value: '720' }, { label: t('lastYear'), value: '8760' }] } }, c.timeSelect || '24'));
         secTime.appendChild(rowTime);
-        if(c.timeMode === 'fixed') {
+        if (c.timeMode === 'fixed') {
             const rowDates = document.createElement('div'); rowDates.className = 'row';
-            rowDates.appendChild(this._createSelector('dateStart', 'Start', { datetime: {} }, c.dateStart));
-            rowDates.appendChild(this._createSelector('dateEnd', 'Ende', { datetime: {} }, c.dateEnd));
+            rowDates.appendChild(this._createSelector('dateStart', t('startLabel'), { datetime: {} }, c.dateStart));
+            rowDates.appendChild(this._createSelector('dateEnd', t('endLabel'), { datetime: {} }, c.dateEnd));
             secTime.appendChild(rowDates);
         }
         container.appendChild(secTime);
 
         // --- SECTION 3: Optionen ---
         const secOpt = document.createElement('div'); secOpt.className = 'section';
-        secOpt.innerHTML = `<div class="section-title">Optionen</div>`;
+        secOpt.innerHTML = `<div class="section-title">${t('options')}</div>`;
         const rowOpt1 = document.createElement('div'); rowOpt1.className = 'row';
-        rowOpt1.appendChild(this._createSelector('fillArea', 'Fläche füllen', { boolean: {} }, c.fillArea === true));
-        rowOpt1.appendChild(this._createSelector('showStats', 'Statistiken', { boolean: {} }, c.showStats !== false));
+        rowOpt1.appendChild(this._createSelector('fillArea', t('fillAreaLabel'), { boolean: {} }, c.fillArea === true));
+        rowOpt1.appendChild(this._createSelector('showStats', t('statisticsLabel'), { boolean: {} }, c.showStats !== false));
         secOpt.appendChild(rowOpt1);
-        
+
         const rowOpt2 = document.createElement('div'); rowOpt2.className = 'row';
-        rowOpt2.appendChild(this._createSelector('showDonutSidebar', 'Donut Sidebar', { boolean: {} }, c.showDonutSidebar === true));
-        rowOpt2.appendChild(this._createSelector('autoScale', 'Auto-Scale', { boolean: {} }, c.autoScale === true));
+        rowOpt2.appendChild(this._createSelector('showDonutSidebar', t('donutSidebar'), { boolean: {} }, c.showDonutSidebar === true));
+        rowOpt2.appendChild(this._createSelector('autoScale', t('autoScale'), { boolean: {} }, c.autoScale === true));
         secOpt.appendChild(rowOpt2);
 
         const rowOpt3 = document.createElement('div'); rowOpt3.className = 'row';
-        rowOpt3.appendChild(this._createSelector('hideAxislabels', 'Achsen-Text aus', { boolean: {} }, c.hideAxislabels === true));
-        rowOpt3.appendChild(this._createSelector('hideGrid', 'Gitterlinien aus', { boolean: {} }, c.hideGrid === true));
+        rowOpt3.appendChild(this._createSelector('hideAxislabels', t('hideAxisLabels'), { boolean: {} }, c.hideAxislabels === true));
+        rowOpt3.appendChild(this._createSelector('hideGrid', t('hideGrid'), { boolean: {} }, c.hideGrid === true));
         secOpt.appendChild(rowOpt3);
 
-        if(c.chartType === 'bar' && c.layoutMode !== 'split') secOpt.appendChild(this._createSelector('stackedBars', 'Stacked', { boolean: {} }, c.stackedBars === true));
+        if (c.chartType === 'bar' && c.layoutMode !== 'split') secOpt.appendChild(this._createSelector('stackedBars', t('stackedBars'), { boolean: {} }, c.stackedBars === true));
         container.appendChild(secOpt);
 
         // --- SECTION 4: Sensoren ---
         const secSens = document.createElement('div'); secSens.className = 'section';
-        secSens.innerHTML = `<div class="section-title">Sensoren</div>`;
+        secSens.innerHTML = `<div class="section-title">${t('sensors')}</div>`;
         const sensorList = document.createElement('div'); sensorList.className = 'sensor-list';
-        
+
         (c.sensors || []).forEach((s, index) => {
             const row = document.createElement('div'); row.className = 'sensor-row';
 
@@ -249,12 +251,12 @@ class DetailedChartsPanelEditor extends HTMLElement {
             row.appendChild(colWrap);
 
             // 2. Entity Selector
-            const selContainer = document.createElement('div'); 
+            const selContainer = document.createElement('div');
             selContainer.className = 'selector-container';
             const entitySelector = document.createElement('ha-selector');
-            entitySelector.selector = { entity: {} }; 
+            entitySelector.selector = { entity: {} };
             entitySelector.value = s.entityId;
-            entitySelector.label = "Sensor";
+            entitySelector.label = t('sensorLabel');
             entitySelector.hass = this._hass;
             entitySelector.addEventListener('value-changed', (e) => this._updateSensor(index, 'entityId', e.detail.value));
             selContainer.appendChild(entitySelector);
@@ -264,7 +266,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
             const btnHide = document.createElement('button');
             btnHide.className = 'icon-btn';
             btnHide.innerHTML = s.hidden ? ICONS.eyeClosed : ICONS.eyeOpen;
-            btnHide.title = s.hidden ? "Einblenden" : "Ausblenden";
+            btnHide.title = s.hidden ? t('show') : t('hide');
             btnHide.onclick = () => this._updateSensor(index, 'hidden', !s.hidden);
             row.appendChild(btnHide);
 
@@ -272,7 +274,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
             const btnDel = document.createElement('button');
             btnDel.className = 'icon-btn delete';
             btnDel.innerHTML = ICONS.delete;
-            btnDel.title = "Entfernen";
+            btnDel.title = t('remove');
             btnDel.onclick = () => this._removeSensor(index);
             row.appendChild(btnDel);
 
@@ -282,7 +284,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
 
         const btnAdd = document.createElement('button');
         btnAdd.className = 'btn-add';
-        btnAdd.innerText = '+ SENSOR HINZUFÜGEN';
+        btnAdd.innerText = t('addSensorBtn');
         btnAdd.onclick = () => this._addSensor();
         secSens.appendChild(btnAdd);
 
@@ -293,27 +295,27 @@ class DetailedChartsPanelEditor extends HTMLElement {
         if (!this._rendered || this._mode !== 'yaml') return;
         const container = this.shadowRoot.getElementById('yaml-container');
         container.innerHTML = '';
-        
+
         let val = '';
         if (window.jsyaml && this._config) {
             const dump = { ...this._config };
             delete dump.type;
             val = window.jsyaml.dump(dump);
         }
-        
+
         const editor = document.createElement('ha-code-editor');
         editor.mode = 'yaml';
         editor.autofocus = true;
         editor.value = val;
         editor.addEventListener('value-changed', (e) => {
-            if(!window.jsyaml) return;
+            if (!window.jsyaml) return;
             try {
                 const parsed = window.jsyaml.load(e.detail.value);
-                if(parsed) {
+                if (parsed) {
                     this._config = { ...parsed, type: 'custom:detailed-charts-panel' };
                     fireEvent(this, 'config-changed', { config: this._config });
                 }
-            } catch(err){}
+            } catch (err) { }
         });
         container.appendChild(editor);
     }
@@ -321,14 +323,14 @@ class DetailedChartsPanelEditor extends HTMLElement {
     _updateSensor(index, key, val) {
         const sensors = [...(this._config.sensors || [])];
         const s = { ...sensors[index], [key]: val };
-        if(key==='hidden' && val===false) delete s.hidden;
+        if (key === 'hidden' && val === false) delete s.hidden;
         sensors[index] = s;
         this._configChanged({ ...this._config, sensors });
     }
 
     _addSensor() {
         const sensors = [...(this._config.sensors || [])];
-        sensors.push({ entityId: '', color: '#' + Math.floor(Math.random()*16777215).toString(16) });
+        sensors.push({ entityId: '', color: '#' + Math.floor(Math.random() * 16777215).toString(16) });
         this._configChanged({ ...this._config, sensors });
     }
 
@@ -339,4 +341,6 @@ class DetailedChartsPanelEditor extends HTMLElement {
     }
 }
 
-customElements.define('detailed-charts-panel-editor', DetailedChartsPanelEditor);
+if (!customElements.get('detailed-charts-panel-editor')) {
+    customElements.define('detailed-charts-panel-editor', DetailedChartsPanelEditor);
+}

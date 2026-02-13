@@ -26,7 +26,9 @@ Wenn euch das Panel gefällt, würde ich mich sehr über eine Sternebewertung �
 ## Features
 
 - **📉 Interaktive Charts:** Stufenloser Zoom & Pan (Touch & Mausrad) mit automatischem Nachladen der Daten.
+- **📉 Vorjahresvergleich:** Vergleiche aktuelle Daten direkt mit dem Vorjahr (als graue Hinterlegung).
 - **📉 Short-Term & Long-Term Charts:** Unterstütz die Kurz- und Langezeitedaten-Auswertung.
+- **🌍 Mehrsprachig:** Komplette Übersetzung in Deutsch und Englisch.
 - **✨ Panel Modus & Card Modus:** Zwei Möglichkeiten der Betrachtung, komplettes Panel oder als Dashboard Card.
 - **⚡ Auto-Scale (W ➡ kW):** Rechnet Werte von `W`/`Wh` automatisch in `kW`/`kWh` um – kein Kopfrechnen mehr!
 - **🍩 Donut Sidebar:** Optionale Seitenleiste für die prozentuale Verteilung (ideal für Stromverbrauch).
@@ -85,13 +87,16 @@ Wenn euch das Panel gefällt, würde ich mich sehr über eine Sternebewertung �
     * Kopiere **alle heruntergeladenen Dateien** in diesen neuen Ordner. Deine Ordnerstruktur sollte wie folgt aussehen:
         ```
         /config/www/community/detailed-charts-panel/detailed-charts-panel.js
-		/config/www/community/detailed-charts-panel/detailed-charts-panel-logic.js
-		/config/www/community/detailed-charts-panel/detailed-charts-panel-function.js
-		/config/www/community/detailed-charts-panel/detailed-charts-panel-editor.js
-		/config/www/detailed-charts-views.js
-		/config/www/community/detailed-charts-panel/chart.umd.min.js
-		/config/www/community/detailed-charts-panel/hammer.min.js
-		/config/www/community/detailed-charts-panel/chartjs-plugin-zoom.min.js
+        /config/www/community/detailed-charts-panel/detailed-charts-panel-logic.js
+        /config/www/community/detailed-charts-panel/detailed-charts-panel-function.js
+        /config/www/community/detailed-charts-panel/detailed-charts-panel-editor.js
+        /config/www/community/detailed-charts-panel/detailed-charts-panel-langs.js
+        /config/www/detailed-charts-views.js
+        /config/www/community/detailed-charts-panel/lang-de.js
+        /config/www/community/detailed-charts-panel/lang-en.js
+        /config/www/community/detailed-charts-panel/chart.umd.min.js
+        /config/www/community/detailed-charts-panel/hammer.min.js
+        /config/www/community/detailed-charts-panel/chartjs-plugin-zoom.min.js
         ```
 
 3.  **Ressource zu Home Assistant hinzufügen:**

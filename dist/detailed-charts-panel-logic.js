@@ -1,7 +1,7 @@
 /* detailed-charts-panel-logic.js */
 console.log(
-  "%c📉 DetailedChartsPanelLogic: v_2.5 ready",
-  "background: #5596c5; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold;"
+    "%c📉 DetailedChartsPanelLogic: v_2.6 ready",
+    "background: #5596c5; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold;"
 );
 
 import {
@@ -16,6 +16,7 @@ import {
     getCombinedDoughnutHTML,
     getSideBySideHTML
 } from './detailed-charts-panel-function.js';
+import { t } from './detailed-charts-panel-langs.js';
 
 export class DetailedChartsLogic extends HTMLElement {
     constructor() {
@@ -57,7 +58,7 @@ export class DetailedChartsLogic extends HTMLElement {
             const script = document.createElement('script');
             script.src = src;
             script.onload = () => resolve();
-            script.onerror = () => reject(new Error(`Fehler bei ${src}`));
+            script.onerror = () => reject(new Error(t('criticalError') + src));
             this.content.appendChild(script);
         });
         const isModernChart = window.Chart && typeof window.Chart.getChart === 'function';
@@ -90,10 +91,10 @@ export class DetailedChartsLogic extends HTMLElement {
         Promise.all([p1, p2, p3, p4, p5])
             .then(() => loadScript('/local/community/detailed-charts-panel/chartjs-plugin-zoom.min.js'))
             .then(() => {
-				console.log(
-				  "%c📉 DetailedChartsPanel-Libs ready",
-				  "background: #5596c5; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold;"
-				);
+                console.log(
+                    "%c📉 DetailedChartsPanel-Libs ready",
+                    "background: #5596c5; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold;"
+                );
                 this.libsLoaded = true;
                 if (this._config) {
                     this.loadHistory();
@@ -101,7 +102,7 @@ export class DetailedChartsLogic extends HTMLElement {
                     this.loadHistory();
                 }
             })
-            .catch(err => { console.error(err); this.showError("Fehler beim Laden der Libs."); });
+            .catch(err => { console.error(err); this.showError(t('error') + ": Libs loading failed"); });
     }
 
     showError(text) {
@@ -205,12 +206,13 @@ export class DetailedChartsLogic extends HTMLElement {
             const curr = values.length ? values[values.length - 1] : 0;
 
             let displayVal = curr.toFixed(precision);
-            let displayLabel = "AKTUELL";
+
+            let displayLabel = t('current');
             if (unit && (unit.includes("Wh") || unit.includes("kWh"))) {
                 const hours = (endTime - startTime) / 3600000;
                 const isAggregated = (type === 'bar' && hours > 24);
                 displayVal = calculateEnergySum(values, isAggregated).toFixed(precision);
-                displayLabel = "SUMME";
+                displayLabel = t('sum');
             }
             return { min: min.toFixed(precision), max: max.toFixed(precision), avg: avg.toFixed(precision), curr: displayVal, label: displayLabel };
         };
@@ -313,8 +315,42 @@ export class DetailedChartsLogic extends HTMLElement {
                     if (unit === 'Wh' || unit === 'kWh') points = points.map(p => ({ x: p.x, y: p.y / 1000 }));
                 }
 
-                // Update Chart Data & Scales
-                chart.data.datasets[0].data = points;
+                // Update Chart Data (Smart Dataset finding)
+                const mainDsIndex = chart.data.datasets.findIndex(d => d._entityId === sensorConfig.entityId);
+                if (mainDsIndex >= 0) chart.data.datasets[mainDsIndex].data = points;
+
+                // Update Previous Year Data if active
+                if (this.compareYear) {
+                    let prevPoints = [];
+                    // Fetch if needed (only if we have a range change, which we do here)
+                    const stPrev = new Date(startTime.getTime() - 365 * 24 * 60 * 60 * 1000);
+                    const etPrev = new Date(endTime.getTime() - 365 * 24 * 60 * 60 * 1000);
+                    // We need to fetch it because this function loads NEW data for a NEW range
+                    // But we can't use await inside this sync block easily? 
+                    // Wait, loadSingleSensorHistory IS async. Good.
+                    const prevData = await this.fetchDataSmart(sensorConfig.entityId, stPrev, etPrev);
+
+                    // Update Cache 
+                    if (this._sensorDataCache[cacheIndex]) {
+                        this._sensorDataCache[cacheIndex].prevData = prevData;
+                    }
+
+                    // Process
+                    const shiftTime = 365 * 24 * 60 * 60 * 1000;
+                    const rawPrevPoints = processData(prevData, currentType, unit, new Date(startTime.getTime() - shiftTime));
+                    prevPoints = rawPrevPoints.map(p => ({ x: p.x + shiftTime, y: p.y }));
+
+                    if (this.autoScale) {
+                        if (unit === 'W' || unit === 'kW') prevPoints = prevPoints.map(p => ({ x: p.x, y: p.y / 1000 }));
+                        if (unit === 'Wh' || unit === 'kWh') prevPoints = prevPoints.map(p => ({ x: p.x, y: p.y / 1000 }));
+                    }
+
+                    const prevDsIndex = chart.data.datasets.findIndex(d => d.label === t('compareYear'));
+                    if (prevDsIndex >= 0) {
+                        chart.data.datasets[prevDsIndex].data = prevPoints;
+                    }
+                }
+
                 chart.options.scales.x.min = startTime.getTime();
                 chart.options.scales.x.max = endTime.getTime();
                 chart.update('none'); // Prevent flicker
@@ -333,12 +369,13 @@ export class DetailedChartsLogic extends HTMLElement {
                     if (footer) {
                         const precision = this._hass.states[sensorConfig.entityId]?.attributes?.display_precision ?? 2;
                         let displayVal = curr.toFixed(precision);
-                        let displayLabel = "Aktuell";
+
+                        let displayLabel = t('current');
                         if (unit && (unit.includes("Wh") || unit.includes("kWh"))) {
                             const hours = (endTime - startTime) / 3600000;
                             const isAggregated = (currentType === 'bar' && hours > 24);
                             displayVal = calculateEnergySum(values, isAggregated).toFixed(precision);
-                            displayLabel = "Summe";
+                            displayLabel = t('sum');
                         }
 
                         footer.innerHTML = getSplitStatsHTML(
@@ -370,8 +407,8 @@ export class DetailedChartsLogic extends HTMLElement {
         let st, et, dh;
         const now = new Date();
         if (this.timeMode === 'relative') { dh = parseInt(this.content.querySelector('#time-select').value); et = now; st = new Date(now.getTime() - (dh * 3600000)); }
-        else { st = new Date(this.content.querySelector('#date-start').value); et = new Date(this.content.querySelector('#date-end').value); dh = (et - st) / 3600000; if (st >= et) { this.showError("Enddatum muss nach Startdatum liegen."); return; } }
-        if (chartType === 'scatter' && dh > 24.1) { this.showError("Scatter nur <= 24h."); return; }
+        else { st = new Date(this.content.querySelector('#date-start').value); et = new Date(this.content.querySelector('#date-end').value); dh = (et - st) / 3600000; if (st >= et) { this.showError(t('endDateAfterStart')); return; } }
+        if (chartType === 'scatter' && dh > 24.1) { this.showError(t('scatterOnly24h')); return; }
         this._globalStartTime = st;
         this._globalEndTime = et;
         if (loader) loader.style.display = 'block';
@@ -379,10 +416,29 @@ export class DetailedChartsLogic extends HTMLElement {
         try {
             const realSensors = this.selectedSensors.filter(s => !s.isCard);
             const promises = realSensors.map(s => this.fetchDataSmart(s.entityId, st, et));
+
+            // Previous Year Fetching
+            let prevPromises = [];
+            if (this.compareYear) {
+                // Shift dates back by 365 days
+                const stPrev = new Date(st.getTime() - 365 * 24 * 60 * 60 * 1000);
+                const etPrev = new Date(et.getTime() - 365 * 24 * 60 * 60 * 1000);
+                prevPromises = realSensors.map(s => this.fetchDataSmart(s.entityId, stPrev, etPrev));
+            }
+
             const results = await Promise.all(promises);
-            results.forEach(res => { this._sensorDataCache.push({ data: res, startTime: st, endTime: et }); });
+            const prevResults = this.compareYear ? await Promise.all(prevPromises) : [];
+
+            results.forEach((res, i) => {
+                this._sensorDataCache.push({
+                    data: res,
+                    prevData: prevResults[i] || [], // Store previous year data
+                    startTime: st,
+                    endTime: et
+                });
+            });
             this.updateChartFromCache();
-        } catch (e) { console.error(e); this.showError(`Fehler: ${e.message}`); } finally { if (loader) loader.style.display = 'none'; }
+        } catch (e) { console.error(e); this.showError(t('criticalError') + e.message); } finally { if (loader) loader.style.display = 'none'; }
     }
 
     updateChartFromCache() {
@@ -604,12 +660,12 @@ export class DetailedChartsLogic extends HTMLElement {
             const min = Math.min(...values); const max = Math.max(...values);
             const avg = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(precision);
             const curr = values[values.length - 1].toFixed(precision);
-            let displayVal = curr; let displayLabel = "AKTUELL";
+            let displayVal = curr; let displayLabel = t('current');
             if (unit && (unit.includes("Wh") || unit.includes("kWh"))) {
                 const hours = (et - st) / 3600000;
                 const isAggregated = (effectiveType === 'bar' && hours > 24);
                 displayVal = calculateEnergySum(values, isAggregated).toFixed(precision);
-                displayLabel = "SUMME";
+                displayLabel = t('sum');
             }
             allStatsHTML += createStatsCard(conf, min.toFixed(precision), avg, max.toFixed(precision), displayVal, unit, displayLabel);
 
@@ -766,6 +822,27 @@ export class DetailedChartsLogic extends HTMLElement {
             if (currentType === 'stepped' || isBinary) { currentType = 'line'; isStepped = true; }
 
             let points = processData(sensorDataObj.data, currentType, unit, chartSt);
+
+            // Previous Year Logic (Visuals)
+            let prevPoints = [];
+            if (this.compareYear && sensorDataObj.prevData && sensorDataObj.prevData.length > 0) {
+                // We need to shift the X timestamps of prevData forward by 365 days to match current chart
+                // NOTE: This simple shift might not account for leap years perfectly, but is usually sufficient for visuals.
+                const shiftTime = 365 * 24 * 60 * 60 * 1000;
+                // Process raw prev data first
+                const rawPrevPoints = processData(sensorDataObj.prevData, currentType, unit, new Date(chartSt.getTime() - shiftTime));
+
+                prevPoints = rawPrevPoints.map(p => ({
+                    x: p.x + shiftTime,
+                    y: p.y
+                }));
+
+                if (this.autoScale) {
+                    if (unit === 'W' || unit === 'kW') prevPoints = prevPoints.map(p => ({ x: p.x, y: p.y / 1000 }));
+                    else if (unit === 'Wh' || unit === 'kWh') prevPoints = prevPoints.map(p => ({ x: p.x, y: p.y / 1000 }));
+                }
+            }
+
             if (this.autoScale) {
                 if (unit === 'W') { points = points.map(p => ({ x: p.x, y: p.y / 1000 })); unit = 'kW'; }
                 else if (unit === 'Wh') { points = points.map(p => ({ x: p.x, y: p.y / 1000 })); unit = 'kWh'; }
@@ -776,11 +853,11 @@ export class DetailedChartsLogic extends HTMLElement {
             const min = Math.min(...values); const max = Math.max(...values);
             const avg = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(precision);
             const curr = values[values.length - 1].toFixed(precision);
-            let displayVal = curr; let displayLabel = "Aktuell";
+            let displayVal = curr; let displayLabel = t('current');
             if (unit && (unit.includes("Wh") || unit.includes("kWh"))) {
                 const isAggregated = (currentType === 'bar' && hours > 24);
                 displayVal = calculateEnergySum(values, isAggregated).toFixed(precision);
-                displayLabel = "Summe";
+                displayLabel = t('sum');
             }
 
             const footer = card.querySelector(`#footer-${idx}`);
@@ -810,6 +887,20 @@ export class DetailedChartsLogic extends HTMLElement {
                 const chartIdx = this.chartInstances.findIndex(c => c.canvas === card.querySelector('canvas'));
                 if (chartIdx > -1) { this.chartInstances[chartIdx].destroy(); this.chartInstances.splice(chartIdx, 1); }
 
+
+
+                // Re-Process Previous Data if needed
+                let prevPoints = [];
+                if (this.compareYear && sensorDataObj.prevData && sensorDataObj.prevData.length > 0) {
+                    const shiftTime = 365 * 24 * 60 * 60 * 1000;
+                    const rawPrevPoints = processData(sensorDataObj.prevData, newType, unit, new Date(sensorDataObj.startTime.getTime() - shiftTime));
+                    prevPoints = rawPrevPoints.map(p => ({ x: p.x + shiftTime, y: p.y }));
+                    if (this.autoScale) {
+                        if (unit === 'W' || unit === 'kW') prevPoints = prevPoints.map(p => ({ x: p.x, y: p.y / 1000 }));
+                        if (unit === 'Wh' || unit === 'kWh') prevPoints = prevPoints.map(p => ({ x: p.x, y: p.y / 1000 }));
+                    }
+                }
+
                 let newPoints = processData(sensorDataObj.data, newType, unit, sensorDataObj.startTime);
                 if (this.autoScale) {
                     if (unit === 'W' || unit === 'kW') newPoints = newPoints.map(p => ({ x: p.x, y: p.y / 1000 }));
@@ -825,14 +916,43 @@ export class DetailedChartsLogic extends HTMLElement {
                 }
                 const pRadius = (newType === 'scatter') ? 4 : 0;
                 // --- UPDATED: Use alias ---
+
+                let datasets = [];
+
+                // Add Previous Year Dataset FIRST (background)
+                if (prevPoints.length > 0 && newType !== 'scatter' && newType !== 'doughnut') {
+                    datasets.push({
+                        label: t('compareYear'), // Translation key
+                        data: prevPoints,
+                        borderColor: 'rgba(128,128,128, 0.5)',
+                        backgroundColor: 'rgba(128,128,128, 0.3)',
+                        borderWidth: (newType === 'bar') ? 0 : 1.5,
+                        fill: (newType === 'line'),
+                        pointRadius: 0,
+                        tension: 0.4,
+                        type: newType,
+                        categoryPercentage: 0.98, barPercentage: 0.98,
+                        grouped: false, // Ensure overlap for bars
+                        order: 10 // Higher order draws earlier? No, check Chart.js specs. Actually depends on array order usually, but let's see. 
+                        // Chart.js: "Loops through the datasets ... in the order they are configured"
+                        // So pushing this first is correct for background.
+                    });
+                }
+
+                // --- UPDATED: Use alias ---
                 const dataset = {
                     label: conf.alias || cleanName(conf.entityId),
                     _entityId: conf.entityId,
                     data: newPoints, borderColor: conf.color, backgroundColor: bg,
                     fill: this.fillArea, borderWidth: (newType === 'bar') ? 0 : 2.5, categoryPercentage: 0.98, barPercentage: 0.98,
-                    pointRadius: pRadius, pointHoverRadius: 6, pointBackgroundColor: conf.color, tension: this.chartTension / 10, stepped: isStepped
+                    pointRadius: pRadius, pointHoverRadius: 6, pointBackgroundColor: conf.color, tension: this.chartTension / 10, stepped: isStepped,
+                    order: 0,
+                    grouped: false // To overlap with prev year
                 };
-                const newChart = this.createChartInstance(ctx, newType, [dataset], sensorDataObj.startTime, sensorDataObj.endTime, false, idx, true);
+
+                datasets.push(dataset);
+
+                const newChart = this.createChartInstance(ctx, newType, datasets, sensorDataObj.startTime, sensorDataObj.endTime, false, idx, true, false, true);
 
                 // Toggle Values Btn Visibility and restore showValues state
                 const vBtn = card.querySelector(`#values-btn-${idx}`);
@@ -891,16 +1011,43 @@ export class DetailedChartsLogic extends HTMLElement {
             }
 
             // --- UPDATED: Use alias ---
-            const dataset = {
+            const mainDataset = {
                 label: conf.alias || cleanName(conf.entityId),
                 _entityId: conf.entityId,
                 data: points, borderColor: conf.color, backgroundColor: bg,
                 fill: (isBinary) ? true : this.fillArea,
                 borderWidth: (isBinary) ? 1 : (currentType === 'bar' ? 0 : 2.5),
                 pointRadius: (currentType === 'scatter' ? 4 : 0),
-                tension: this.chartTension / 10, stepped: isStepped, spanGaps: true
+                tension: this.chartTension / 10, stepped: isStepped, spanGaps: true,
+                order: 0,
+                grouped: false
             };
-            const chartInstance = this.createChartInstance(ctx, currentType, [dataset], chartSt, chartEt, false, idx, true);
+
+            const datasets = [];
+
+            // Add Previous Year Dataset FIRST
+            if (prevPoints.length > 0 && currentType !== 'scatter' && currentType !== 'doughnut') {
+                datasets.push({
+                    label: t('compareYear'),
+                    data: prevPoints,
+                    // Styling: Grey bars or dashed gray line
+                    borderColor: 'rgba(128,128,128, 0.5)',
+                    backgroundColor: 'rgba(128,128,128, 0.3)',
+                    borderWidth: (currentType === 'bar') ? 0 : 1.5,
+                    borderDash: (currentType === 'line') ? [5, 5] : [],
+                    fill: (currentType === 'line'),
+                    pointRadius: 0,
+                    tension: 0.4,
+                    type: currentType,
+                    categoryPercentage: 0.98, barPercentage: 0.98,
+                    grouped: false,
+                    order: 10
+                });
+            }
+
+            datasets.push(mainDataset);
+
+            const chartInstance = this.createChartInstance(ctx, currentType, datasets, chartSt, chartEt, false, idx, true, false, true);
 
             // Restore showValues state from saved config
             if (conf.showValues && currentType === 'bar' && chartInstance) {
@@ -910,7 +1057,7 @@ export class DetailedChartsLogic extends HTMLElement {
         });
     }
 
-    createChartInstance(ctx, type, datasets, startTime, endTime, showZoomBtn, sensorIndex, hideLegend, hasSecondaryAxis) {
+    createChartInstance(ctx, type, datasets, startTime, endTime, showZoomBtn, sensorIndex, hideLegend, hasSecondaryAxis, forceNoStack = false) {
         const styles = getComputedStyle(this);
         const textColor = styles.getPropertyValue('--primary-text-color').trim();
         const gridColor = styles.getPropertyValue('--divider-color').trim();
@@ -960,11 +1107,11 @@ export class DetailedChartsLogic extends HTMLElement {
                 const ctx = chart.ctx;
                 const { left, right, top, bottom } = chart.chartArea;
 
-                // Clip to chart area to prevent values from rendering outside when scrolling
+                // Removed clipping to allow values to overflow slightly into padding
                 ctx.save();
                 ctx.beginPath();
-                ctx.rect(left, top, right - left, bottom - top);
-                ctx.clip();
+                // ctx.rect(left, top, right - left, bottom - top);
+                // ctx.clip();
 
                 chart.data.datasets.forEach((dataset, i) => {
                     if (chart.isDatasetVisible(i)) {
@@ -1071,7 +1218,19 @@ export class DetailedChartsLogic extends HTMLElement {
                                 if (this.autoScale) { if (unit === 'W') unit = 'kW'; if (unit === 'Wh') unit = 'kWh'; }
 
                                 const valStr = val.toLocaleString(undefined, { minimumFractionDigits: precision, maximumFractionDigits: precision });
-                                return `\u00A0\u00A0${lbl}: ${valStr} ${unit}`;
+                                // valStr already declared above, removing duplicate
+
+
+                                // FIX: Tooltip Date for Previous Year
+                                let lblStr = lbl;
+                                if (lbl === t('compareYear')) {
+                                    // Calculate original date (approx -365 days)
+                                    // precise method: get original timestamp if possible, or just subtract
+                                    const origDate = new Date(c.parsed.x - 365 * 24 * 60 * 60 * 1000);
+                                    lblStr += ` (${origDate.getFullYear()})`;
+                                }
+
+                                return `\u00A0\u00A0${lblStr}: ${valStr} ${unit}`;
                             }
                         }
                     },
@@ -1090,12 +1249,12 @@ export class DetailedChartsLogic extends HTMLElement {
                 },
                 scales: {
                     x: {
-                        type: 'linear', position: 'bottom', min: startTime.getTime(), max: endTime.getTime(), stacked: this.stackedBars, offset: false,
+                        type: 'linear', position: 'bottom', min: startTime.getTime(), max: endTime.getTime(), stacked: forceNoStack ? false : this.stackedBars, offset: false,
                         ticks: { display: !this.hideAxislabels, color: secondaryText, maxTicksLimit: 8, callback: function (value) { const d = new Date(value); const diffHours = (endTime - startTime) / (1000 * 60 * 60); if (diffHours > 48) return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }); return d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }); } },
                         grid: { color: gridColor, drawBorder: false, display: !this.hideGrid }
                     },
                     y: {
-                        type: 'linear', position: 'left', stacked: this.stackedBars, grace: '5%',
+                        type: 'linear', position: 'left', stacked: forceNoStack ? false : this.stackedBars, grace: '15%',
                         ticks: { display: !this.hideAxislabels, color: secondaryText },
                         grid: { color: gridColor, borderDash: [5, 5], display: !this.hideGrid }
                     },

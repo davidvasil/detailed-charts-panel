@@ -32,7 +32,7 @@ export const sharedViews = [
              { "entityId": "sensor.solar_yield", "color": "#ff9800" }
         ],
         "timeMode": "relative",
-        "timeSelect": "720", // Letzte 30 Tage
+        "timeSelect": "720",
         "fillArea": true
     }
 ];

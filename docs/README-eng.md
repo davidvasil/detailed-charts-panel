@@ -24,7 +24,9 @@ If you like this panel, I would be very happy about a star rating ⭐. 🤗
 ## Features
 
 - **📉 Interactive Charts:** Smooth zoom & pan (touch & mouse wheel) with automatic data reloading.
+- **📉 Previous Year Comparison:** Compare current data directly with the previous year.
 - **📉 Short-Term & Long-Term Charts:** Supports short-term and long-term data analysis.
+- **🌍 Multilingual:** Full translation support for English and German.
 - **✨ Panel Mode & Card Mode:** Two viewing options — full panel view or as a dashboard card.
 - **⚡ Auto-Scale (W ➡ kW):** Automatically converts values from `W`/`Wh` to `kW`/`kWh` — no mental math required!
 - **🍩 Donut Sidebar:** Optional sidebar showing percentage distribution (ideal for power consumption).
@@ -82,13 +84,16 @@ Open HACS in Home Assistant.
     * Copy **all downloaded files** into this new folder. Your folder structure should look like this:
         ```
         /config/www/community/detailed-charts-panel/detailed-charts-panel.js
-		/config/www/community/detailed-charts-panel/detailed-charts-panel-logic.js
-		/config/www/community/detailed-charts-panel/detailed-charts-panel-function.js
-		/config/www/community/detailed-charts-panel/detailed-charts-panel-editor.js
+        /config/www/community/detailed-charts-panel/detailed-charts-panel-logic.js
+        /config/www/community/detailed-charts-panel/detailed-charts-panel-function.js
+        /config/www/community/detailed-charts-panel/detailed-charts-panel-editor.js
+        /config/www/community/detailed-charts-panel/detailed-charts-panel-langs.js
         /config/www/detailed-charts-views.js
-		/config/www/community/detailed-charts-panel/chart.umd.min.js
-		/config/www/community/detailed-charts-panel/hammer.min.js
-		/config/www/community/detailed-charts-panel/chartjs-plugin-zoom.min.js
+        /config/www/community/detailed-charts-panel/lang-de.js
+        /config/www/community/detailed-charts-panel/lang-en.js
+        /config/www/community/detailed-charts-panel/chart.umd.min.js
+        /config/www/community/detailed-charts-panel/hammer.min.js
+        /config/www/community/detailed-charts-panel/chartjs-plugin-zoom.min.js
         ```
 
 4.  **Add Resource to Home Assistant:**

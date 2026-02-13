@@ -1,7 +1,7 @@
 /* detailed-charts-panel.js */
 console.log(
-  "%c📉️ DetailedChartsPanel: v_2.5 ready",
-  "background: #5596c5; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold;"
+    "%c📉️ DetailedChartsPanel: v_2.6 ready",
+    "background: #5596c5; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold;"
 );
 
 import {
@@ -11,6 +11,7 @@ import {
 } from './detailed-charts-panel-function.js';
 
 import { DetailedChartsLogic } from './detailed-charts-panel-logic.js';
+import { t, setLanguage } from './detailed-charts-panel-langs.js';
 
 class DetailedChartsPanel extends DetailedChartsLogic {
     constructor() {
@@ -32,7 +33,9 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             timeMode: 'relative',
             timeSelect: '24',
             layoutMode: 'combined',
-            fillArea: false
+            layoutMode: 'combined',
+            fillArea: false,
+            compareYear: false
         };
     }
 
@@ -125,7 +128,9 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
             updateInput('#stats-switch', this.showStats, true);
             updateInput('#donut-switch', this.showDonutSidebar, true);
+            updateInput('#donut-switch', this.showDonutSidebar, true);
             updateInput('#autoscale-switch', this.autoScale, true);
+            updateInput('#compare-year-switch', this.compareYear, true);
             updateInput('#threshold-input', this.thresholdValue);
             updateInput('#threshold2-input', this.thresholdValue2);
 
@@ -137,7 +142,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
             // FIX: If config changed (Editor), sync to localStorage to prevent loadSettings from reverting it
             if (oldConfig) {
-                const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'threshold', 'threshold2', 'hideAxislabels', 'hideGrid'];
+                const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'compareYear', 'threshold', 'threshold2', 'hideAxislabels', 'hideGrid'];
                 let hasChanged = keysToCheck.some(k => oldConfig[k] !== config[k]);
                 if (!hasChanged) {
                     if (JSON.stringify(config.sensors) !== JSON.stringify(oldConfig.sensors)) hasChanged = true;
@@ -172,6 +177,9 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
     set hass(hass) {
         this._hass = hass;
+        if (hass && hass.language) {
+            setLanguage(hass.language);
+        }
         if (!this.content) {
             try {
                 this.initUI();
@@ -179,7 +187,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 if (!this._config) this.loadSettings();
             } catch (e) {
                 console.error("Critical Error", e);
-                this.innerHTML = `<div style="color:red;padding:20px;">Fehler: ${e.message}</div>`;
+                this.innerHTML = `<div style="color:red;padding:20px;">${t('criticalError')}${e.message}</div>`;
             }
         }
 
@@ -278,7 +286,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 const successful = document.execCommand('copy');
                 if (successful) showSuccess(); else throw new Error("execCommand failed");
             } catch (err) {
-                navigator.clipboard.writeText(txt.value).then(() => showSuccess()).catch(() => alert("Kopieren fehlgeschlagen."));
+                navigator.clipboard.writeText(txt.value).then(() => showSuccess()).catch(() => alert(t('copyFailed')));
             }
         };
 
@@ -302,7 +310,8 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         const inputs = [
             '#chart-type', '#time-select', '#date-start', '#date-end',
             '#fill-switch', '#layout-select', '#stacked-switch',
-            '#stats-switch', '#donut-switch', '#autoscale-switch',
+            '#fill-switch', '#layout-select', '#stacked-switch',
+            '#stats-switch', '#donut-switch', '#autoscale-switch', '#compare-year-switch',
             '#hide-axis-switch', '#hide-grid-switch'
         ];
         inputs.forEach(id => {
@@ -327,7 +336,16 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 if (id === '#stacked-switch') this.stackedBars = e.target.checked;
                 if (id === '#stats-switch') this.showStats = e.target.checked;
                 if (id === '#donut-switch') this.showDonutSidebar = e.target.checked;
+                if (id === '#donut-switch') this.showDonutSidebar = e.target.checked;
                 if (id === '#autoscale-switch') this.autoScale = e.target.checked;
+                if (id === '#compare-year-switch') {
+                    this.compareYear = e.target.checked;
+                    // Reload data if enabled to fetch previous year
+                    if (this.compareYear) {
+                        this.loadHistory();
+                        return; // loadHistory updates charts
+                    }
+                }
                 if (id === '#hide-axis-switch') this.hideAxislabels = e.target.checked;
                 if (id === '#hide-grid-switch') this.hideGrid = e.target.checked;
 
@@ -412,7 +430,13 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
     toggleSidebar() {
         this.sidebarCollapsed = !this.sidebarCollapsed;
+        this._applySidebarState();
+        this.saveSettings();
+    }
+
+    _applySidebarState() {
         const sidebar = this.shadowRoot.getElementById('sidebar-panel');
+        if (!sidebar) return;
         if (this.sidebarCollapsed) {
             sidebar.classList.add('collapsed');
             this.classList.add('sidebar-hidden');
@@ -466,7 +490,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
     }
 
     copyToClipboard() {
-        if (this.selectedSensors.length === 0) { alert("Keine Sensoren ausgewählt."); return; }
+        if (this.selectedSensors.length === 0) { alert(t('noSensorsSelected')); return; }
         this.fillArea = this.content.querySelector('#fill-switch').checked;
 
         let yaml = `type: custom:detailed-charts-panel\n`;
@@ -484,6 +508,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         yaml += `showDonutSidebar: ${this.showDonutSidebar}\n`;
         yaml += `zoomLevel: ${this.zoomLevel}\n`;
         yaml += `autoScale: ${this.autoScale}\n`;
+        yaml += `compareYear: ${this.compareYear}\n`;
         yaml += `hideAxislabels: ${this.hideAxislabels}\n`;
         yaml += `hideGrid: ${this.hideGrid}\n`;
         yaml += `chartTension: ${this.chartTension}\n`;
@@ -511,7 +536,9 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             layoutMode: this.layoutMode,
             gridColumns: this.gridColumns,
             zoomLevel: this.zoomLevel,
+            zoomLevel: this.zoomLevel,
             autoScale: this.autoScale,
+            compareYear: this.compareYear,
             threshold: this.thresholdValue,
             threshold2: this.thresholdValue2,
             hideAxislabels: this.hideAxislabels,
@@ -572,8 +599,8 @@ class DetailedChartsPanel extends DetailedChartsLogic {
     }
 
     saveCurrentView() {
-        if (this.selectedSensors.length === 0) { alert("Bitte erst Sensoren hinzufügen."); return; }
-        const name = prompt("Name für diese LOKALE Ansicht:", "");
+        if (this.selectedSensors.length === 0) { alert(t('addSensorsFirst')); return; }
+        const name = prompt(t('viewNamePrompt'), "");
         if (!name) return;
 
         let sensorsToSave = JSON.parse(JSON.stringify(this.selectedSensors));
@@ -606,7 +633,9 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             showStats: this.showStats,
             showDonutSidebar: this.showDonutSidebar,
             zoomLevel: this.zoomLevel,
+            zoomLevel: this.zoomLevel,
             autoScale: this.autoScale,
+            compareYear: this.compareYear,
             threshold: this.thresholdValue,
             threshold2: this.thresholdValue2,
             hideAxislabels: this.hideAxislabels,
@@ -621,12 +650,12 @@ class DetailedChartsPanel extends DetailedChartsLogic {
     deleteSavedView(index, event) {
         if (event) event.stopPropagation();
         if (index < this.sharedViews.length) {
-            alert("Globale Ansichten können nur in der JS Datei gelöscht werden.");
+            alert(t('globalViewCantDelete'));
             return;
         }
 
         const localIndex = index - this.sharedViews.length;
-        if (!confirm("Ansicht wirklich löschen?")) return;
+        if (!confirm(t('deleteViewConfirm'))) return;
         this.savedViews.splice(localIndex, 1);
         localStorage.setItem(this.STORAGE_KEY_VIEWS, JSON.stringify(this.savedViews));
         this.renderSavedViewsUI();
@@ -677,6 +706,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         this.content.querySelector('#threshold-input').value = this.thresholdValue;
         if (this.content.querySelector('#threshold2-input')) this.content.querySelector('#threshold2-input').value = this.thresholdValue2;
         this.content.querySelector('#autoscale-switch').checked = this.autoScale;
+        this.content.querySelector('#compare-year-switch').checked = this.compareYear;
         this.content.querySelector('#hide-axis-switch').checked = this.hideAxislabels;
         this.content.querySelector('#hide-grid-switch').checked = this.hideGrid;
 
@@ -694,7 +724,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         const allViews = [...this.sharedViews, ...this.savedViews];
 
         if (allViews.length === 0) {
-            container.innerHTML = '<div style="font-size:12px; color:var(--secondary-text-color); padding:5px;">Keine gespeichert.</div>';
+            container.innerHTML = `<div style="font-size:12px; color:var(--secondary-text-color); padding:5px;">${t('noViewsSaved')}</div>`;
             return;
         }
 
@@ -704,8 +734,8 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             item.className = 'saved-view-item';
             if (isShared) item.classList.add('shared');
 
-            let actionBtn = `<div class="remove-sensor" title="Löschen">✕</div>`;
-            if (isShared) { actionBtn = `<div class="lock-icon" title="Globale Ansicht (in Datei)">🔒</div>`; }
+            let actionBtn = `<div class="remove-sensor" title="${t('delete')}">✕</div>`;
+            if (isShared) { actionBtn = `<div class="lock-icon" title="${t('globalView')}">🔒</div>`; }
 
             item.innerHTML = `<div class="saved-view-name">${view.name}</div>${actionBtn}`;
             item.addEventListener('click', () => this.loadSavedView(index));
@@ -760,9 +790,13 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 threshold: this.thresholdValue,
                 threshold2: this.thresholdValue2,
                 autoScale: this.autoScale,
+                compareYear: this.compareYear,
                 hideAxislabels: this.hideAxislabels,
                 hideGrid: this.hideGrid,
-                chartTension: this.chartTension
+                hideAxislabels: this.hideAxislabels,
+                hideGrid: this.hideGrid,
+                chartTension: this.chartTension,
+                sidebarCollapsed: this.sidebarCollapsed
             };
             const singleContainer = this.content.querySelector('#chart-container-single');
             if (singleContainer) settings.containerHeight = singleContainer.style.height;
@@ -837,7 +871,12 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             this.chartTension = settings.chartTension !== undefined ? settings.chartTension : 4;
 
             if (settings.hideAxislabels !== undefined) { this.hideAxislabels = settings.hideAxislabels; this.content.querySelector('#hide-axis-switch').checked = settings.hideAxislabels; }
+            if (settings.hideAxislabels !== undefined) { this.hideAxislabels = settings.hideAxislabels; this.content.querySelector('#hide-axis-switch').checked = settings.hideAxislabels; }
             if (settings.hideGrid !== undefined) { this.hideGrid = settings.hideGrid; this.content.querySelector('#hide-grid-switch').checked = settings.hideGrid; }
+            if (settings.sidebarCollapsed !== undefined) {
+                this.sidebarCollapsed = settings.sidebarCollapsed;
+                this._applySidebarState();
+            }
 
             this.updateSliderVisibility();
             this.savedContainerHeight = settings.containerHeight;
@@ -859,7 +898,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         const entityId = input.value.trim();
         const color = this.content.querySelector('#color-input').value;
         if (!entityId) return;
-        if (this.selectedSensors.some(s => s.entityId === entityId)) { alert("Sensor ist bereits in der Liste."); return; }
+        if (this.selectedSensors.some(s => s.entityId === entityId)) { alert(t('sensorAlreadyInList')); return; }
         this.selectedSensors.push({ entityId, color });
         input.value = '';
         this.content.querySelector('#color-input').value = getRandomColor();
@@ -884,9 +923,9 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         let config;
         try {
             if (window.jsyaml) { config = window.jsyaml.load(val); } else { config = JSON.parse(val); }
-        } catch (e) { alert("Fehler beim Parsen des Codes (YAML/JSON ungültig)."); return; }
+        } catch (e) { alert(t('error') + ": YAML/JSON invalid"); return; }
 
-        if (!config || !config.type) { alert("Keine gültige Card-Konfiguration (Feld 'type' fehlt)."); return; }
+        if (!config || !config.type) { alert(t('error') + ": Missing 'type'"); return; }
         const name = config.title || config.type;
 
         this.selectedSensors.push({ entityId: name, isCard: true, cardConfig: config, color: '#ffffff' });
@@ -899,7 +938,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
     clearAllSensors() {
         if (this.selectedSensors.length === 0) return;
-        if (!confirm("Alle Sensoren aus der Liste löschen?")) return;
+        if (!confirm(t('clearAllConfirm'))) return;
         this.selectedSensors = [];
         this._sensorDataCache = [];
         this.renderSensorListUI();
@@ -934,7 +973,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
     // --- NEW: Rename Sensor Function ---
     renameSensor(index) {
         const currentName = this.selectedSensors[index].alias || (this.selectedSensors[index].isCard ? (this.selectedSensors[index].entityId || "Custom Card") : cleanName(this.selectedSensors[index].entityId));
-        const newName = prompt("Neuer Name für den Sensor:", currentName);
+        const newName = prompt(t('renameSensorPrompt'), currentName);
 
         // Check if user pressed Cancel (newName is null)
         if (newName !== null) {
@@ -950,7 +989,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
     renderSensorListUI() {
         const container = this.content.querySelector('#sensor-list-container');
-        if (this.selectedSensors.length === 0) { container.innerHTML = `<div style="color:var(--secondary-text-color);font-size:12px;text-align:center;padding:10px;">Liste leer.</div>`; return; }
+        if (this.selectedSensors.length === 0) { container.innerHTML = `<div style="color:var(--secondary-text-color);font-size:12px;text-align:center;padding:10px;">${t('listEmpty')}</div>`; return; }
         container.innerHTML = '';
 
         this.selectedSensors.forEach((sensor, index) => {
@@ -966,7 +1005,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             colorInput.className = 'sensor-list-color-picker';
             if (sensor.isCard) colorInput.style.visibility = 'hidden';
             else {
-                colorInput.title = "Farbe ändern";
+                colorInput.title = t('selectColor');
                 colorInput.addEventListener('change', (e) => this.updateSensorColor(index, e.target.value));
                 colorInput.addEventListener('click', (e) => e.stopPropagation());
                 colorInput.addEventListener('mousedown', (e) => e.stopPropagation());
@@ -979,7 +1018,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             if (sensor.isCard) {
                 nameDiv.textContent = "🎴 " + (sensor.alias || sensor.entityId || "Custom Card");
             } else {
-                nameDiv.title = "Klicken zum Umbenennen: " + sensor.entityId;
+                nameDiv.title = t('clickToRename') + sensor.entityId;
                 nameDiv.textContent = sensor.alias || cleanName(sensor.entityId);
             }
 
@@ -1015,7 +1054,9 @@ class DetailedChartsPanel extends DetailedChartsLogic {
     }
 }
 
-customElements.define('detailed-charts-panel', DetailedChartsPanel);
+if (!customElements.get('detailed-charts-panel')) {
+    customElements.define('detailed-charts-panel', DetailedChartsPanel);
+}
 
 // --- REGISTER CARD IN LOVELACE PICKER ---
 window.customCards = window.customCards || [];

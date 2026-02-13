@@ -1,5 +1,7 @@
 /* detailed-charts-panel-function.js */
 
+import { t } from './detailed-charts-panel-langs.js';
+
 /* --- HELPER FUNCTIONS --- */
 
 export function cleanName(name) {
@@ -162,9 +164,9 @@ export function createStatsCard(conf, min, avg, max, curr, unit, label) {
               <span>${label}:</span>
               <span class="stats-main-val" style="color:${conf.color}">${curr} ${unit}</span>
           </div>
-          <div class="stats-row"><span>Min:</span> <span>${min}</span></div>
-          <div class="stats-row"><span>Avg:</span> <span>${avg}</span></div>
-          <div class="stats-row"><span>Max:</span> <span>${max}</span></div>
+          <div class="stats-row"><span>${t('min')}:</span> <span>${min}</span></div>
+          <div class="stats-row"><span>${t('avg')}:</span> <span>${avg}</span></div>
+          <div class="stats-row"><span>${t('max')}:</span> <span>${max}</span></div>
       </div>
    `;
 }
@@ -189,10 +191,10 @@ export function getSplitCardHTML(index, color, name, isCard) {
        <div class="split-chart-header" style="color:${color}">
            <span>${name}</span>
            <div style="display:flex; gap:10px; align-items:center;">
-               <button class="values-toggle-btn" id="values-btn-${index}" title="Werte anzeigen" style="display:none;">
+               <button class="values-toggle-btn" id="values-btn-${index}" title="${t('showValues')}" style="display:none;">
                   <svg style="width:18px;height:18px" viewBox="0 0 24 24"><path fill="currentColor" d="M7,13H21V11H7M7,19H21V17H7M7,7H21V5H7M2,11H3.8L2,13.1V14H5V13H3.2L5,10.9V10H2M3,8H4V4H2V5H3M2,17H4.2L2,17.5V18.5L4.2,19H2V20H5V19L2.8,18.5V17.5L5,17V16H2V17Z" /></svg>
                </button>
-               <div class="drag-handle" draggable="true" title="Verschieben">
+               <div class="drag-handle" draggable="true" title="${t('moveHandle')}">
                    <svg style="width:20px;height:20px" viewBox="0 0 24 24">
                        <path fill="currentColor" d="M10,9h4V6h3l-5-5l-5,5h3V9z M9,10H6V6l-5,5l5,5v-3h3V10z M14,10v3h3l5-5l-5-5v3h-3z M10,15h4v3h-3l5,5l5-5h-3V15z M13,14h-2v2h2V14z"></path>
                    </svg>
@@ -206,15 +208,15 @@ export function getSplitCardHTML(index, color, name, isCard) {
 export function getSplitStatsHTML(displayLabel, color, displayVal, unit, min, avg, max) {
     return `
        <div><div class="stat-label">${displayLabel}</div><div class="stat-current" style="color:${color}">${displayVal} <span class="stat-unit">${unit}</span></div></div>
-       <div><div class="stat-label">Min</div><div class="stat-value" style="font-size:1em">${min}</div></div>
-       <div><div class="stat-label">Ø</div><div class="stat-value" style="font-size:1em">${avg}</div></div>
-       <div><div class="stat-label">Max</div><div class="stat-value" style="font-size:1em">${max}</div></div>
+       <div><div class="stat-label">${t('min')}</div><div class="stat-value" style="font-size:1em">${min}</div></div>
+       <div><div class="stat-label">${t('avg')}</div><div class="stat-value" style="font-size:1em">${avg}</div></div>
+       <div><div class="stat-label">${t('max')}</div><div class="stat-value" style="font-size:1em">${max}</div></div>
     `;
 }
 
 function getMonoButtonHTML() {
     return `
-        <button id="toggle-mono-btn" class="chart-overlay-btn" title="Min/Max hervorheben (Monochrom)">
+        <button id="toggle-mono-btn" class="chart-overlay-btn" title="${t('monochromeHighlight')}">
             <svg style="width:20px;height:20px" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M7.5,5.6L5,7L7.5,8.4L10,7L7.5,5.6M19.5,15.4L22,14L19.5,12.6L17,14L19.5,15.4M22,2L20.6,4.5L22,7L19.5,5.6L17,7L18.4,4.5L17,2L19.5,3.4L22,2M13.34,12C13.5,12.58 13.78,13.08 14.15,13.5L3.6,23L2.2,21.6L13.34,12M15.4,14.8L16.8,16.2L12,21H10.6L15.4,14.8Z" />
             </svg>
@@ -498,7 +500,7 @@ export function getPanelTemplate() {
         .drag-handle { cursor: grab; padding: 5px; color: var(--secondary-text-color); display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: background 0.2s; margin-left: 10px; }
         .drag-handle:hover { background: rgba(128,128,128,0.1); color: var(--primary-text-color); }
         .drag-handle:active { cursor: grabbing; }
-        .split-canvas-container { height: 300px; position: relative; width: 100%; }
+        .split-canvas-container { height: 300px; position: relative; width: 100%; overflow: hidden; }
         
         .split-footer { display: flex; gap: 20px; margin-top: 10px; align-items: stretch; border-top: 1px solid var(--divider-color); padding-top: 15px; }
         
@@ -581,12 +583,12 @@ export function getPanelTemplate() {
 
       <div class="mobile-top-header">
           <div style="display:flex; align-items:center; gap:20px;">
-              <button id="ha-menu-btn" class="header-btn" title="Home Assistant Menü">
+              <button id="ha-menu-btn" class="header-btn" title="${t('homeAssistantMenu')}">
                  <svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
               </button>
               <div class="header-title">Detailed Charts</div>
           </div>
-          <button id="mobile-open-sidebar-btn" class="header-btn" title="Menü öffnen">
+          <button id="mobile-open-sidebar-btn" class="header-btn" title="${t('openMenu')}">
              <svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
           </button>
       </div>
@@ -597,7 +599,7 @@ export function getPanelTemplate() {
               <h2>📉 Detailed Charts</h2>
               <div style="display:flex; align-items:center; gap:10px;">
                   <div class="loader" id="loader"></div>
-                  <button id="toggle-sidebar-btn" title="Seitenleiste einklappen">
+                  <button id="toggle-sidebar-btn" title="${t('collapseSidebar')}">
                       <svg style="width:24px;height:24px" viewBox="0 0 24 24">
                           <path fill="currentColor" d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" />
                       </svg>
@@ -606,113 +608,117 @@ export function getPanelTemplate() {
           </div>
           
           <div class="control-group">
-            <label>Sensor hinzufügen:</label>
-            <input id="sensor-input" placeholder="Tippen zum Suchen..." autocomplete="off">
+            <label>${t('addSensor')}:</label>
+            <input id="sensor-input" placeholder="${t('searchPlaceholder')}" autocomplete="off">
             <div id="suggestions" class="suggestions-list"></div>
           </div>
           <div class="control-group add-sensor-row">
-             <input type="color" id="color-input" class="color-picker" value="#03a9f4" title="Farbe wählen">
-             <button id="clear-all-btn" class="btn-icon grey" title="Sensorliste löschen"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg></button>
-             <button id="add-card-btn" class="btn-icon" title="Custom Card hinzufügen" style="font-size:12px;width:auto;padding:0 8px;">Card +</button>
+             <input type="color" id="color-input" class="color-picker" value="#03a9f4" title="${t('selectColor')}">
+             <button id="clear-all-btn" class="btn-icon grey" title="${t('deleteList')}"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg></button>
+             <button id="add-card-btn" class="btn-icon" title="${t('addCustomCard')}" style="font-size:12px;width:auto;padding:0 8px;">${t('addCard')}</button>
              
              <div style="margin-left:auto; display:flex; gap:5px;">
-                <button id="copy-yaml-btn" class="btn-icon" title="YAML für Dashboard kopieren" style="background-color:#455a64;">
+                <button id="copy-yaml-btn" class="btn-icon" title="${t('copyYaml')}" style="background-color:#455a64;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/></svg>
                 </button>
-                <button id="save-view-btn" class="btn-icon" title="Ansicht speichern"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"/></svg></button>
+                <button id="save-view-btn" class="btn-icon" title="${t('saveView')}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"/></svg></button>
              </div>
           </div>
-          <div id="sensor-list-container" class="sensor-list"><div style="color: var(--secondary-text-color); font-size: 12px; text-align: center; padding: 10px;">Liste leer.</div></div>
+          <div id="sensor-list-container" class="sensor-list"><div style="color: var(--secondary-text-color); font-size: 12px; text-align: center; padding: 10px;">${t('listEmpty')}</div></div>
           <div style="margin-top: 0px; border-top: 1px solid var(--divider-color); padding-top: 15px;">
               <div class="control-group" style="margin-top:5px;">
-                  <label>Ansicht (Layout)</label>
+                  <label>${t('layout')}</label>
                   <select id="layout-select">
-                      <option value="combined" selected>Kombiniert</option>
-                      <option value="split">Getrennt (Grid)</option>
-                      <option value="mixed">Mixed (Beides)</option>
+                      <option value="combined" selected>${t('combined')}</option>
+                      <option value="split">${t('split')}</option>
+                      <option value="mixed">${t('mixed')}</option>
                   </select>
               </div>
-              <div class="toggle-row" id="toggle-stats-row" style="margin-top: 10px;"><span class="toggle-label">Statistiken anzeigen</span><input type="checkbox" class="toggle-switch" id="stats-switch" checked></div>
-              <div class="toggle-row" id="toggle-donut-row" style="margin-top: 10px;"><span class="toggle-label">Donut Sidebar</span><input type="checkbox" class="toggle-switch" id="donut-switch"></div>
+              <div class="toggle-row" id="toggle-stats-row" style="margin-top: 10px;"><span class="toggle-label">${t('showStats')}</span><input type="checkbox" class="toggle-switch" id="stats-switch" checked></div>
+              <div class="toggle-row" id="toggle-donut-row" style="margin-top: 10px;"><span class="toggle-label">${t('donutSidebar')}</span><input type="checkbox" class="toggle-switch" id="donut-switch"></div>
               
               <div class="slider-row" id="zoom-slider-row" style="display:block;">
-                  <div class="slider-header"><label>Zoom Stufe</label><span id="zoom-value-display" style="font-weight:bold;">100%</span></div>
+                  <div class="slider-header"><label>${t('zoomLevel')}</label><span id="zoom-value-display" style="font-weight:bold;">100%</span></div>
                   <input type="range" id="zoom-slider" min="0.5" max="1.5" step="0.1" value="1">
               </div>
               <div class="slider-row" id="grid-slider-row">
-                  <div class="slider-header"><label>Spalten (Grid)</label><span id="grid-value-display" style="font-weight:bold;">1</span></div>
+                  <div class="slider-header"><label>${t('gridColumns')}</label><span id="grid-value-display" style="font-weight:bold;">1</span></div>
                   <input type="range" id="grid-slider" min="1" max="4" step="1" value="1">
               </div>
               <div class="slider-row" id="tension-slider-row" style="display:block;">
-                  <div class="slider-header"><label>Linien-Glättung (0-5)</label><span id="tension-value-display" style="font-weight:bold;">4</span></div>
+                  <div class="slider-header"><label>${t('lineSmoothing')}</label><span id="tension-value-display" style="font-weight:bold;">4</span></div>
                   <input type="range" id="tension-slider" min="0" max="5" step="1" value="4">
               </div>
 			  <div class="control-group" style="margin-top: 20px;">
-				<label>Darstellung (Global):</label>
+				<label>${t('chartType')}</label>
 				<select id="chart-type">
-					<option value="line" selected>Line (Kurve)</option>
-					<option value="bar">Bar (Balken)</option>
-					<option value="doughnut">Donut (Verteilung)</option>
-					<option value="stepped">Stepped (Stufen)</option>
-					<option value="scatter">Scatter (Punkte)</option>
+					<option value="line" selected>${t('line')}</option>
+					<option value="bar">${t('bar')}</option>
+					<option value="doughnut">${t('doughnut')}</option>
+					<option value="stepped">${t('stepped')}</option>
+					<option value="scatter">${t('scatter')}</option>
 				</select>
 			  </div>
               <div class="control-group" style="margin-top:10px;">
-                 <label>Referenzlinie 1 (Wert):</label>
+                 <label>${t('threshold1')}</label>
                  <input id="threshold-input" type="number" step="any" placeholder="z.B. 500" title="Zeigt eine rote Linie bei diesem Wert an">
               </div>
               <div class="control-group" style="margin-top:10px;">
-                 <label>Referenzlinie 2 (Wert):</label>
+                 <label>${t('threshold2')}</label>
                  <input id="threshold2-input" type="number" step="any" placeholder="z.B. 1000" title="Zeigt eine hellblaue Linie bei diesem Wert an">
               </div>
               <div class="toggle-row" id="toggle-autoscale-row" style="margin-top: 10px;">
-                 <span class="toggle-label">Auto-Scale (W ➡ kW)</span>
+                 <span class="toggle-label">${t('autoScale')}</span>
                  <input type="checkbox" class="toggle-switch" id="autoscale-switch">
               </div>
-			  <div class="toggle-row" id="toggle-fill-row"><span class="toggle-label">Fläche füllen</span><input type="checkbox" class="toggle-switch" id="fill-switch"></div>          
+              <div class="toggle-row" id="toggle-compare-year-row" style="margin-top: 10px;">
+                 <span class="toggle-label">${t('compareYear')}</span>
+                 <input type="checkbox" class="toggle-switch" id="compare-year-switch">
+              </div>
+			  <div class="toggle-row" id="toggle-fill-row"><span class="toggle-label">${t('fillArea')}</span><input type="checkbox" class="toggle-switch" id="fill-switch"></div>          
               <div class="toggle-row" id="toggle-axis-row" style="margin-top: 10px;">
-                 <span class="toggle-label">Achsen-Text ausblenden</span>
+                 <span class="toggle-label">${t('hideAxisLabels')}</span>
                  <input type="checkbox" class="toggle-switch" id="hide-axis-switch">
               </div>
               <div class="toggle-row" id="toggle-grid-row" style="margin-top: 10px;">
-                 <span class="toggle-label">Gitterlinien ausblenden</span>
+                 <span class="toggle-label">${t('hideGrid')}</span>
                  <input type="checkbox" class="toggle-switch" id="hide-grid-switch">
               </div>
-              <div class="toggle-row" id="toggle-stacked-row" style="margin-top: 10px; display:none;"><span class="toggle-label">Stacked Bars</span><input type="checkbox" class="toggle-switch" id="stacked-switch"></div>
+              <div class="toggle-row" id="toggle-stacked-row" style="margin-top: 10px; display:none;"><span class="toggle-label">${t('stackedBars')}</span><input type="checkbox" class="toggle-switch" id="stacked-switch"></div>
 		  </div>
 		  <div style="margin-top: 0px; border-top: 1px solid var(--divider-color); padding-top: 15px;">
-			  <label style="margin-top:5px;">Zeitraum Modus:</label>
+			  <label style="margin-top:5px;">${t('timePeriodMode')}</label>
 			  <div class="mode-switch">
-				  <div class="mode-btn active" id="btn-mode-relative">Relativ</div>
-				  <div class="mode-btn" id="btn-mode-fixed">Kalender</div>
+				  <div class="mode-btn active" id="btn-mode-relative">${t('relative')}</div>
+				  <div class="mode-btn" id="btn-mode-fixed">${t('calendar')}</div>
 			  </div>
 			  <div id="container-relative" class="control-group">
 				<select id="time-select">
-					<option value="1">Letzte 1 Stunde</option>
-					<option value="3">Letzte 3 Stunden</option>
-					<option value="6">Letzte 6 Stunden</option>
-					<option value="12">Letzte 12 Stunden</option>
-					<option value="24" selected>Letzte 24 Stunden</option>
-					<option value="48">Letzte 48 Stunden</option>
-					<option value="168">Letzte 7 Tage</option>
-					<option value="720">Letzte 30 Tage (Monat)</option>
-					<option value="2160">Letzte 3 Monate</option>
-					<option value="8760">Letztes Jahr</option>
+					<option value="1">${t('lastHour')}</option>
+					<option value="3">${t('last3Hours')}</option>
+					<option value="6">${t('last6Hours')}</option>
+					<option value="12">${t('last12Hours')}</option>
+					<option value="24" selected>${t('last24Hours')}</option>
+					<option value="48">${t('last48Hours')}</option>
+					<option value="168">${t('last7Days')}</option>
+					<option value="720">${t('last30Days')}</option>
+					<option value="2160">${t('last3Months')}</option>
+					<option value="8760">${t('lastYear')}</option>
 				</select>
 			  </div>
 			  <div id="container-fixed" class="custom-date-container">
-				 <div><label>Von:</label><input type="datetime-local" id="date-start"></div>
-				 <div><label>Bis:</label><input type="datetime-local" id="date-end"></div>
+				 <div><label>${t('from')}</label><input type="datetime-local" id="date-start"></div>
+				 <div><label>${t('to')}</label><input type="datetime-local" id="date-end"></div>
 			  </div>
-			  <button id="reset-zoom-btn">🔍 Zoom zurücksetzen</button>
+			  <button id="reset-zoom-btn">${t('resetZoom')}</button>
 		  </div>	  
-          <div class="saved-views-section"><label>Gespeicherte Ansichten</label><div id="saved-views-container"></div></div>
+          <div class="saved-views-section"><label>${t('savedViews')}</label><div id="saved-views-container"></div></div>
           <div class="error-msg" id="error-msg"></div>
         </div>
         
         <div class="main-content" id="main-content-area"></div>
 
-        <button id="open-sidebar-floating" title="Menü öffnen">
+        <button id="open-sidebar-floating" title="${t('openMenu')}">
             <svg style="width:24px;height:24px" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
             </svg>
@@ -721,29 +727,29 @@ export function getPanelTemplate() {
         <div class="modal-overlay" id="export-modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <span class="modal-title">Code Export</span>
+                    <span class="modal-title">${t('codeExport')}</span>
                     <span class="modal-close" id="close-modal-btn">✕</span>
                 </div>
-                <div class="modal-hint">Dieser Code erstellt eine Card (yaml - Kopie für das Dashboard).</div>
+                <div class="modal-hint">${t('yamlHint')}</div>
                 <textarea class="yaml-textarea" id="yaml-export-area" readonly></textarea>
-                <button class="copy-btn" id="copy-yaml-btn-action">Kopieren</button>
-                <div class="copy-success-msg" id="msg-yaml">Kopieren erfolgreich!</div>
-                <div class="modal-hint" style="margin-top:10px;">Hier findest du den JSON-Code für die <b>detailed-charts-views.js</b> Datei. (Siehe Wiki!)</div>
+                <button class="copy-btn" id="copy-yaml-btn-action">${t('copy')}</button>
+                <div class="copy-success-msg" id="msg-yaml">${t('copySuccess')}</div>
+                <div class="modal-hint" style="margin-top:10px;">${t('jsonHint')}</div>
                 <textarea class="yaml-textarea" id="json-export-area" readonly></textarea>
-                <button class="copy-btn" id="copy-json-btn-action">Kopieren</button>
-                <div class="copy-success-msg" id="msg-json">Kopieren erfolgreich!</div>
+                <button class="copy-btn" id="copy-json-btn-action">${t('copy')}</button>
+                <div class="copy-success-msg" id="msg-json">${t('copySuccess')}</div>
             </div>
         </div>
 
         <div class="modal-overlay" id="import-card-modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <span class="modal-title">Custom Card Import</span>
+                    <span class="modal-title">${t('customCardImport')}</span>
                     <span class="modal-close" id="close-import-modal-btn">✕</span>
                 </div>
-                <div class="modal-hint">Füge hier den YAML oder JSON Code deiner Custom Card ein.</div>
+                <div class="modal-hint">${t('importHint')}</div>
                 <textarea class="yaml-textarea" id="card-import-area" style="height: 300px;"></textarea>
-                <button class="copy-btn" id="import-card-confirm-btn" style="margin-top:10px;">Card hinzufügen</button>
+                <button class="copy-btn" id="import-card-confirm-btn" style="margin-top:10px;">${t('addCardBtn')}</button>
             </div>
         </div>
       </div>

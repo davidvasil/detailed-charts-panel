@@ -1,5 +1,9 @@
 # Usage & Operation
 
+Video with all Details. Sorry for my mic quality. :) It is in German, but you can add English subtitles.
+[![Watch the video](https://img.youtube.com/vi/o3h9qdb1-Fk/0.jpg)](https://www.youtube.com/watch?v=o3h9qdb1-Fk)
+
+
 ## Step-by-Step Guide
 
 The panel is designed so that you can intuitively click through the sidebar from top to bottom:

@@ -19,7 +19,9 @@ If you like the Detailed Charts, I would be very happy about a Star ⭐. 🤗
 ## Features at a Glance
 
 - **📉 Interactive Charts:** Smooth zoom & pan (touch & mouse wheel) with automatic data reloading.
+- **📉 Previous Year Comparison:** Compare current data directly with the previous year.
 - **📉 Short-Term & Long-Term Charts:** Supports short-term and long-term data analysis.
+- **🌍 Multilingual:** Full translation support for English and German.
 - **✨ Panel Mode & Card Mode:** Two viewing options — full panel view or as a dashboard card.
 - **⚡ Auto-Scale (W ➡ kW):** Automatically converts values from `W`/`Wh` to `kW`/`kWh` — no mental math required!
 - **🍩 Donut Sidebar:** Optional sidebar showing percentage distribution (ideal for power consumption).
@@ -100,6 +102,13 @@ Do you want to see when your balcony power plant produced over 600W?
 
 * Enter the value 600 at Reference Line.
 * A dashed red line appears in the chart at exactly this value as an orientation aid.
+
+📉 Previous Year Comparison
+Do you want to see how your electricity consumption or yield has developed compared to last year?
+
+* Activate the "Previous Year Comparison" switch in the sidebar.
+* The data from the exact same period a year ago is displayed as grey bars or lines in the background.
+* Ideal for identifying trends!
 
 💾 Saving & Loading
 Save locally: The floppy disk symbol 💾 saves the current view in the browser.
