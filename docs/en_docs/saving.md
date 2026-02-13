@@ -16,8 +16,11 @@ This is the "Pro Method" to make views available on **all devices** (Tablet, Mob
 1.  Create your desired view in the panel.
 2.  Click on the **Copy Button** (📋 Icon).
 3.  Copy the lower **JSON Code** from the selection in the popup.
-4.  Open the file `detailed-charts-views.js` in your Home Assistant folder (`/www/`).
-5.  Paste the code into the `sharedViews` array.
+4.  Open the file-explorer in your HA and navigate to the folder (`/www/`).
+5.  Create a new file called `detailed-charts-views.js`.
+6.  Paste the code from the example below into the file.
+7.  Replace the content of the `sharedViews` array with your JSON code.
+8.  Save the file.
 
 <img src="https://raw.githubusercontent.com/jayjojayson/detailed-charts-panel/main/docs/images/example4.png" alt="JSON Code" width="25%">
 

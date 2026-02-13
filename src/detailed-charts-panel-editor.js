@@ -1,5 +1,8 @@
 /* detailed-charts-panel-editor.js */
-console.log("DetailedChartsPanelEditor: v_2.6");
+console.log(
+    "%c📉️ DetailedChartsPanelEditor: v_2.6 ready",
+    "background: #5596c5; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold;"
+);
 
 const fireEvent = (node, type, detail, options) => {
     options = options || {};

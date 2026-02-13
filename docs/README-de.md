@@ -71,6 +71,7 @@ Wenn euch das Panel gefällt, würde ich mich sehr über eine Sternebewertung �
 - Klicke auf "HINZUFÜGEN" ("ADD").
 - Das "Detailed Charts Panel" sollte nun in HACS verfügbar sein. Klicke auf "INSTALLIEREN" ("INSTALL").
 - Die Ressource wird automatisch zu deiner Lovelace-Konfiguration hinzugefügt.
+- Erstelle die Datei `detail-charts-views.js` im Ordner `/config/www/`.
 </details>
 
 <details>
@@ -106,6 +107,8 @@ Wenn euch das Panel gefällt, würde ich mich sehr über eine Sternebewertung �
     * Wähle als Ressourcentyp **JavaScript-Modul**.
     * Klicke auf **Erstellen**.
 </details>
+
+4.  Erstelle die Datei `detail-charts-views.js` im Ordner `/config/www/`.
 
 ---
 

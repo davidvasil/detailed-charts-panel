@@ -29,7 +29,8 @@ panel_custom:
 2.  Erstelle den Ordner `/config/www/community/detailed-charts-panel/`.
 3.  Kopiere die Dateien aus der Source.zip aus dem Ordnder `/dist` dort hinein.
 4.  Füge unter **Einstellungen > Dashboards > Ressourcen** den Pfad `/local/community/detailed-charts-panel/detailed-charts-panel.js` als JavaScript-Modul hinzu.
-5.	WICHTIG, füge wie in Methode 1 erklärt den Code in deine `configuration.yaml` ein und starte Home Assistant neu.
+5.  Erstelle die Datei `detail-charts-views.js` im Ordner `/config/www/`.
+6.	WICHTIG, füge wie in Methode 1 erklärt den Code in deine `configuration.yaml` ein und starte Home Assistant neu.
 
 ---
 

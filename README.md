@@ -56,6 +56,7 @@ If you like this panel, I would be very happy about a star rating ⭐. 🤗
 
 - The "Detailed Charts Panel" should now be available in HACS. Click on "INSTALL".
 - The resource will be automatically added to your Lovelace configuration.
+- Create the file `detail-charts-views.js` in the `/config/www/` folder.
 
 <details>
   <summary> <b>Manual Installation via HACS</b></summary>  
@@ -96,13 +97,16 @@ Open HACS in Home Assistant.
         /config/www/community/detailed-charts-panel/chartjs-plugin-zoom.min.js
         ```
 
-4.  **Add Resource to Home Assistant:**
+3.  **Add Resource to Home Assistant:**
     * Go to Home Assistant **Settings > Dashboards**.
     * Click the three dots menu in the top right corner and select **Resources**.
     * Click **+ Add Resource**.
     * Enter the URL `/local/community/detailed-charts-panel/detailed-charts-panel.js`.
     * Select **JavaScript Module** as the resource type.
     * Click **Create**.
+
+4.  Create the file `detail-charts-views.js` in the `/config/www/` folder.
+
 </details>
 
 ---

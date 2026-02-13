@@ -1,4 +1,4 @@
 .vscode/
 .idea/
 
-/dist/detailed-charts-views.js
+/node_modules

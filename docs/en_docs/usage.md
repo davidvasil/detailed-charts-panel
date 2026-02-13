@@ -49,7 +49,8 @@ This mode is your "laboratory" to explore data or to configure a Dashboard Card 
 
 <img src="../images/details-chart-panel.png" alt="Dashboard Card" width="55%">
 
-In Panel Mode, you can also create a JSON file via the Copy button, insert it into `detail-charts-views.js`, and thus make the view available on all end devices.
+In Panel Mode, you can also create a JSON file via the Copy button, insert it into `detail-charts-views.js`, and thus make the view available on all end devices. The `detail-charts-views.js` must be inserted as a file into the `/www/` folder of your Home Assistant instance. More information can be found under the menu item "Saving & Export".  
+
 *New* Experimental: Other Custom Cards can now also be imported. Copy the Yaml code of your card, then click on the Add Card button and paste your code. The card is only displayed in the Separated and Mixed views. But it can be placed anywhere there.
 
 ### 2. Card Mode ("Dashboard Card")

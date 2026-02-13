@@ -1,0 +1,31 @@
+{
+  "name": "detailed-charts-panel",
+  "version": "1.0.0",
+  "description": "Detailed Charts Panel for Home Assistant",
+  "main": "dist/detailed-charts-panel.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jayjojayson/detailed-charts-panel.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jayjojayson/detailed-charts-panel/issues"
+  },
+  "homepage": "https://github.com/jayjojayson/detailed-charts-panel#readme",
+  "devDependencies": {
+    "@rollup/plugin-alias": "^6.0.0",
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "rollup": "^4.57.1"
+  }
+}

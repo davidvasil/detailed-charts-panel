@@ -18,6 +18,15 @@ import {
 } from './detailed-charts-panel-function.js';
 import { t } from './detailed-charts-panel-langs.js';
 
+// Static Imports for Bundling
+import './chart.umd.min.js';
+import './hammer.min.js';
+import './chartjs-plugin-zoom.min.js';
+
+// Register essentials
+// window.Chart and window.Hammer are set by the imported scripts
+
+
 export class DetailedChartsLogic extends HTMLElement {
     constructor() {
         super();
@@ -53,19 +62,11 @@ export class DetailedChartsLogic extends HTMLElement {
         this.hideGrid = false;
     }
 
-    loadDependencies() {
-        const loadScript = (src) => new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error(t('criticalError') + src));
-            this.content.appendChild(script);
-        });
-        const isModernChart = window.Chart && typeof window.Chart.getChart === 'function';
-        const p1 = isModernChart ? Promise.resolve() : loadScript('/local/community/detailed-charts-panel/chart.umd.min.js');
-        const p2 = window.Hammer ? Promise.resolve() : loadScript('/local/community/detailed-charts-panel/hammer.min.js');
-        const p3 = window.jsyaml ? Promise.resolve() : loadScript('https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js');
+    // ... (existing imports)
 
+    loadDependencies() {
+        // Libraries are now bundled, so we just declare them ready.
+        // We still need to load helpers if available.
         const p4 = (async () => {
             if (window.loadCardHelpers) {
                 this.helpers = await window.loadCardHelpers();
@@ -74,22 +75,20 @@ export class DetailedChartsLogic extends HTMLElement {
 
         // Load Shared Views (User Config vs Default)
         const p5 = (async () => {
+
+
             try {
                 // Try loading user-defined views from root www folder
+                // This remains dynamic as it's a user configuration file external to the bundle
                 const module = await import('/local/detailed-charts-views.js');
                 if (module && module.sharedViews) this.sharedViews = module.sharedViews;
             } catch (e) {
-                // Fallback to default file in package
-                try {
-                    const module = await import('./detailed-charts-views.js');
-                    if (module && module.sharedViews) this.sharedViews = module.sharedViews;
-                } catch (e2) { console.warn("Could not load detailed-charts-views.js"); }
+                // Ignore failure to load external user config
             }
             if (this.renderSavedViewsUI) this.renderSavedViewsUI();
         })();
 
-        Promise.all([p1, p2, p3, p4, p5])
-            .then(() => loadScript('/local/community/detailed-charts-panel/chartjs-plugin-zoom.min.js'))
+        Promise.all([p4, p5])
             .then(() => {
                 console.log(
                     "%c📉 DetailedChartsPanel-Libs ready",

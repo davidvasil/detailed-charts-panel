@@ -49,8 +49,9 @@ Dieser Modus ist dein "Labor", um Daten zu erforschen oder auch im "kombiniert" 
 
 <img src="images/details-chart-panel.png" alt="Dashboard Card" width="55%">
 
-Im Panel-Modus könnt ihr zudem auch über den Kopieren Button eine Json Datei erstellen, diese in die `detail-charts-views.js` einfügen und somit die Ansicht auf allen Endgeräten verfügbar machen.
-*Neu* Experimentell: Es können jetzt auch andere Custom Cards importiert werden. Kopiert dazu den Yaml Code eurer Card, klickt anschließend auf den Button Card hinzufügen und fügt euren Code ein. Die Card wird nur in der Getrennt- und Mixed-Ansicht angezeigt. Kann dort aber beliebig platziert werden.
+Im Panel-Modus könnt ihr zudem auch über den Kopieren Button eine Json Datei erstellen, diese in die `detail-charts-views.js` einfügen und somit die Ansicht auf allen Endgeräten verfügbar machen. Die `detail-charts-views.js` müsst ihr als Datei im Ordner `/www/` von eurer Home Assistant Instanz legen. Mehr Infos dazu findet ihr unter dem Menüpunkt "Speichern & Export".  
+
+*Noch* Experimentell: Es können jetzt auch andere Custom Cards importiert werden. Kopiert dazu den Yaml Code eurer Card, klickt anschließend auf den Button Card hinzufügen und fügt euren Code ein. Die Card wird nur in der Getrennt- und Mixed-Ansicht angezeigt. Kann dort aber beliebig platziert werden.
 
 ### 2. Card Modus ("Dashboard-Card")
 Du hast im Panel Modus eine perfekte Ansicht erstellt und möchtest diese fest auf deinem Dashboard haben? 

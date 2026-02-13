@@ -16,8 +16,11 @@ Das ist die "Profi-Methode", um Ansichten auf **allen Geräten** (Tablet, Handy,
 1.  Erstelle deine Wunsch-Ansicht im Panel.
 2.  Klicke auf den **Kopieren-Button** (📋 Icon).
 3.  Kopiere aus der Auswahl im Popup den unteren **JSON-Code**.
-4.  Öffne die Datei `detailed-charts-views.js` in deinem Home Assistant Ordner (`/www/`).
-5.  Füge den Code in das `sharedViews` Array ein.
+4.  Öffne z.B. den File Explorer und navigiere zu deinem HA Ordner (`/www/`).
+5.  Erstelle eine neue Datei `detailed-charts-views.js`.
+6.  Füge den Code aus dem unten aufgeführten Beispiel in die Datei ein.
+7.  Ersetze nun den Inhalt des `sharedViews` Arrays mit deinem JSON-Code.
+8.  Speichere die Datei.
 
 <img src="images/example4.png" alt="JSON Code" width="25%">
 
@@ -25,6 +28,8 @@ Das ist die "Profi-Methode", um Ansichten auf **allen Geräten** (Tablet, Handy,
 
 ```javascript
 export const sharedViews = [
+    
+    /* Füge dein Code hierunter ein */
     {
         "name": "Meine globale Solar-Analyse",
         "chartType": "bar",
