@@ -1268,7 +1268,7 @@ class DetailedChartsLogic extends HTMLElement {
         Promise.all([p4, p5])
             .then(() => {
                 console.log(
-                    "%c📉 DetailedChartsPanel-Libs ready (Bundled)",
+                    "%c📉 DetailedChartsPanel-Libs ready",
                     "background: #5596c5; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold;"
                 );
                 this.libsLoaded = true;
@@ -3548,7 +3548,10 @@ window.customCards.push({
 });
 
 /* detailed-charts-panel-editor.js */
-console.log("DetailedChartsPanelEditor: v_2.6");
+console.log(
+    "%c📉️ DetailedChartsPanelEditor: v_2.6 ready",
+    "background: #5596c5; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold;"
+);
 
 const fireEvent = (node, type, detail, options) => {
     options = options || {};
