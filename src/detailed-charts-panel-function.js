@@ -685,6 +685,13 @@ export function getPanelTemplate() {
                  <span class="toggle-label">${t('hideGrid')}</span>
                  <input type="checkbox" class="toggle-switch" id="hide-grid-switch">
               </div>
+              <div class="control-group" style="margin-top:10px;">
+                 <label>${t('dateFormat')}</label>
+                 <select id="date-format-select">
+                    <option value="dmy">${t('dateFormatDMY')}</option>
+                    <option value="mdy">${t('dateFormatMDY')}</option>
+                 </select>
+              </div>
               <div class="toggle-row" id="toggle-stacked-row" style="margin-top: 10px; display:none;"><span class="toggle-label">${t('stackedBars')}</span><input type="checkbox" class="toggle-switch" id="stacked-switch"></div>
 		  </div>
 		  <div style="margin-top: 0px; border-top: 1px solid var(--divider-color); padding-top: 15px;">

@@ -32,6 +32,9 @@ const en = {
     fillArea: "Fill area",
     hideAxisLabels: "Hide axis labels",
     hideGrid: "Hide gridlines",
+    dateFormat: "Date format",
+    dateFormatDMY: "Day.Month (31.12)",
+    dateFormatMDY: "Month/Day (12/31)",
     stackedBars: "Stacked Bars",
     timePeriodMode: "Time Period Mode:",
     relative: "Relative",
@@ -160,6 +163,9 @@ const de = {
     fillArea: "Fläche füllen",
     hideAxisLabels: "Achsen-Text ausblenden",
     hideGrid: "Gitterlinien ausblenden",
+    dateFormat: "Datumsformat",
+    dateFormatDMY: "Tag.Monat (31.12)",
+    dateFormatMDY: "Monat/Tag (12/31)",
     stackedBars: "Stacked Bars",
     timePeriodMode: "Zeitraum Modus:",
     relative: "Relativ",
@@ -965,6 +971,13 @@ function getPanelTemplate() {
                  <span class="toggle-label">${t('hideGrid')}</span>
                  <input type="checkbox" class="toggle-switch" id="hide-grid-switch">
               </div>
+              <div class="control-group" style="margin-top:10px;">
+                 <label>${t('dateFormat')}</label>
+                 <select id="date-format-select">
+                    <option value="dmy">${t('dateFormatDMY')}</option>
+                    <option value="mdy">${t('dateFormatMDY')}</option>
+                 </select>
+              </div>
               <div class="toggle-row" id="toggle-stacked-row" style="margin-top: 10px; display:none;"><span class="toggle-label">${t('stackedBars')}</span><input type="checkbox" class="toggle-switch" id="stacked-switch"></div>
 		  </div>
 		  <div style="margin-top: 0px; border-top: 1px solid var(--divider-color); padding-top: 15px;">
@@ -1240,6 +1253,7 @@ class DetailedChartsLogic extends HTMLElement {
 
         this.hideAxislabels = false;
         this.hideGrid = false;
+        this.dateFormat = 'dmy';
     }
 
     // ... (existing imports)
@@ -2411,7 +2425,7 @@ class DetailedChartsLogic extends HTMLElement {
                         },
                         backgroundColor: 'rgba(20, 20, 20, 0.95)', titleColor: '#fff', bodyColor: '#bbb', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, padding: 12,
                         callbacks: {
-                            title: (c) => new Date(c[0].parsed.x).toLocaleString('de-DE'),
+                            title: (c) => new Date(c[0].parsed.x).toLocaleString(this.dateFormat === 'mdy' ? 'en-US' : 'de-DE'),
                             label: (c) => {
                                 const ds = c.dataset;
                                 const lbl = ds.label || '';
@@ -2484,7 +2498,7 @@ class DetailedChartsLogic extends HTMLElement {
                 scales: {
                     x: {
                         type: 'linear', position: 'bottom', min: startTime.getTime(), max: endTime.getTime(), stacked: forceNoStack ? false : (forceStack || this.stackedBars), offset: false,
-                        ticks: { display: !this.hideAxislabels, color: secondaryText, maxTicksLimit: 8, callback: function (value) { const d = new Date(value); const diffHours = (endTime - startTime) / (1000 * 60 * 60); if (diffHours > 48) return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }); return d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }); } },
+                        ticks: { display: !this.hideAxislabels, color: secondaryText, maxTicksLimit: 8, callback: (function (dateFormat) { return function (value) { const d = new Date(value); const scaleMin = (this && typeof this.min === 'number') ? this.min : startTime.getTime(); const scaleMax = (this && typeof this.max === 'number') ? this.max : endTime.getTime(); const rangeMs = scaleMax - scaleMin; const rangeHours = rangeMs / 3600000; const locale = dateFormat === 'mdy' ? 'en-US' : 'de-DE'; if (rangeHours > 24 * 180) { return d.toLocaleDateString(locale, { month: 'short', year: '2-digit' }); } if (rangeHours > 48) { return d.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' }); } if (rangeHours > 6) { return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }); } if (rangeHours > 0.1) { return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' }); } return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }; })(this.dateFormat) },
                         grid: { color: gridColor, drawBorder: false, display: !this.hideGrid }
                     },
                     y: {
@@ -2630,6 +2644,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
         this.hideAxislabels = config.hideAxislabels || false;
         this.hideGrid = config.hideGrid || false;
+        this.dateFormat = config.dateFormat || 'dmy';
 
         if (this.content) {
             const updateInput = (id, val, isCheck = false) => {
@@ -2653,6 +2668,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
             updateInput('#hide-axis-switch', this.hideAxislabels, true);
             updateInput('#hide-grid-switch', this.hideGrid, true);
+            updateInput('#date-format-select', this.dateFormat);
 
             const gridDisp = this.content.querySelector('#grid-value-display');
             if (gridDisp) gridDisp.textContent = this.gridColumns;
@@ -2680,7 +2696,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
             // FIX: If config changed (Editor), sync to localStorage to prevent loadSettings from reverting it
             if (oldConfig) {
-                const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'compareYear', 'threshold', 'threshold2', 'hideAxislabels', 'hideGrid'];
+                const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'compareYear', 'threshold', 'threshold2', 'hideAxislabels', 'hideGrid', 'dateFormat'];
                 let hasChanged = keysToCheck.some(k => oldConfig[k] !== config[k]);
                 if (!hasChanged) {
                     if (JSON.stringify(config.sensors) !== JSON.stringify(oldConfig.sensors)) hasChanged = true;
@@ -2850,7 +2866,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             '#fill-switch', '#layout-select', '#stacked-switch',
             '#fill-switch', '#layout-select', '#stacked-switch',
             '#stats-switch', '#donut-switch', '#autoscale-switch', '#compare-year-switch',
-            '#hide-axis-switch', '#hide-grid-switch'
+            '#hide-axis-switch', '#hide-grid-switch', '#date-format-select'
         ];
         inputs.forEach(id => {
             const el = this.content.querySelector(id);
@@ -2886,6 +2902,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 }
                 if (id === '#hide-axis-switch') this.hideAxislabels = e.target.checked;
                 if (id === '#hide-grid-switch') this.hideGrid = e.target.checked;
+                if (id === '#date-format-select') this.dateFormat = e.target.value;
 
                 this.updateStackedVisibility();
                 if (!this._config) this.saveSettings();
@@ -3049,6 +3066,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         yaml += `compareYear: ${this.compareYear}\n`;
         yaml += `hideAxislabels: ${this.hideAxislabels}\n`;
         yaml += `hideGrid: ${this.hideGrid}\n`;
+        yaml += `dateFormat: ${this.dateFormat}\n`;
         yaml += `chartTension: ${this.chartTension}\n`;
         if (this.thresholdValue) yaml += `threshold: ${this.thresholdValue}\n`;
         if (this.thresholdValue2) yaml += `threshold2: ${this.thresholdValue2}\n`;
@@ -3081,6 +3099,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             threshold2: this.thresholdValue2,
             hideAxislabels: this.hideAxislabels,
             hideGrid: this.hideGrid,
+            dateFormat: this.dateFormat,
             chartTension: this.chartTension,
             sensors: this.selectedSensors
         };
@@ -3178,6 +3197,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             threshold2: this.thresholdValue2,
             hideAxislabels: this.hideAxislabels,
             hideGrid: this.hideGrid,
+            dateFormat: this.dateFormat,
             chartTension: this.chartTension
         };
         this.savedViews.push(viewConfig);
@@ -3219,6 +3239,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         this.chartTension = config.chartTension !== undefined ? config.chartTension : 4;
         this.hideAxislabels = config.hideAxislabels || false;
         this.hideGrid = config.hideGrid || false;
+        this.dateFormat = config.dateFormat || 'dmy';
 
         this.content.querySelector('#chart-type').value = config.chartType || 'line';
         this.content.querySelector('#time-select').value = config.timeSelect || '24';
@@ -3247,6 +3268,8 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         this.content.querySelector('#compare-year-switch').checked = this.compareYear;
         this.content.querySelector('#hide-axis-switch').checked = this.hideAxislabels;
         this.content.querySelector('#hide-grid-switch').checked = this.hideGrid;
+        const dfSel = this.content.querySelector('#date-format-select');
+        if (dfSel) dfSel.value = this.dateFormat;
 
         this.updateSliderVisibility();
         this.updateStackedVisibility();
@@ -3333,6 +3356,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 hideGrid: this.hideGrid,
                 hideAxislabels: this.hideAxislabels,
                 hideGrid: this.hideGrid,
+                dateFormat: this.dateFormat,
                 chartTension: this.chartTension,
                 sidebarCollapsed: this.sidebarCollapsed
             };
@@ -3411,6 +3435,11 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             if (settings.hideAxislabels !== undefined) { this.hideAxislabels = settings.hideAxislabels; this.content.querySelector('#hide-axis-switch').checked = settings.hideAxislabels; }
             if (settings.hideAxislabels !== undefined) { this.hideAxislabels = settings.hideAxislabels; this.content.querySelector('#hide-axis-switch').checked = settings.hideAxislabels; }
             if (settings.hideGrid !== undefined) { this.hideGrid = settings.hideGrid; this.content.querySelector('#hide-grid-switch').checked = settings.hideGrid; }
+            if (settings.dateFormat) {
+                this.dateFormat = settings.dateFormat;
+                const dfSel = this.content.querySelector('#date-format-select');
+                if (dfSel) dfSel.value = settings.dateFormat;
+            }
             if (settings.sidebarCollapsed !== undefined) {
                 this.sidebarCollapsed = settings.sidebarCollapsed;
                 this._applySidebarState();
@@ -3837,6 +3866,10 @@ class DetailedChartsPanelEditor extends HTMLElement {
         rowOpt3.appendChild(this._createSelector('hideAxislabels', t('hideAxisLabels'), { boolean: {} }, c.hideAxislabels === true));
         rowOpt3.appendChild(this._createSelector('hideGrid', t('hideGrid'), { boolean: {} }, c.hideGrid === true));
         secOpt.appendChild(rowOpt3);
+
+        const rowOpt4 = document.createElement('div'); rowOpt4.className = 'row';
+        rowOpt4.appendChild(this._createSelector('dateFormat', t('dateFormat'), { select: { mode: "dropdown", options: [{ label: t('dateFormatDMY'), value: 'dmy' }, { label: t('dateFormatMDY'), value: 'mdy' }] } }, c.dateFormat || 'dmy'));
+        secOpt.appendChild(rowOpt4);
 
         if (c.chartType === 'bar' && c.layoutMode !== 'split') secOpt.appendChild(this._createSelector('stackedBars', t('stackedBars'), { boolean: {} }, c.stackedBars === true));
         container.appendChild(secOpt);
