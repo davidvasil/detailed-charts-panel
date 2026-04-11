@@ -190,7 +190,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
         const secDisp = document.createElement('div'); secDisp.className = 'section';
         secDisp.innerHTML = `<div class="section-title">${t('presentation')}</div>`;
         const row1 = document.createElement('div'); row1.className = 'row';
-        row1.appendChild(this._createSelector('chartType', t('chartTypeLabel'), { select: { mode: "dropdown", options: [{ label: t('line'), value: 'line' }, { label: t('bar'), value: 'bar' }, { label: t('scatter'), value: 'scatter' }, { label: t('doughnut'), value: 'doughnut' }, { label: t('stepped'), value: 'stepped' }] } }, c.chartType || 'line'));
+        row1.appendChild(this._createSelector('chartType', t('chartTypeLabel'), { select: { mode: "dropdown", options: [{ label: t('line'), value: 'line' }, { label: t('bar'), value: 'bar' }, { label: t('stackedArea'), value: 'stackedArea' }, { label: t('scatter'), value: 'scatter' }, { label: t('doughnut'), value: 'doughnut' }, { label: t('stepped'), value: 'stepped' }] } }, c.chartType || 'line'));
         row1.appendChild(this._createSelector('layoutMode', t('layoutLabel'), { select: { mode: "dropdown", options: [{ label: t('combined'), value: 'combined' }, { label: t('split'), value: 'split' }, { label: t('mixed'), value: 'mixed' }] } }, c.layoutMode || 'combined'));
         secDisp.appendChild(row1);
         const row2 = document.createElement('div'); row2.className = 'row';

@@ -24,6 +24,7 @@ export const en = {
     doughnut: "Doughnut (Distribution)",
     stepped: "Stepped",
     scatter: "Scatter (Points)",
+    stackedArea: "Stacked Area",
     threshold1: "Reference Line 1 (Value):",
     threshold2: "Reference Line 2 (Value):",
     autoScale: "Auto-Scale (W ➡ kW)",

@@ -654,6 +654,7 @@ export function getPanelTemplate() {
 				<select id="chart-type">
 					<option value="line" selected>${t('line')}</option>
 					<option value="bar">${t('bar')}</option>
+					<option value="stackedArea">${t('stackedArea')}</option>
 					<option value="doughnut">${t('doughnut')}</option>
 					<option value="stepped">${t('stepped')}</option>
 					<option value="scatter">${t('scatter')}</option>

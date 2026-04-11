@@ -230,6 +230,7 @@ export class DetailedChartsLogic extends HTMLElement {
                     if (sensorIdx >= 0 && newResults[sensorIdx]) {
                         const unit = this._hass.states[s.entityId]?.attributes?.unit_of_measurement || '';
                         let type = s.typeOverride || this.content.querySelector('#chart-type').value;
+                        if (type === 'stackedArea') type = 'line';
                         if (this.stackedBars) type = 'bar';
 
                         let points = processData(newResults[sensorIdx], type, unit, startTime);
@@ -253,6 +254,7 @@ export class DetailedChartsLogic extends HTMLElement {
                 if (s.hidden) return;
                 const unit = this._hass.states[s.entityId]?.attributes?.unit_of_measurement || '';
                 let type = this.content.querySelector('#chart-type').value;
+                if (type === 'stackedArea') type = 'line';
                 if (this.stackedBars) type = 'bar';
 
                 let points = processData(newResults[idx], type, unit, startTime);
@@ -304,6 +306,7 @@ export class DetailedChartsLogic extends HTMLElement {
             if (chart) {
                 const unit = this._hass.states[sensorConfig.entityId]?.attributes?.unit_of_measurement || '';
                 let currentType = sensorConfig.typeOverride || this.content.querySelector('#chart-type').value;
+                if (currentType === 'stackedArea') currentType = 'line';
                 if (this.stackedBars) currentType = 'bar';
 
                 let points = processData(newData, currentType, unit, startTime);
@@ -625,6 +628,10 @@ export class DetailedChartsLogic extends HTMLElement {
         const st = this._globalStartTime || cacheData[0]?.startTime || new Date();
         const et = this._globalEndTime || cacheData[0]?.endTime || new Date();
 
+        const isStackedArea = (chartType === 'stackedArea');
+        let stackOrdinal = 0;
+        const stackMemberDatasets = [];
+
         let hasSecondaryAxis = false;
         let cacheIdx = 0;
 
@@ -640,7 +647,7 @@ export class DetailedChartsLogic extends HTMLElement {
             const useRightAxis = (unit === '%' || cleanName(conf.entityId).toLowerCase().includes('soc'));
             if (useRightAxis) hasSecondaryAxis = true;
 
-            let effectiveType = this.stackedBars ? 'bar' : chartType;
+            let effectiveType = this.stackedBars ? 'bar' : (isStackedArea ? 'line' : chartType);
             if (useRightAxis || isBinary) effectiveType = 'line';
 
             let isStepped = false;
@@ -668,9 +675,13 @@ export class DetailedChartsLogic extends HTMLElement {
             }
             allStatsHTML += createStatsCard(conf, min.toFixed(precision), avg, max.toFixed(precision), displayVal, unit, displayLabel);
 
+            const isStackMember = isStackedArea && !isBinary && !useRightAxis;
+
             let dsBgColor = conf.color;
             if (isBinary) {
                 dsBgColor = hexToRgba(conf.color, 0.2);
+            } else if (isStackMember) {
+                dsBgColor = hexToRgba(conf.color, 0.55);
             } else if (this.fillArea && effectiveType === 'line') {
                 const grad = ctx.createLinearGradient(0, 0, 0, 400);
                 grad.addColorStop(0, hexToRgba(conf.color, 0.5));
@@ -678,16 +689,24 @@ export class DetailedChartsLogic extends HTMLElement {
                 dsBgColor = grad;
             }
 
+            let fillValue;
+            if (isStackMember) {
+                fillValue = (stackOrdinal === 0) ? 'origin' : '-1';
+                stackOrdinal++;
+            } else {
+                fillValue = (isBinary) ? true : (this.fillArea && !this.monochromeMode);
+            }
+
             const isHidden = conf.hidden === true;
             // --- UPDATED: Use alias and store entityId ---
-            datasets.push({
+            const ds = {
                 label: conf.alias || cleanName(conf.entityId),
                 _entityId: conf.entityId, // Store original ID for lookups
                 hidden: isHidden,
                 data: points,
                 borderColor: conf.color,
                 backgroundColor: dsBgColor,
-                fill: (isBinary) ? true : (this.fillArea && !this.monochromeMode),
+                fill: fillValue,
                 borderWidth: (isBinary) ? 1 : (effectiveType === 'bar' ? 0 : 2.5),
                 categoryPercentage: 0.98,
                 barPercentage: 0.98,
@@ -700,9 +719,40 @@ export class DetailedChartsLogic extends HTMLElement {
                 yAxisID: isBinary ? 'y_binary' : (useRightAxis ? 'y1' : 'y'),
                 type: effectiveType,
                 order: isBinary ? 10 : 0,
-                spanGaps: true
-            });
+                spanGaps: true,
+                stack: isStackMember ? 'stackArea' : undefined
+            };
+            datasets.push(ds);
+            if (isStackMember) stackMemberDatasets.push(ds);
         });
+
+        if (isStackedArea && stackMemberDatasets.length >= 2) {
+            const allX = new Set();
+            stackMemberDatasets.forEach(d => d.data.forEach(p => allX.add(p.x)));
+            let xs = Array.from(allX).sort((a, b) => a - b);
+            const MAX_TICKS = 1500;
+            if (xs.length > MAX_TICKS) {
+                const step = Math.ceil(xs.length / MAX_TICKS);
+                xs = xs.filter((_, i) => i % step === 0);
+            }
+            stackMemberDatasets.forEach(d => {
+                const src = d.data;
+                const resampled = new Array(xs.length);
+                let i = 0;
+                let last = 0;
+                let started = false;
+                for (let k = 0; k < xs.length; k++) {
+                    const x = xs[k];
+                    while (i < src.length && src[i].x <= x) {
+                        last = src[i].y;
+                        started = true;
+                        i++;
+                    }
+                    resampled[k] = { x, y: started ? last : 0 };
+                }
+                d.data = resampled;
+            });
+        }
 
         if (this.thresholdValue !== null && this.thresholdValue !== '') {
             const val = parseFloat(this.thresholdValue);
@@ -711,7 +761,8 @@ export class DetailedChartsLogic extends HTMLElement {
                     label: 'Limit',
                     data: [{ x: st.getTime(), y: val }, { x: et.getTime(), y: val }],
                     borderColor: '#f44336', borderWidth: 1.5, borderDash: [10, 5],
-                    pointRadius: 0, fill: false, type: 'line', yAxisID: 'y', order: -1
+                    pointRadius: 0, fill: false, type: 'line', yAxisID: 'y', order: -1,
+                    stack: 'threshold1'
                 });
             }
         }
@@ -722,14 +773,17 @@ export class DetailedChartsLogic extends HTMLElement {
                     label: 'Limit2',
                     data: [{ x: st.getTime(), y: val2 }, { x: et.getTime(), y: val2 }],
                     borderColor: '#03a9f4', borderWidth: 1.5, borderDash: [10, 5],
-                    pointRadius: 0, fill: false, type: 'line', yAxisID: 'y', order: -1
+                    pointRadius: 0, fill: false, type: 'line', yAxisID: 'y', order: -1,
+                    stack: 'threshold2'
                 });
             }
         }
 
         if (statsWrapper) statsWrapper.innerHTML = allStatsHTML;
-        const finalChartType = (this.stackedBars ? 'bar' : (chartType === 'stepped' ? 'line' : chartType));
-        this.createChartInstance(ctx, finalChartType, datasets, st, et, true, null, false, hasSecondaryAxis);
+        const finalChartType = this.stackedBars
+            ? 'bar'
+            : (isStackedArea || chartType === 'stepped' ? 'line' : chartType);
+        this.createChartInstance(ctx, finalChartType, datasets, st, et, true, null, false, hasSecondaryAxis, false, isStackedArea);
 
         if (this.showDonutSidebar && chartType !== 'doughnut') {
             const donutCanvas = wrapper.querySelector('#canvas-side-donut');
@@ -813,6 +867,7 @@ export class DetailedChartsLogic extends HTMLElement {
             card.addEventListener('drop', (e) => { e.preventDefault(); const fromIndex = parseInt(e.dataTransfer.getData('text/plain')); if (fromIndex !== idx) { this.reorderSensors(fromIndex, idx); } });
 
             let currentType = conf.typeOverride || globalChartType;
+            if (currentType === 'stackedArea') currentType = 'line';
             let unit = this._hass.states[conf.entityId]?.attributes?.unit_of_measurement || '';
             const isBinary = conf.entityId.startsWith('binary_sensor.') || (this._hass.states[conf.entityId]?.attributes?.device_class === 'binary_sensor');
             if (isBinary) currentType = 'line';
@@ -1056,7 +1111,7 @@ export class DetailedChartsLogic extends HTMLElement {
         });
     }
 
-    createChartInstance(ctx, type, datasets, startTime, endTime, showZoomBtn, sensorIndex, hideLegend, hasSecondaryAxis, forceNoStack = false) {
+    createChartInstance(ctx, type, datasets, startTime, endTime, showZoomBtn, sensorIndex, hideLegend, hasSecondaryAxis, forceNoStack = false, forceStack = false) {
         const styles = getComputedStyle(this);
         const textColor = styles.getPropertyValue('--primary-text-color').trim();
         const gridColor = styles.getPropertyValue('--divider-color').trim();
@@ -1248,12 +1303,12 @@ export class DetailedChartsLogic extends HTMLElement {
                 },
                 scales: {
                     x: {
-                        type: 'linear', position: 'bottom', min: startTime.getTime(), max: endTime.getTime(), stacked: forceNoStack ? false : this.stackedBars, offset: false,
+                        type: 'linear', position: 'bottom', min: startTime.getTime(), max: endTime.getTime(), stacked: forceNoStack ? false : (forceStack || this.stackedBars), offset: false,
                         ticks: { display: !this.hideAxislabels, color: secondaryText, maxTicksLimit: 8, callback: function (value) { const d = new Date(value); const diffHours = (endTime - startTime) / (1000 * 60 * 60); if (diffHours > 48) return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }); return d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }); } },
                         grid: { color: gridColor, drawBorder: false, display: !this.hideGrid }
                     },
                     y: {
-                        type: 'linear', position: 'left', stacked: forceNoStack ? false : this.stackedBars, grace: '15%',
+                        type: 'linear', position: 'left', stacked: forceNoStack ? false : (forceStack || this.stackedBars), grace: '15%',
                         ticks: { display: !this.hideAxislabels, color: secondaryText },
                         grid: { color: gridColor, borderDash: [5, 5], display: !this.hideGrid }
                     },
