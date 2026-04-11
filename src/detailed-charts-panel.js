@@ -89,6 +89,8 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         this.thresholdValue = config.threshold || "";
         this.thresholdValue2 = config.threshold2 || "";
         this.chartTension = config.chartTension !== undefined ? config.chartTension : 4;
+        this.yMin = this._parseAxisLimit(config.yMin);
+        this.yMax = this._parseAxisLimit(config.yMax);
 
         this.hideAxislabels = config.hideAxislabels || false;
         this.hideGrid = config.hideGrid || false;
@@ -135,6 +137,8 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             updateInput('#compare-year-switch', this.compareYear, true);
             updateInput('#threshold-input', this.thresholdValue);
             updateInput('#threshold2-input', this.thresholdValue2);
+            updateInput('#y-min-input', this.yMin === undefined ? '' : this.yMin);
+            updateInput('#y-max-input', this.yMax === undefined ? '' : this.yMax);
 
             this.updateSliderVisibility();
             this.updateStackedVisibility();
@@ -144,7 +148,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
             // FIX: If config changed (Editor), sync to localStorage to prevent loadSettings from reverting it
             if (oldConfig) {
-                const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'compareYear', 'threshold', 'threshold2', 'hideAxislabels', 'hideGrid', 'dateFormat'];
+                const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'compareYear', 'threshold', 'threshold2', 'hideAxislabels', 'hideGrid', 'dateFormat', 'yMin', 'yMax'];
                 let hasChanged = keysToCheck.some(k => oldConfig[k] !== config[k]);
                 if (!hasChanged) {
                     if (JSON.stringify(config.sensors) !== JSON.stringify(oldConfig.sensors)) hasChanged = true;
@@ -175,6 +179,12 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
     getCardSize() {
         return 4;
+    }
+
+    _parseAxisLimit(v) {
+        if (v === undefined || v === null || v === '') return undefined;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : undefined;
     }
 
     set hass(hass) {
@@ -377,6 +387,26 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             });
         }
 
+        const yMinInput = this.content.querySelector('#y-min-input');
+        if (yMinInput) {
+            yMinInput.addEventListener('change', (e) => {
+                const v = e.target.value;
+                this.yMin = v === '' ? undefined : Number(v);
+                if (!this._config) this.saveSettings();
+                if (this._sensorDataCache.length > 0) this.updateChartFromCache();
+            });
+        }
+
+        const yMaxInput = this.content.querySelector('#y-max-input');
+        if (yMaxInput) {
+            yMaxInput.addEventListener('change', (e) => {
+                const v = e.target.value;
+                this.yMax = v === '' ? undefined : Number(v);
+                if (!this._config) this.saveSettings();
+                if (this._sensorDataCache.length > 0) this.updateChartFromCache();
+            });
+        }
+
         const zoomSlider = this.content.querySelector('#zoom-slider');
         zoomSlider.addEventListener('input', (e) => {
             this.zoomLevel = parseFloat(e.target.value);
@@ -518,6 +548,8 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         yaml += `chartTension: ${this.chartTension}\n`;
         if (this.thresholdValue) yaml += `threshold: ${this.thresholdValue}\n`;
         if (this.thresholdValue2) yaml += `threshold2: ${this.thresholdValue2}\n`;
+        if (this.yMin !== undefined) yaml += `yMin: ${this.yMin}\n`;
+        if (this.yMax !== undefined) yaml += `yMax: ${this.yMax}\n`;
         if (this.gridColumns > 1) yaml += `gridColumns: ${this.gridColumns}\n`;
 
         yaml += `sensors:\n`;
@@ -545,6 +577,8 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             compareYear: this.compareYear,
             threshold: this.thresholdValue,
             threshold2: this.thresholdValue2,
+            yMin: this.yMin,
+            yMax: this.yMax,
             hideAxislabels: this.hideAxislabels,
             hideGrid: this.hideGrid,
             dateFormat: this.dateFormat,
@@ -643,6 +677,8 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             compareYear: this.compareYear,
             threshold: this.thresholdValue,
             threshold2: this.thresholdValue2,
+            yMin: this.yMin,
+            yMax: this.yMax,
             hideAxislabels: this.hideAxislabels,
             hideGrid: this.hideGrid,
             dateFormat: this.dateFormat,
@@ -685,6 +721,8 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         this.thresholdValue = config.threshold || "";
         this.thresholdValue2 = config.threshold2 || "";
         this.chartTension = config.chartTension !== undefined ? config.chartTension : 4;
+        this.yMin = this._parseAxisLimit(config.yMin);
+        this.yMax = this._parseAxisLimit(config.yMax);
         this.hideAxislabels = config.hideAxislabels || false;
         this.hideGrid = config.hideGrid || false;
         this.dateFormat = config.dateFormat || 'dmy';
@@ -712,6 +750,10 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
         this.content.querySelector('#threshold-input').value = this.thresholdValue;
         if (this.content.querySelector('#threshold2-input')) this.content.querySelector('#threshold2-input').value = this.thresholdValue2;
+        const yMinEl = this.content.querySelector('#y-min-input');
+        if (yMinEl) yMinEl.value = this.yMin === undefined ? '' : this.yMin;
+        const yMaxEl = this.content.querySelector('#y-max-input');
+        if (yMaxEl) yMaxEl.value = this.yMax === undefined ? '' : this.yMax;
         this.content.querySelector('#autoscale-switch').checked = this.autoScale;
         this.content.querySelector('#compare-year-switch').checked = this.compareYear;
         this.content.querySelector('#hide-axis-switch').checked = this.hideAxislabels;
@@ -806,6 +848,8 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 hideGrid: this.hideGrid,
                 dateFormat: this.dateFormat,
                 chartTension: this.chartTension,
+                yMin: this.yMin,
+                yMax: this.yMax,
                 sidebarCollapsed: this.sidebarCollapsed
             };
             const singleContainer = this.content.querySelector('#chart-container-single');
@@ -877,6 +921,16 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             if (settings.autoScale !== undefined) {
                 this.autoScale = settings.autoScale;
                 this.content.querySelector('#autoscale-switch').checked = settings.autoScale;
+            }
+            if (settings.yMin !== undefined && settings.yMin !== null && settings.yMin !== '') {
+                this.yMin = Number(settings.yMin);
+                const el = this.content.querySelector('#y-min-input');
+                if (el) el.value = this.yMin;
+            }
+            if (settings.yMax !== undefined && settings.yMax !== null && settings.yMax !== '') {
+                this.yMax = Number(settings.yMax);
+                const el = this.content.querySelector('#y-max-input');
+                if (el) el.value = this.yMax;
             }
             this.chartTension = settings.chartTension !== undefined ? settings.chartTension : 4;
 

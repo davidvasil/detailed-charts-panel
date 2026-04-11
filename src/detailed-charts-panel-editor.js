@@ -198,6 +198,10 @@ class DetailedChartsPanelEditor extends HTMLElement {
         if (c.layoutMode !== 'combined') row2.appendChild(this._createSelector('gridColumns', t('columnsLabel'), { number: { min: 1, max: 6, step: 1, mode: "box" } }, c.gridColumns ?? 1));
         secDisp.appendChild(row2);
         secDisp.appendChild(this._createSelector('threshold', t('thresholdLabel'), { text: {} }, c.threshold || ''));
+        const rowYAxis = document.createElement('div'); rowYAxis.className = 'row';
+        rowYAxis.appendChild(this._createSelector('yMin', t('yMinLabel'), { text: {} }, c.yMin ?? ''));
+        rowYAxis.appendChild(this._createSelector('yMax', t('yMaxLabel'), { text: {} }, c.yMax ?? ''));
+        secDisp.appendChild(rowYAxis);
         container.appendChild(secDisp);
 
         // --- SECTION 2: Zeitraum ---

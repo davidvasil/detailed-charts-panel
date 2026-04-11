@@ -1310,6 +1310,8 @@ export class DetailedChartsLogic extends HTMLElement {
                     },
                     y: {
                         type: 'linear', position: 'left', stacked: forceNoStack ? false : (forceStack || this.stackedBars), grace: '15%',
+                        ...(Number.isFinite(this.yMin) ? { min: this.yMin } : {}),
+                        ...(Number.isFinite(this.yMax) ? { max: this.yMax } : {}),
                         ticks: { display: !this.hideAxislabels, color: secondaryText },
                         grid: { color: gridColor, borderDash: [5, 5], display: !this.hideGrid }
                     },

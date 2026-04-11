@@ -668,6 +668,14 @@ export function getPanelTemplate() {
                  <label>${t('threshold2')}</label>
                  <input id="threshold2-input" type="number" step="any" placeholder="z.B. 1000" title="Zeigt eine hellblaue Linie bei diesem Wert an">
               </div>
+              <div class="control-group" style="margin-top:10px;">
+                 <label>${t('yMinLabel')}</label>
+                 <input id="y-min-input" type="number" step="any" placeholder="${t('autoPlaceholder')}" title="${t('yMinTitle')}">
+              </div>
+              <div class="control-group" style="margin-top:10px;">
+                 <label>${t('yMaxLabel')}</label>
+                 <input id="y-max-input" type="number" step="any" placeholder="${t('autoPlaceholder')}" title="${t('yMaxTitle')}">
+              </div>
               <div class="toggle-row" id="toggle-autoscale-row" style="margin-top: 10px;">
                  <span class="toggle-label">${t('autoScale')}</span>
                  <input type="checkbox" class="toggle-switch" id="autoscale-switch">
