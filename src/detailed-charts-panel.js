@@ -822,7 +822,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
     updateStatsToggleVisibility() {
         const statsRow = this.content.querySelector('#toggle-stats-row');
-        if (this.layoutMode !== 'split') { statsRow.style.display = 'flex'; } else { statsRow.style.display = 'none'; }
+        if (statsRow) statsRow.style.display = 'flex';
     }
 
     updateDonutToggleVisibility() {

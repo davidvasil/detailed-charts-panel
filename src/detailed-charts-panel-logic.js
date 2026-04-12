@@ -221,13 +221,12 @@ export class DetailedChartsLogic extends HTMLElement {
         // Update Split Cards (Footer)
         this.selectedSensors.forEach((s, idx) => {
             if (s.isCard) return;
-            // Suche Footer im ShadowRoot (funktioniert für Mixed & Split Layout)
-            // Hinweis: Im Mixed Mode sind die Split-Indizes oft verschoben oder separat, 
-            // aber renderSplitView nutzt dataset-index.
             const card = this.shadowRoot.querySelector(`.split-chart-card[data-index="${idx}"]`);
             if (card) {
                 const footer = card.querySelector('.split-stats-box');
                 if (footer) {
+                    if (!this.showStats) { footer.style.display = 'none'; return; }
+                    footer.style.display = '';
                     const sensorIdx = realSensors.findIndex(rs => rs.entityId === s.entityId);
                     if (sensorIdx >= 0 && newResults[sensorIdx]) {
                         const unit = this._hass.states[s.entityId]?.attributes?.unit_of_measurement || '';
@@ -269,6 +268,94 @@ export class DetailedChartsLogic extends HTMLElement {
                 html += createStatsCard(s, stats.min, stats.avg, stats.max, stats.curr, unit, stats.label);
             });
             statsWrapper.innerHTML = html;
+        }
+    }
+
+    _updateVisibleStats(chart, sensorIndex) {
+        if (!this.showStats) return;
+        const xMin = chart.scales.x.min;
+        const xMax = chart.scales.x.max;
+
+        if (sensorIndex !== null && sensorIndex !== undefined) {
+            const conf = this.selectedSensors[sensorIndex];
+            if (!conf || conf.isCard) return;
+            const dataset = chart.data.datasets.find(d => d._entityId === conf.entityId);
+            if (!dataset) return;
+
+            const visiblePoints = dataset.data.filter(p => p.x >= xMin && p.x <= xMax);
+            if (!visiblePoints.length) return;
+
+            let unit = this._hass.states[conf.entityId]?.attributes?.unit_of_measurement || '';
+            if (this.autoScale) {
+                if (unit === 'W') unit = 'kW';
+                else if (unit === 'Wh') unit = 'kWh';
+            }
+            const precision = this._hass.states[conf.entityId]?.attributes?.display_precision ?? 2;
+            const values = visiblePoints.map(p => p.y);
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            const avg = values.reduce((a, b) => a + b, 0) / values.length;
+            const curr = values[values.length - 1];
+
+            let displayVal = curr.toFixed(precision);
+            let displayLabel = t('current');
+            if (unit && (unit.includes("Wh") || unit.includes("kWh"))) {
+                const hours = (xMax - xMin) / 3600000;
+                let type = conf.typeOverride || this.content.querySelector('#chart-type').value;
+                if (type === 'stackedArea') type = 'line';
+                if (this.stackedBars) type = 'bar';
+                const isAggregated = (type === 'bar' && hours > 24);
+                displayVal = calculateEnergySum(values, isAggregated).toFixed(precision);
+                displayLabel = t('sum');
+            }
+
+            const card = this.shadowRoot.querySelector(`.split-chart-card[data-index="${sensorIndex}"]`);
+            if (card) {
+                const footer = card.querySelector('.split-stats-box');
+                if (footer) {
+                    footer.innerHTML = getSplitStatsHTML(displayLabel, conf.color, displayVal, unit, min.toFixed(precision), avg.toFixed(precision), max.toFixed(precision));
+                }
+            }
+        } else {
+            const statsWrapper = this.shadowRoot.querySelector('#stats-wrapper') || this.shadowRoot.querySelector('#stats-wrapper-top');
+            if (!statsWrapper || statsWrapper.style.display === 'none') return;
+
+            let html = '';
+            chart.data.datasets.forEach(ds => {
+                if (!ds._entityId) return;
+                if (ds.hidden) return;
+                const conf = this.selectedSensors.find(s => s.entityId === ds._entityId);
+                if (!conf || conf.hidden) return;
+
+                const visiblePoints = ds.data.filter(p => p.x >= xMin && p.x <= xMax);
+                if (!visiblePoints.length) return;
+
+                let unit = this._hass.states[conf.entityId]?.attributes?.unit_of_measurement || '';
+                if (this.autoScale) {
+                    if (unit === 'W') unit = 'kW';
+                    else if (unit === 'Wh') unit = 'kWh';
+                }
+                const precision = this._hass.states[conf.entityId]?.attributes?.display_precision ?? 2;
+                const values = visiblePoints.map(p => p.y);
+                const min = Math.min(...values);
+                const max = Math.max(...values);
+                const avg = values.reduce((a, b) => a + b, 0) / values.length;
+                const curr = values[values.length - 1];
+
+                let displayVal = curr.toFixed(precision);
+                let displayLabel = t('current');
+                if (unit && (unit.includes("Wh") || unit.includes("kWh"))) {
+                    const hours = (xMax - xMin) / 3600000;
+                    let type = this.content.querySelector('#chart-type').value;
+                    if (type === 'stackedArea') type = 'line';
+                    if (this.stackedBars) type = 'bar';
+                    const isAggregated = (type === 'bar' && hours > 24);
+                    displayVal = calculateEnergySum(values, isAggregated).toFixed(precision);
+                    displayLabel = t('sum');
+                }
+                html += createStatsCard(conf, min.toFixed(precision), avg.toFixed(precision), max.toFixed(precision), displayVal, unit, displayLabel);
+            });
+            if (html) statsWrapper.innerHTML = html;
         }
     }
 
@@ -370,7 +457,7 @@ export class DetailedChartsLogic extends HTMLElement {
                 const card = this.shadowRoot.querySelector(`.split-chart-card[data-index="${index}"]`);
                 if (card) {
                     const footer = card.querySelector(`#footer-${index} .split-stats-box`);
-                    if (footer) {
+                    if (footer && this.showStats) {
                         const precision = this._hass.states[sensorConfig.entityId]?.attributes?.display_precision ?? 2;
                         let displayVal = curr.toFixed(precision);
 
@@ -917,7 +1004,13 @@ export class DetailedChartsLogic extends HTMLElement {
             }
 
             const footer = card.querySelector(`#footer-${idx}`);
-            footer.querySelector('.split-stats-box').innerHTML = getSplitStatsHTML(displayLabel, conf.color, displayVal, unit, min.toFixed(precision), avg, max.toFixed(precision));
+            const statsBox = footer.querySelector('.split-stats-box');
+            if (this.showStats) {
+                statsBox.innerHTML = getSplitStatsHTML(displayLabel, conf.color, displayVal, unit, min.toFixed(precision), avg, max.toFixed(precision));
+                statsBox.style.display = '';
+            } else {
+                statsBox.style.display = 'none';
+            }
 
             const controlsBox = document.createElement('div');
             controlsBox.className = 'split-controls-box';
@@ -1297,10 +1390,10 @@ export class DetailedChartsLogic extends HTMLElement {
                             onPanComplete: ({ chart }) => {
                                 const min = chart.scales.x.min; const max = chart.scales.x.max; chart.stop();
                                 if (this.layoutMode !== 'combined' && sensorIndex !== null) { this.loadSingleSensorHistory(sensorIndex, new Date(min), new Date(max)); }
-                                else { if (min < startTime.getTime() || max > endTime.getTime()) { this.loadSpecificRange(new Date(min), new Date(max)); } }
+                                else { if (min < startTime.getTime() || max > endTime.getTime()) { this.loadSpecificRange(new Date(min), new Date(max)); } else { this._updateVisibleStats(chart, sensorIndex); } }
                             }
                         },
-                        zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x', onZoom: () => { if (showZoomBtn) resetBtn.style.display = 'block'; } }
+                        zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x', onZoom: () => { if (showZoomBtn) resetBtn.style.display = 'block'; }, onZoomComplete: ({ chart }) => { this._updateVisibleStats(chart, sensorIndex); } }
                     }
                 },
                 scales: {
