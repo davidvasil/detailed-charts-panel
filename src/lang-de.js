@@ -37,6 +37,7 @@ export const de = {
     fillArea: "Fläche füllen",
     hideAxisLabels: "Achsen-Text ausblenden",
     hideGrid: "Gitterlinien ausblenden",
+    hideLegend: "Legende ausblenden",
     dateFormat: "Datumsformat",
     dateFormatDMY: "Tag.Monat (31.12)",
     dateFormatMDY: "Monat/Tag (12/31)",

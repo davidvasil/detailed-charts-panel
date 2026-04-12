@@ -237,6 +237,10 @@ class DetailedChartsPanelEditor extends HTMLElement {
         rowOpt3.appendChild(this._createSelector('hideGrid', t('hideGrid'), { boolean: {} }, c.hideGrid === true));
         secOpt.appendChild(rowOpt3);
 
+        const rowOpt3b = document.createElement('div'); rowOpt3b.className = 'row';
+        rowOpt3b.appendChild(this._createSelector('hideLegend', t('hideLegend'), { boolean: {} }, c.hideLegend === true));
+        secOpt.appendChild(rowOpt3b);
+
         const rowOpt4 = document.createElement('div'); rowOpt4.className = 'row';
         rowOpt4.appendChild(this._createSelector('dateFormat', t('dateFormat'), { select: { mode: "dropdown", options: [{ label: t('dateFormatDMY'), value: 'dmy' }, { label: t('dateFormatMDY'), value: 'mdy' }] } }, c.dateFormat || 'dmy'));
         secOpt.appendChild(rowOpt4);

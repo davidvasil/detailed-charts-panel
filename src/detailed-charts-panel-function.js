@@ -693,6 +693,10 @@ export function getPanelTemplate() {
                  <span class="toggle-label">${t('hideGrid')}</span>
                  <input type="checkbox" class="toggle-switch" id="hide-grid-switch">
               </div>
+              <div class="toggle-row" id="toggle-legend-row" style="margin-top: 10px;">
+                 <span class="toggle-label">${t('hideLegend')}</span>
+                 <input type="checkbox" class="toggle-switch" id="hide-legend-switch">
+              </div>
               <div class="control-group" style="margin-top:10px;">
                  <label>${t('dateFormat')}</label>
                  <select id="date-format-select">

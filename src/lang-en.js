@@ -37,6 +37,7 @@ export const en = {
     fillArea: "Fill area",
     hideAxisLabels: "Hide axis labels",
     hideGrid: "Hide gridlines",
+    hideLegend: "Hide legend",
     dateFormat: "Date format",
     dateFormatDMY: "Day.Month (31.12)",
     dateFormatMDY: "Month/Day (12/31)",

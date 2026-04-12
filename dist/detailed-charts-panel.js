@@ -37,6 +37,7 @@ const en = {
     fillArea: "Fill area",
     hideAxisLabels: "Hide axis labels",
     hideGrid: "Hide gridlines",
+    hideLegend: "Hide legend",
     dateFormat: "Date format",
     dateFormatDMY: "Day.Month (31.12)",
     dateFormatMDY: "Month/Day (12/31)",
@@ -173,6 +174,7 @@ const de = {
     fillArea: "Fläche füllen",
     hideAxisLabels: "Achsen-Text ausblenden",
     hideGrid: "Gitterlinien ausblenden",
+    hideLegend: "Legende ausblenden",
     dateFormat: "Datumsformat",
     dateFormatDMY: "Tag.Monat (31.12)",
     dateFormatMDY: "Monat/Tag (12/31)",
@@ -989,6 +991,10 @@ function getPanelTemplate() {
                  <span class="toggle-label">${t('hideGrid')}</span>
                  <input type="checkbox" class="toggle-switch" id="hide-grid-switch">
               </div>
+              <div class="toggle-row" id="toggle-legend-row" style="margin-top: 10px;">
+                 <span class="toggle-label">${t('hideLegend')}</span>
+                 <input type="checkbox" class="toggle-switch" id="hide-legend-switch">
+              </div>
               <div class="control-group" style="margin-top:10px;">
                  <label>${t('dateFormat')}</label>
                  <select id="date-format-select">
@@ -1271,6 +1277,7 @@ class DetailedChartsLogic extends HTMLElement {
 
         this.hideAxislabels = false;
         this.hideGrid = false;
+        this.hideLegend = false;
         this.dateFormat = 'dmy';
     }
 
@@ -1995,7 +2002,7 @@ class DetailedChartsLogic extends HTMLElement {
         const finalChartType = this.stackedBars
             ? 'bar'
             : (isStackedArea || chartType === 'stepped' ? 'line' : chartType);
-        this.createChartInstance(ctx, finalChartType, datasets, st, et, true, null, false, hasSecondaryAxis, false, isStackedArea);
+        this.createChartInstance(ctx, finalChartType, datasets, st, et, true, null, this.hideLegend, hasSecondaryAxis, false, isStackedArea);
 
         if (this.showDonutSidebar && chartType !== 'doughnut') {
             const donutCanvas = wrapper.querySelector('#canvas-side-donut');
@@ -2666,6 +2673,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
         this.hideAxislabels = config.hideAxislabels || false;
         this.hideGrid = config.hideGrid || false;
+        this.hideLegend = config.hideLegend || false;
         this.dateFormat = config.dateFormat || 'dmy';
 
         if (this.content) {
@@ -2690,6 +2698,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
             updateInput('#hide-axis-switch', this.hideAxislabels, true);
             updateInput('#hide-grid-switch', this.hideGrid, true);
+            updateInput('#hide-legend-switch', this.hideLegend, true);
             updateInput('#date-format-select', this.dateFormat);
 
             const gridDisp = this.content.querySelector('#grid-value-display');
@@ -2720,7 +2729,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
             // FIX: If config changed (Editor), sync to localStorage to prevent loadSettings from reverting it
             if (oldConfig) {
-                const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'compareYear', 'threshold', 'threshold2', 'hideAxislabels', 'hideGrid', 'dateFormat', 'yMin', 'yMax'];
+                const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'compareYear', 'threshold', 'threshold2', 'hideAxislabels', 'hideGrid', 'hideLegend', 'dateFormat', 'yMin', 'yMax'];
                 let hasChanged = keysToCheck.some(k => oldConfig[k] !== config[k]);
                 if (!hasChanged) {
                     if (JSON.stringify(config.sensors) !== JSON.stringify(oldConfig.sensors)) hasChanged = true;
@@ -2896,7 +2905,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             '#fill-switch', '#layout-select', '#stacked-switch',
             '#fill-switch', '#layout-select', '#stacked-switch',
             '#stats-switch', '#donut-switch', '#autoscale-switch', '#compare-year-switch',
-            '#hide-axis-switch', '#hide-grid-switch', '#date-format-select'
+            '#hide-axis-switch', '#hide-grid-switch', '#hide-legend-switch', '#date-format-select'
         ];
         inputs.forEach(id => {
             const el = this.content.querySelector(id);
@@ -2932,6 +2941,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 }
                 if (id === '#hide-axis-switch') this.hideAxislabels = e.target.checked;
                 if (id === '#hide-grid-switch') this.hideGrid = e.target.checked;
+                if (id === '#hide-legend-switch') this.hideLegend = e.target.checked;
                 if (id === '#date-format-select') this.dateFormat = e.target.value;
 
                 this.updateStackedVisibility();
@@ -3116,6 +3126,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         yaml += `compareYear: ${this.compareYear}\n`;
         yaml += `hideAxislabels: ${this.hideAxislabels}\n`;
         yaml += `hideGrid: ${this.hideGrid}\n`;
+        yaml += `hideLegend: ${this.hideLegend}\n`;
         yaml += `dateFormat: ${this.dateFormat}\n`;
         yaml += `chartTension: ${this.chartTension}\n`;
         if (this.thresholdValue) yaml += `threshold: ${this.thresholdValue}\n`;
@@ -3153,6 +3164,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             yMax: this.yMax,
             hideAxislabels: this.hideAxislabels,
             hideGrid: this.hideGrid,
+            hideLegend: this.hideLegend,
             dateFormat: this.dateFormat,
             chartTension: this.chartTension,
             sensors: this.selectedSensors
@@ -3253,6 +3265,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             yMax: this.yMax,
             hideAxislabels: this.hideAxislabels,
             hideGrid: this.hideGrid,
+            hideLegend: this.hideLegend,
             dateFormat: this.dateFormat,
             chartTension: this.chartTension
         };
@@ -3297,6 +3310,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         this.yMax = this._parseAxisLimit(config.yMax);
         this.hideAxislabels = config.hideAxislabels || false;
         this.hideGrid = config.hideGrid || false;
+        this.hideLegend = config.hideLegend || false;
         this.dateFormat = config.dateFormat || 'dmy';
 
         this.content.querySelector('#chart-type').value = config.chartType || 'line';
@@ -3330,6 +3344,8 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         this.content.querySelector('#compare-year-switch').checked = this.compareYear;
         this.content.querySelector('#hide-axis-switch').checked = this.hideAxislabels;
         this.content.querySelector('#hide-grid-switch').checked = this.hideGrid;
+        const legendSw = this.content.querySelector('#hide-legend-switch');
+        if (legendSw) legendSw.checked = this.hideLegend;
         const dfSel = this.content.querySelector('#date-format-select');
         if (dfSel) dfSel.value = this.dateFormat;
 
@@ -3416,8 +3432,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 compareYear: this.compareYear,
                 hideAxislabels: this.hideAxislabels,
                 hideGrid: this.hideGrid,
-                hideAxislabels: this.hideAxislabels,
-                hideGrid: this.hideGrid,
+                hideLegend: this.hideLegend,
                 dateFormat: this.dateFormat,
                 chartTension: this.chartTension,
                 yMin: this.yMin,
@@ -3507,8 +3522,12 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             this.chartTension = settings.chartTension !== undefined ? settings.chartTension : 4;
 
             if (settings.hideAxislabels !== undefined) { this.hideAxislabels = settings.hideAxislabels; this.content.querySelector('#hide-axis-switch').checked = settings.hideAxislabels; }
-            if (settings.hideAxislabels !== undefined) { this.hideAxislabels = settings.hideAxislabels; this.content.querySelector('#hide-axis-switch').checked = settings.hideAxislabels; }
             if (settings.hideGrid !== undefined) { this.hideGrid = settings.hideGrid; this.content.querySelector('#hide-grid-switch').checked = settings.hideGrid; }
+            if (settings.hideLegend !== undefined) {
+                this.hideLegend = settings.hideLegend;
+                const el = this.content.querySelector('#hide-legend-switch');
+                if (el) el.checked = settings.hideLegend;
+            }
             if (settings.dateFormat) {
                 this.dateFormat = settings.dateFormat;
                 const dfSel = this.content.querySelector('#date-format-select');
@@ -3944,6 +3963,10 @@ class DetailedChartsPanelEditor extends HTMLElement {
         rowOpt3.appendChild(this._createSelector('hideAxislabels', t('hideAxisLabels'), { boolean: {} }, c.hideAxislabels === true));
         rowOpt3.appendChild(this._createSelector('hideGrid', t('hideGrid'), { boolean: {} }, c.hideGrid === true));
         secOpt.appendChild(rowOpt3);
+
+        const rowOpt3b = document.createElement('div'); rowOpt3b.className = 'row';
+        rowOpt3b.appendChild(this._createSelector('hideLegend', t('hideLegend'), { boolean: {} }, c.hideLegend === true));
+        secOpt.appendChild(rowOpt3b);
 
         const rowOpt4 = document.createElement('div'); rowOpt4.className = 'row';
         rowOpt4.appendChild(this._createSelector('dateFormat', t('dateFormat'), { select: { mode: "dropdown", options: [{ label: t('dateFormatDMY'), value: 'dmy' }, { label: t('dateFormatMDY'), value: 'mdy' }] } }, c.dateFormat || 'dmy'));

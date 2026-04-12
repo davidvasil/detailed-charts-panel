@@ -60,6 +60,7 @@ export class DetailedChartsLogic extends HTMLElement {
 
         this.hideAxislabels = false;
         this.hideGrid = false;
+        this.hideLegend = false;
         this.dateFormat = 'dmy';
     }
 
@@ -784,7 +785,7 @@ export class DetailedChartsLogic extends HTMLElement {
         const finalChartType = this.stackedBars
             ? 'bar'
             : (isStackedArea || chartType === 'stepped' ? 'line' : chartType);
-        this.createChartInstance(ctx, finalChartType, datasets, st, et, true, null, false, hasSecondaryAxis, false, isStackedArea);
+        this.createChartInstance(ctx, finalChartType, datasets, st, et, true, null, this.hideLegend, hasSecondaryAxis, false, isStackedArea);
 
         if (this.showDonutSidebar && chartType !== 'doughnut') {
             const donutCanvas = wrapper.querySelector('#canvas-side-donut');
