@@ -229,7 +229,21 @@ class DetailedChartsPanelEditor extends HTMLElement {
         row2.appendChild(this._createSelector('zoomLevel', t('zoomLabel'), { number: { min: 0.5, max: 2.0, step: 0.1, mode: "box" } }, c.zoomLevel ?? 1.0));
         if (c.layoutMode !== 'combined') row2.appendChild(this._createSelector('gridColumns', t('columnsLabel'), { number: { min: 1, max: 6, step: 1, mode: "box" } }, c.gridColumns ?? 1));
         secDisp.appendChild(row2);
-        secDisp.appendChild(this._createSelector('threshold', t('thresholdLabel'), { text: {} }, c.threshold || ''));
+        // Reference lines section
+        const refDiv = document.createElement('div'); refDiv.style.marginTop = '8px';
+        const refLabel = document.createElement('div'); refLabel.style.cssText = 'font-size:12px;font-weight:500;margin-bottom:4px;'; refLabel.textContent = t('refLinesLabel');
+        refDiv.appendChild(refLabel);
+        const refList = document.createElement('div'); refList.id = 'ref-lines-editor-list';
+        (c.thresholds || this._migrateThresholdsForEditor(c)).forEach((ref, i) => {
+            refList.appendChild(this._buildRefLineRow(ref, i));
+        });
+        refDiv.appendChild(refList);
+        const btnAddRef = document.createElement('button');
+        btnAddRef.className = 'btn-add'; btnAddRef.style.marginTop = '6px';
+        btnAddRef.innerText = t('addRefLineBtn');
+        btnAddRef.onclick = () => this._addRefLine();
+        refDiv.appendChild(btnAddRef);
+        secDisp.appendChild(refDiv);
         const rowYAxis = document.createElement('div'); rowYAxis.className = 'row';
         rowYAxis.appendChild(this._createSelector('yMin', t('yMinLabel'), { text: {} }, c.yMin ?? ''));
         rowYAxis.appendChild(this._createSelector('yMax', t('yMaxLabel'), { text: {} }, c.yMax ?? ''));
@@ -408,6 +422,67 @@ class DetailedChartsPanelEditor extends HTMLElement {
         const sensors = [...(this._config.sensors || [])];
         sensors.splice(index, 1);
         this._configChanged({ ...this._config, sensors });
+    }
+
+    _migrateThresholdsForEditor(c) {
+        const result = [];
+        if (c.threshold !== undefined && c.threshold !== '') result.push({ value: c.threshold, alias: c.thresholdAlias1 || '', color: '#f44336' });
+        if (c.threshold2 !== undefined && c.threshold2 !== '') result.push({ value: c.threshold2, alias: c.thresholdAlias2 || '', color: '#03a9f4' });
+        return result;
+    }
+
+    _buildRefLineRow(ref, index) {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:6px;';
+
+        const colWrap = document.createElement('div');
+        colWrap.className = 'color-wrap';
+        colWrap.style.backgroundColor = ref.color || '#f44336';
+        const colInp = document.createElement('input');
+        colInp.type = 'color'; colInp.className = 'color-inp'; colInp.value = ref.color || '#f44336';
+        colInp.addEventListener('input', (e) => { colWrap.style.backgroundColor = e.target.value; });
+        colInp.onchange = (e) => this._updateRefLine(index, 'color', e.target.value);
+        colWrap.appendChild(colInp);
+        row.appendChild(colWrap);
+
+        const valInp = document.createElement('input');
+        valInp.type = 'number'; valInp.step = 'any'; valInp.value = ref.value !== undefined ? ref.value : '';
+        valInp.placeholder = t('refLineValue');
+        valInp.style.cssText = 'flex:1;min-width:0;padding:4px;border:1px solid var(--divider-color);border-radius:4px;background:var(--card-background-color);color:var(--primary-text-color);';
+        valInp.addEventListener('change', (e) => this._updateRefLine(index, 'value', e.target.value));
+        row.appendChild(valInp);
+
+        const aliasInp = document.createElement('input');
+        aliasInp.type = 'text'; aliasInp.value = ref.alias || '';
+        aliasInp.placeholder = t('refLineAlias');
+        aliasInp.style.cssText = 'flex:1;min-width:0;padding:4px;border:1px solid var(--divider-color);border-radius:4px;background:var(--card-background-color);color:var(--primary-text-color);';
+        aliasInp.addEventListener('change', (e) => this._updateRefLine(index, 'alias', e.target.value.trim()));
+        row.appendChild(aliasInp);
+
+        const btnDel = document.createElement('button');
+        btnDel.className = 'icon-btn delete'; btnDel.innerHTML = ICONS.delete; btnDel.title = t('remove');
+        btnDel.onclick = () => this._removeRefLine(index);
+        row.appendChild(btnDel);
+
+        return row;
+    }
+
+    _updateRefLine(index, key, val) {
+        const thresholds = [...(this._config.thresholds || this._migrateThresholdsForEditor(this._config))];
+        thresholds[index] = { ...thresholds[index], [key]: val };
+        this._configChanged({ ...this._config, thresholds, threshold: undefined, threshold2: undefined, thresholdAlias1: undefined, thresholdAlias2: undefined });
+    }
+
+    _addRefLine() {
+        const thresholds = [...(this._config.thresholds || this._migrateThresholdsForEditor(this._config))];
+        thresholds.push({ value: '', alias: '', color: '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0') });
+        this._configChanged({ ...this._config, thresholds, threshold: undefined, threshold2: undefined, thresholdAlias1: undefined, thresholdAlias2: undefined });
+    }
+
+    _removeRefLine(index) {
+        const thresholds = [...(this._config.thresholds || this._migrateThresholdsForEditor(this._config))];
+        thresholds.splice(index, 1);
+        this._configChanged({ ...this._config, thresholds, threshold: undefined, threshold2: undefined, thresholdAlias1: undefined, thresholdAlias2: undefined });
     }
 }
 

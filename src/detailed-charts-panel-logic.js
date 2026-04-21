@@ -53,10 +53,7 @@ export class DetailedChartsLogic extends HTMLElement {
         this.zoomLevel = 1.0;
         this.monochromeMode = false;
         this.sidebarCollapsed = false;
-        this.thresholdValue = "";
-        this.thresholdValue2 = "";
-        this.thresholdAlias1 = "";
-        this.thresholdAlias2 = "";
+        this.thresholds = [];
         this.autoScale = false;
         this.chartTension = 4;
 
@@ -850,30 +847,18 @@ export class DetailedChartsLogic extends HTMLElement {
             });
         }
 
-        if (this.thresholdValue !== null && this.thresholdValue !== '') {
-            const val = parseFloat(this.thresholdValue);
-            if (!isNaN(val)) {
-                datasets.push({
-                    label: this.thresholdAlias1 || 'Limit',
-                    data: [{ x: st.getTime(), y: val }, { x: et.getTime(), y: val }],
-                    borderColor: '#f44336', borderWidth: 1.5, borderDash: [10, 5],
-                    pointRadius: 0, fill: false, type: 'line', yAxisID: 'y', order: -1,
-                    stack: 'threshold1'
-                });
-            }
-        }
-        if (this.thresholdValue2 !== null && this.thresholdValue2 !== '') {
-            const val2 = parseFloat(this.thresholdValue2);
-            if (!isNaN(val2)) {
-                datasets.push({
-                    label: this.thresholdAlias2 || 'Limit2',
-                    data: [{ x: st.getTime(), y: val2 }, { x: et.getTime(), y: val2 }],
-                    borderColor: '#03a9f4', borderWidth: 1.5, borderDash: [10, 5],
-                    pointRadius: 0, fill: false, type: 'line', yAxisID: 'y', order: -1,
-                    stack: 'threshold2'
-                });
-            }
-        }
+        (this.thresholds || []).forEach((ref, i) => {
+            if (ref.value === undefined || ref.value === '') return;
+            const val = parseFloat(ref.value);
+            if (isNaN(val)) return;
+            datasets.push({
+                label: ref.alias || `Limit${i + 1}`,
+                data: [{ x: st.getTime(), y: val }, { x: et.getTime(), y: val }],
+                borderColor: ref.color || '#f44336', borderWidth: 1.5, borderDash: [10, 5],
+                pointRadius: 0, fill: false, type: 'line', yAxisID: 'y', order: -1,
+                _isThreshold: true
+            });
+        });
 
         if (statsWrapper) statsWrapper.innerHTML = allStatsHTML;
         const finalChartType = this.stackedBars
@@ -1400,7 +1385,7 @@ export class DetailedChartsLogic extends HTMLElement {
                                 else { if (min < startTime.getTime() || max > endTime.getTime()) { this.loadSpecificRange(new Date(min), new Date(max)); } else { this._updateVisibleStats(chart, sensorIndex); } }
                             }
                         },
-                        zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x', onZoom: () => { if (showZoomBtn) resetBtn.style.display = 'block'; }, onZoomComplete: ({ chart }) => { this._updateVisibleStats(chart, sensorIndex); const xMin = chart.scales.x.min; const xMax = chart.scales.x.max; let refUpdated = false; chart.data.datasets.forEach(ds => { if (ds.stack === 'threshold1' || ds.stack === 'threshold2') { if (ds.data.length === 2) { ds.data[0].x = xMin; ds.data[1].x = xMax; refUpdated = true; } } }); if (refUpdated) chart.update('none'); } }
+                        zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x', onZoom: () => { if (showZoomBtn) resetBtn.style.display = 'block'; }, onZoomComplete: ({ chart }) => { this._updateVisibleStats(chart, sensorIndex); const xMin = chart.scales.x.min; const xMax = chart.scales.x.max; let refUpdated = false; chart.data.datasets.forEach(ds => { if (ds._isThreshold) { if (ds.data.length === 2) { ds.data[0].x = xMin; ds.data[1].x = xMax; refUpdated = true; } } }); if (refUpdated) chart.update('none'); } }
                     }
                 },
                 scales: {

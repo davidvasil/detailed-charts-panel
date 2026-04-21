@@ -360,6 +360,8 @@ export function getPanelTemplate() {
         .s-id { font-size: 11px; color: var(--secondary-text-color); margin-top: 2px; }
         .add-sensor-row { display: flex; gap: 8px; align-items: center; }
         .color-picker { width: 44px; height: 44px; padding: 2px; border-radius: 4px; border: 1px solid var(--divider-color); background: var(--primary-background-color); cursor: pointer; }
+        .btn-add-small { width:100%; padding:6px; background:transparent; border:1px dashed var(--primary-color); color:var(--primary-color); font-size:11px; font-weight:bold; text-transform:uppercase; cursor:pointer; border-radius:4px; }
+        .btn-add-small:hover { background:rgba(var(--rgb-primary-color,0,115,207),0.1); }
         .btn-icon { width: 44px; height: 44px; background: var(--btn-color); color: white; border: none; border-radius: 4px; font-size: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; }
         .btn-icon:hover { background-color: #757575; }
         .btn-icon.grey { background-color: #757575; }
@@ -661,20 +663,9 @@ export function getPanelTemplate() {
 				</select>
 			  </div>
               <div class="control-group" style="margin-top:10px;">
-                 <label>${t('threshold1')}</label>
-                 <input id="threshold-input" type="number" step="any" placeholder="z.B. 500" title="Zeigt eine rote Linie bei diesem Wert an">
-              </div>
-              <div class="control-group" style="margin-top:10px;">
-                 <label>${t('threshold1Alias')}</label>
-                 <input id="threshold-alias-input" type="text" placeholder="Limit">
-              </div>
-              <div class="control-group" style="margin-top:10px;">
-                 <label>${t('threshold2')}</label>
-                 <input id="threshold2-input" type="number" step="any" placeholder="z.B. 1000" title="Zeigt eine hellblaue Linie bei diesem Wert an">
-              </div>
-              <div class="control-group" style="margin-top:10px;">
-                 <label>${t('threshold2Alias')}</label>
-                 <input id="threshold2-alias-input" type="text" placeholder="Limit2">
+                 <label>${t('refLinesSection')}</label>
+                 <div id="ref-lines-list"></div>
+                 <button id="add-ref-line-btn" class="btn-add-small" style="margin-top:6px;">${t('addRefLineBtn')}</button>
               </div>
               <div class="control-group" style="margin-top:10px;">
                  <label>${t('yMinLabel')}</label>
