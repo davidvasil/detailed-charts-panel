@@ -97,6 +97,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         this.hideAxislabels = config.hideAxislabels || false;
         this.hideGrid = config.hideGrid || false;
         this.hideLegend = config.hideLegend || false;
+        this.hideMonoBtn = config.hideMonoBtn || false;
         this.dateFormat = config.dateFormat || 'dmy';
 
         if (this.content) {
@@ -154,7 +155,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
             // FIX: If config changed (Editor), sync to localStorage to prevent loadSettings from reverting it
             if (oldConfig) {
-                const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'compareYear', 'threshold', 'thresholdAlias1', 'threshold2', 'thresholdAlias2', 'hideAxislabels', 'hideGrid', 'hideLegend', 'dateFormat', 'yMin', 'yMax'];
+                const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'compareYear', 'threshold', 'thresholdAlias1', 'threshold2', 'thresholdAlias2', 'hideAxislabels', 'hideGrid', 'hideLegend', 'hideMonoBtn', 'dateFormat', 'yMin', 'yMax'];
                 let hasChanged = keysToCheck.some(k => oldConfig[k] !== config[k]);
                 if (!hasChanged) {
                     if (JSON.stringify(config.sensors) !== JSON.stringify(oldConfig.sensors)) hasChanged = true;
@@ -570,6 +571,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         yaml += `hideAxislabels: ${this.hideAxislabels}\n`;
         yaml += `hideGrid: ${this.hideGrid}\n`;
         yaml += `hideLegend: ${this.hideLegend}\n`;
+        yaml += `hideMonoBtn: ${this.hideMonoBtn}\n`;
         yaml += `dateFormat: ${this.dateFormat}\n`;
         yaml += `chartTension: ${this.chartTension}\n`;
         if (this.thresholdValue) yaml += `threshold: ${this.thresholdValue}\n`;
@@ -612,6 +614,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             hideAxislabels: this.hideAxislabels,
             hideGrid: this.hideGrid,
             hideLegend: this.hideLegend,
+            hideMonoBtn: this.hideMonoBtn,
             dateFormat: this.dateFormat,
             chartTension: this.chartTension,
             sensors: this.selectedSensors
@@ -715,6 +718,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             hideAxislabels: this.hideAxislabels,
             hideGrid: this.hideGrid,
             hideLegend: this.hideLegend,
+            hideMonoBtn: this.hideMonoBtn,
             dateFormat: this.dateFormat,
             chartTension: this.chartTension
         };
@@ -762,6 +766,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         this.hideAxislabels = config.hideAxislabels || false;
         this.hideGrid = config.hideGrid || false;
         this.hideLegend = config.hideLegend || false;
+        this.hideMonoBtn = config.hideMonoBtn || false;
         this.dateFormat = config.dateFormat || 'dmy';
 
         this.content.querySelector('#chart-type').value = config.chartType || 'line';
@@ -890,6 +895,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 hideAxislabels: this.hideAxislabels,
                 hideGrid: this.hideGrid,
                 hideLegend: this.hideLegend,
+                hideMonoBtn: this.hideMonoBtn,
                 dateFormat: this.dateFormat,
                 chartTension: this.chartTension,
                 yMin: this.yMin,
@@ -995,6 +1001,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 const el = this.content.querySelector('#hide-legend-switch');
                 if (el) el.checked = settings.hideLegend;
             }
+            if (settings.hideMonoBtn !== undefined) this.hideMonoBtn = settings.hideMonoBtn;
             if (settings.dateFormat) {
                 this.dateFormat = settings.dateFormat;
                 const dfSel = this.content.querySelector('#date-format-select');

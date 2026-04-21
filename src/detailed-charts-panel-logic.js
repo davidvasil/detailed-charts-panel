@@ -63,6 +63,7 @@ export class DetailedChartsLogic extends HTMLElement {
         this.hideAxislabels = false;
         this.hideGrid = false;
         this.hideLegend = false;
+        this.hideMonoBtn = false;
         this.dateFormat = 'dmy';
     }
 
@@ -708,8 +709,12 @@ export class DetailedChartsLogic extends HTMLElement {
 
         const monoBtn = wrapper.querySelector('#toggle-mono-btn');
         if (monoBtn) {
-            monoBtn.addEventListener('click', () => this.toggleMonochrome());
-            if (!this.monochromeMode) monoBtn.classList.add('active');
+            if (this.hideMonoBtn) {
+                monoBtn.style.display = 'none';
+            } else {
+                monoBtn.addEventListener('click', () => this.toggleMonochrome());
+                if (!this.monochromeMode) monoBtn.classList.add('active');
+            }
         }
 
         if (chartType === 'doughnut') { this.renderDoughnut(cacheData, ctx, statsWrapper); return; }

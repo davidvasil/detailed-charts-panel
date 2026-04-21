@@ -40,6 +40,7 @@ export const de = {
     hideAxisLabels: "Achsen-Text ausblenden",
     hideGrid: "Gitterlinien ausblenden",
     hideLegend: "Legende ausblenden",
+    hideMonoBtn: "Min/Max-Hervorhebungsschaltfläche ausblenden",
     dateFormat: "Datumsformat",
     dateFormatDMY: "Tag.Monat (31.12)",
     dateFormatMDY: "Monat/Tag (12/31)",

@@ -40,6 +40,7 @@ const en = {
     hideAxisLabels: "Hide axis labels",
     hideGrid: "Hide gridlines",
     hideLegend: "Hide legend",
+    hideMonoBtn: "Hide highlight min/max button",
     dateFormat: "Date format",
     dateFormatDMY: "Day.Month (31.12)",
     dateFormatMDY: "Month/Day (12/31)",
@@ -181,6 +182,7 @@ const de = {
     hideAxisLabels: "Achsen-Text ausblenden",
     hideGrid: "Gitterlinien ausblenden",
     hideLegend: "Legende ausblenden",
+    hideMonoBtn: "Min/Max-Hervorhebungsschaltfläche ausblenden",
     dateFormat: "Datumsformat",
     dateFormatDMY: "Tag.Monat (31.12)",
     dateFormatMDY: "Monat/Tag (12/31)",
@@ -1296,6 +1298,7 @@ class DetailedChartsLogic extends HTMLElement {
         this.hideAxislabels = false;
         this.hideGrid = false;
         this.hideLegend = false;
+        this.hideMonoBtn = false;
         this.dateFormat = 'dmy';
     }
 
@@ -1941,8 +1944,12 @@ class DetailedChartsLogic extends HTMLElement {
 
         const monoBtn = wrapper.querySelector('#toggle-mono-btn');
         if (monoBtn) {
-            monoBtn.addEventListener('click', () => this.toggleMonochrome());
-            if (!this.monochromeMode) monoBtn.classList.add('active');
+            if (this.hideMonoBtn) {
+                monoBtn.style.display = 'none';
+            } else {
+                monoBtn.addEventListener('click', () => this.toggleMonochrome());
+                if (!this.monochromeMode) monoBtn.classList.add('active');
+            }
         }
 
         if (chartType === 'doughnut') { this.renderDoughnut(cacheData, ctx, statsWrapper); return; }
@@ -2787,6 +2794,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         this.hideAxislabels = config.hideAxislabels || false;
         this.hideGrid = config.hideGrid || false;
         this.hideLegend = config.hideLegend || false;
+        this.hideMonoBtn = config.hideMonoBtn || false;
         this.dateFormat = config.dateFormat || 'dmy';
 
         if (this.content) {
@@ -2844,7 +2852,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
             // FIX: If config changed (Editor), sync to localStorage to prevent loadSettings from reverting it
             if (oldConfig) {
-                const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'compareYear', 'threshold', 'thresholdAlias1', 'threshold2', 'thresholdAlias2', 'hideAxislabels', 'hideGrid', 'hideLegend', 'dateFormat', 'yMin', 'yMax'];
+                const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'compareYear', 'threshold', 'thresholdAlias1', 'threshold2', 'thresholdAlias2', 'hideAxislabels', 'hideGrid', 'hideLegend', 'hideMonoBtn', 'dateFormat', 'yMin', 'yMax'];
                 let hasChanged = keysToCheck.some(k => oldConfig[k] !== config[k]);
                 if (!hasChanged) {
                     if (JSON.stringify(config.sensors) !== JSON.stringify(oldConfig.sensors)) hasChanged = true;
@@ -3260,6 +3268,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         yaml += `hideAxislabels: ${this.hideAxislabels}\n`;
         yaml += `hideGrid: ${this.hideGrid}\n`;
         yaml += `hideLegend: ${this.hideLegend}\n`;
+        yaml += `hideMonoBtn: ${this.hideMonoBtn}\n`;
         yaml += `dateFormat: ${this.dateFormat}\n`;
         yaml += `chartTension: ${this.chartTension}\n`;
         if (this.thresholdValue) yaml += `threshold: ${this.thresholdValue}\n`;
@@ -3302,6 +3311,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             hideAxislabels: this.hideAxislabels,
             hideGrid: this.hideGrid,
             hideLegend: this.hideLegend,
+            hideMonoBtn: this.hideMonoBtn,
             dateFormat: this.dateFormat,
             chartTension: this.chartTension,
             sensors: this.selectedSensors
@@ -3405,6 +3415,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             hideAxislabels: this.hideAxislabels,
             hideGrid: this.hideGrid,
             hideLegend: this.hideLegend,
+            hideMonoBtn: this.hideMonoBtn,
             dateFormat: this.dateFormat,
             chartTension: this.chartTension
         };
@@ -3452,6 +3463,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         this.hideAxislabels = config.hideAxislabels || false;
         this.hideGrid = config.hideGrid || false;
         this.hideLegend = config.hideLegend || false;
+        this.hideMonoBtn = config.hideMonoBtn || false;
         this.dateFormat = config.dateFormat || 'dmy';
 
         this.content.querySelector('#chart-type').value = config.chartType || 'line';
@@ -3580,6 +3592,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 hideAxislabels: this.hideAxislabels,
                 hideGrid: this.hideGrid,
                 hideLegend: this.hideLegend,
+                hideMonoBtn: this.hideMonoBtn,
                 dateFormat: this.dateFormat,
                 chartTension: this.chartTension,
                 yMin: this.yMin,
@@ -3685,6 +3698,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 const el = this.content.querySelector('#hide-legend-switch');
                 if (el) el.checked = settings.hideLegend;
             }
+            if (settings.hideMonoBtn !== undefined) this.hideMonoBtn = settings.hideMonoBtn;
             if (settings.dateFormat) {
                 this.dateFormat = settings.dateFormat;
                 const dfSel = this.content.querySelector('#date-format-select');
@@ -4155,6 +4169,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
 
         const rowOpt3b = document.createElement('div'); rowOpt3b.className = 'row';
         rowOpt3b.appendChild(this._createSelector('hideLegend', t('hideLegend'), { boolean: {} }, c.hideLegend === true));
+        rowOpt3b.appendChild(this._createSelector('hideMonoBtn', t('hideMonoBtn'), { boolean: {} }, c.hideMonoBtn === true));
         secOpt.appendChild(rowOpt3b);
 
         const rowOpt4 = document.createElement('div'); rowOpt4.className = 'row';

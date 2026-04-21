@@ -40,6 +40,7 @@ export const en = {
     hideAxisLabels: "Hide axis labels",
     hideGrid: "Hide gridlines",
     hideLegend: "Hide legend",
+    hideMonoBtn: "Hide highlight min/max button",
     dateFormat: "Date format",
     dateFormatDMY: "Day.Month (31.12)",
     dateFormatMDY: "Month/Day (12/31)",

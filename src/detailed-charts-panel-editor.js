@@ -271,6 +271,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
 
         const rowOpt3b = document.createElement('div'); rowOpt3b.className = 'row';
         rowOpt3b.appendChild(this._createSelector('hideLegend', t('hideLegend'), { boolean: {} }, c.hideLegend === true));
+        rowOpt3b.appendChild(this._createSelector('hideMonoBtn', t('hideMonoBtn'), { boolean: {} }, c.hideMonoBtn === true));
         secOpt.appendChild(rowOpt3b);
 
         const rowOpt4 = document.createElement('div'); rowOpt4.className = 'row';
