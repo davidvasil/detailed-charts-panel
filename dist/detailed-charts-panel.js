@@ -26,7 +26,9 @@ const en = {
     scatter: "Scatter (Points)",
     stackedArea: "Stacked Area",
     threshold1: "Reference Line 1 (Value):",
+    threshold1Alias: "Reference Line 1 (Label):",
     threshold2: "Reference Line 2 (Value):",
+    threshold2Alias: "Reference Line 2 (Label):",
     yMinLabel: "Y-Axis Min",
     yMaxLabel: "Y-Axis Max",
     yMinTitle: "Minimum Y-axis value. Leave empty for autoscale.",
@@ -132,6 +134,8 @@ const en = {
     fillAreaLabel: "Fill area",
     statisticsLabel: "Statistics",
     sensorLabel: "Sensor",
+    aliasLabel: "Alias",
+    aliasPlaceholder: "Display name (leave empty for default)",
     addSensorBtn: "+ ADD SENSOR"
 };
 
@@ -163,7 +167,9 @@ const de = {
     scatter: "Scatter (Punkte)",
     stackedArea: "Stacked Area (gestapelt)",
     threshold1: "Referenzlinie 1 (Wert):",
+    threshold1Alias: "Referenzlinie 1 (Bezeichnung):",
     threshold2: "Referenzlinie 2 (Wert):",
+    threshold2Alias: "Referenzlinie 2 (Bezeichnung):",
     yMinLabel: "Y-Achse Min",
     yMaxLabel: "Y-Achse Max",
     yMinTitle: "Minimalwert Y-Achse. Leer lassen für Auto-Skalierung.",
@@ -269,6 +275,8 @@ const de = {
     fillAreaLabel: "Fläche füllen",
     statisticsLabel: "Statistiken",
     sensorLabel: "Sensor",
+    aliasLabel: "Alias",
+    aliasPlaceholder: "Anzeigename (leer für Standard)",
     addSensorBtn: "+ SENSOR HINZUFÜGEN"
 };
 
@@ -963,8 +971,16 @@ function getPanelTemplate() {
                  <input id="threshold-input" type="number" step="any" placeholder="z.B. 500" title="Zeigt eine rote Linie bei diesem Wert an">
               </div>
               <div class="control-group" style="margin-top:10px;">
+                 <label>${t('threshold1Alias')}</label>
+                 <input id="threshold-alias-input" type="text" placeholder="Limit">
+              </div>
+              <div class="control-group" style="margin-top:10px;">
                  <label>${t('threshold2')}</label>
                  <input id="threshold2-input" type="number" step="any" placeholder="z.B. 1000" title="Zeigt eine hellblaue Linie bei diesem Wert an">
+              </div>
+              <div class="control-group" style="margin-top:10px;">
+                 <label>${t('threshold2Alias')}</label>
+                 <input id="threshold2-alias-input" type="text" placeholder="Limit2">
               </div>
               <div class="control-group" style="margin-top:10px;">
                  <label>${t('yMinLabel')}</label>
@@ -1272,6 +1288,8 @@ class DetailedChartsLogic extends HTMLElement {
         this.sidebarCollapsed = false;
         this.thresholdValue = "";
         this.thresholdValue2 = "";
+        this.thresholdAlias1 = "";
+        this.thresholdAlias2 = "";
         this.autoScale = false;
         this.chartTension = 4;
 
@@ -2064,7 +2082,7 @@ class DetailedChartsLogic extends HTMLElement {
             const val = parseFloat(this.thresholdValue);
             if (!isNaN(val)) {
                 datasets.push({
-                    label: 'Limit',
+                    label: this.thresholdAlias1 || 'Limit',
                     data: [{ x: st.getTime(), y: val }, { x: et.getTime(), y: val }],
                     borderColor: '#f44336', borderWidth: 1.5, borderDash: [10, 5],
                     pointRadius: 0, fill: false, type: 'line', yAxisID: 'y', order: -1,
@@ -2076,7 +2094,7 @@ class DetailedChartsLogic extends HTMLElement {
             const val2 = parseFloat(this.thresholdValue2);
             if (!isNaN(val2)) {
                 datasets.push({
-                    label: 'Limit2',
+                    label: this.thresholdAlias2 || 'Limit2',
                     data: [{ x: st.getTime(), y: val2 }, { x: et.getTime(), y: val2 }],
                     borderColor: '#03a9f4', borderWidth: 1.5, borderDash: [10, 5],
                     pointRadius: 0, fill: false, type: 'line', yAxisID: 'y', order: -1,
@@ -2610,7 +2628,7 @@ class DetailedChartsLogic extends HTMLElement {
                                 else { if (min < startTime.getTime() || max > endTime.getTime()) { this.loadSpecificRange(new Date(min), new Date(max)); } else { this._updateVisibleStats(chart, sensorIndex); } }
                             }
                         },
-                        zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x', onZoom: () => { if (showZoomBtn) resetBtn.style.display = 'block'; }, onZoomComplete: ({ chart }) => { this._updateVisibleStats(chart, sensorIndex); } }
+                        zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x', onZoom: () => { if (showZoomBtn) resetBtn.style.display = 'block'; }, onZoomComplete: ({ chart }) => { this._updateVisibleStats(chart, sensorIndex); const xMin = chart.scales.x.min; const xMax = chart.scales.x.max; let refUpdated = false; chart.data.datasets.forEach(ds => { if (ds.stack === 'threshold1' || ds.stack === 'threshold2') { if (ds.data.length === 2) { ds.data[0].x = xMin; ds.data[1].x = xMax; refUpdated = true; } } }); if (refUpdated) chart.update('none'); } }
                     }
                 },
                 scales: {
@@ -2760,6 +2778,8 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         this.autoScale = config.autoScale || false;
         this.thresholdValue = config.threshold || "";
         this.thresholdValue2 = config.threshold2 || "";
+        this.thresholdAlias1 = config.thresholdAlias1 || "";
+        this.thresholdAlias2 = config.thresholdAlias2 || "";
         this.chartTension = config.chartTension !== undefined ? config.chartTension : 4;
         this.yMin = this._parseAxisLimit(config.yMin);
         this.yMax = this._parseAxisLimit(config.yMax);
@@ -2810,7 +2830,9 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             updateInput('#autoscale-switch', this.autoScale, true);
             updateInput('#compare-year-switch', this.compareYear, true);
             updateInput('#threshold-input', this.thresholdValue);
+            updateInput('#threshold-alias-input', this.thresholdAlias1);
             updateInput('#threshold2-input', this.thresholdValue2);
+            updateInput('#threshold2-alias-input', this.thresholdAlias2);
             updateInput('#y-min-input', this.yMin === undefined ? '' : this.yMin);
             updateInput('#y-max-input', this.yMax === undefined ? '' : this.yMax);
 
@@ -2822,7 +2844,7 @@ class DetailedChartsPanel extends DetailedChartsLogic {
 
             // FIX: If config changed (Editor), sync to localStorage to prevent loadSettings from reverting it
             if (oldConfig) {
-                const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'compareYear', 'threshold', 'threshold2', 'hideAxislabels', 'hideGrid', 'hideLegend', 'dateFormat', 'yMin', 'yMax'];
+                const keysToCheck = ['layoutMode', 'chartType', 'timeMode', 'timeSelect', 'fillArea', 'stackedBars', 'gridColumns', 'zoomLevel', 'showStats', 'showDonutSidebar', 'autoScale', 'compareYear', 'threshold', 'thresholdAlias1', 'threshold2', 'thresholdAlias2', 'hideAxislabels', 'hideGrid', 'hideLegend', 'dateFormat', 'yMin', 'yMax'];
                 let hasChanged = keysToCheck.some(k => oldConfig[k] !== config[k]);
                 if (!hasChanged) {
                     if (JSON.stringify(config.sensors) !== JSON.stringify(oldConfig.sensors)) hasChanged = true;
@@ -3053,10 +3075,28 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             if (this._sensorDataCache.length > 0) this.updateChartFromCache();
         });
 
+        const threshAliasInput = this.content.querySelector('#threshold-alias-input');
+        if (threshAliasInput) {
+            threshAliasInput.addEventListener('change', (e) => {
+                this.thresholdAlias1 = e.target.value.trim();
+                if (!this._config) this.saveSettings();
+                if (this._sensorDataCache.length > 0) this.updateChartFromCache();
+            });
+        }
+
         const threshInput2 = this.content.querySelector('#threshold2-input');
         if (threshInput2) {
             threshInput2.addEventListener('change', (e) => {
                 this.thresholdValue2 = e.target.value;
+                if (!this._config) this.saveSettings();
+                if (this._sensorDataCache.length > 0) this.updateChartFromCache();
+            });
+        }
+
+        const threshAlias2Input = this.content.querySelector('#threshold2-alias-input');
+        if (threshAlias2Input) {
+            threshAlias2Input.addEventListener('change', (e) => {
+                this.thresholdAlias2 = e.target.value.trim();
                 if (!this._config) this.saveSettings();
                 if (this._sensorDataCache.length > 0) this.updateChartFromCache();
             });
@@ -3223,7 +3263,9 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         yaml += `dateFormat: ${this.dateFormat}\n`;
         yaml += `chartTension: ${this.chartTension}\n`;
         if (this.thresholdValue) yaml += `threshold: ${this.thresholdValue}\n`;
+        if (this.thresholdAlias1) yaml += `thresholdAlias1: "${this.thresholdAlias1}"\n`;
         if (this.thresholdValue2) yaml += `threshold2: ${this.thresholdValue2}\n`;
+        if (this.thresholdAlias2) yaml += `thresholdAlias2: "${this.thresholdAlias2}"\n`;
         if (this.yMin !== undefined) yaml += `yMin: ${this.yMin}\n`;
         if (this.yMax !== undefined) yaml += `yMax: ${this.yMax}\n`;
         if (this.gridColumns > 1) yaml += `gridColumns: ${this.gridColumns}\n`;
@@ -3252,7 +3294,9 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             autoScale: this.autoScale,
             compareYear: this.compareYear,
             threshold: this.thresholdValue,
+            thresholdAlias1: this.thresholdAlias1,
             threshold2: this.thresholdValue2,
+            thresholdAlias2: this.thresholdAlias2,
             yMin: this.yMin,
             yMax: this.yMax,
             hideAxislabels: this.hideAxislabels,
@@ -3353,7 +3397,9 @@ class DetailedChartsPanel extends DetailedChartsLogic {
             autoScale: this.autoScale,
             compareYear: this.compareYear,
             threshold: this.thresholdValue,
+            thresholdAlias1: this.thresholdAlias1,
             threshold2: this.thresholdValue2,
+            thresholdAlias2: this.thresholdAlias2,
             yMin: this.yMin,
             yMax: this.yMax,
             hideAxislabels: this.hideAxislabels,
@@ -3398,6 +3444,8 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         this.autoScale = config.autoScale || false;
         this.thresholdValue = config.threshold || "";
         this.thresholdValue2 = config.threshold2 || "";
+        this.thresholdAlias1 = config.thresholdAlias1 || "";
+        this.thresholdAlias2 = config.thresholdAlias2 || "";
         this.chartTension = config.chartTension !== undefined ? config.chartTension : 4;
         this.yMin = this._parseAxisLimit(config.yMin);
         this.yMax = this._parseAxisLimit(config.yMax);
@@ -3428,7 +3476,11 @@ class DetailedChartsPanel extends DetailedChartsLogic {
         this.content.querySelector('#zoom-value-display').textContent = Math.round(this.zoomLevel * 100) + '%';
 
         this.content.querySelector('#threshold-input').value = this.thresholdValue;
+        const ta1El = this.content.querySelector('#threshold-alias-input');
+        if (ta1El) ta1El.value = this.thresholdAlias1;
         if (this.content.querySelector('#threshold2-input')) this.content.querySelector('#threshold2-input').value = this.thresholdValue2;
+        const ta2El = this.content.querySelector('#threshold2-alias-input');
+        if (ta2El) ta2El.value = this.thresholdAlias2;
         const yMinEl = this.content.querySelector('#y-min-input');
         if (yMinEl) yMinEl.value = this.yMin === undefined ? '' : this.yMin;
         const yMaxEl = this.content.querySelector('#y-max-input');
@@ -3520,7 +3572,9 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 showDonutSidebar: this.showDonutSidebar,
                 zoomLevel: this.zoomLevel,
                 threshold: this.thresholdValue,
+                thresholdAlias1: this.thresholdAlias1,
                 threshold2: this.thresholdValue2,
+                thresholdAlias2: this.thresholdAlias2,
                 autoScale: this.autoScale,
                 compareYear: this.compareYear,
                 hideAxislabels: this.hideAxislabels,
@@ -3594,9 +3648,19 @@ class DetailedChartsPanel extends DetailedChartsLogic {
                 this.thresholdValue = settings.threshold;
                 this.content.querySelector('#threshold-input').value = settings.threshold;
             }
+            if (settings.thresholdAlias1 !== undefined) {
+                this.thresholdAlias1 = settings.thresholdAlias1;
+                const el = this.content.querySelector('#threshold-alias-input');
+                if (el) el.value = settings.thresholdAlias1;
+            }
             if (settings.threshold2) {
                 this.thresholdValue2 = settings.threshold2;
                 if (this.content.querySelector('#threshold2-input')) this.content.querySelector('#threshold2-input').value = settings.threshold2;
+            }
+            if (settings.thresholdAlias2 !== undefined) {
+                this.thresholdAlias2 = settings.thresholdAlias2;
+                const el = this.content.querySelector('#threshold2-alias-input');
+                if (el) el.value = settings.thresholdAlias2;
             }
             if (settings.autoScale !== undefined) {
                 this.autoScale = settings.autoScale;
@@ -3931,15 +3995,47 @@ class DetailedChartsPanelEditor extends HTMLElement {
 
                 /* SENSOR LIST STYLES */
                 .sensor-list { display: flex; flex-direction: column; gap: 10px; }
-                .sensor-row { 
-                    display: grid; 
-                    grid-template-columns: 40px 1fr 40px 40px; 
-                    gap: 12px; 
-                    align-items: center;
-                    background: var(--card-background-color, #202020); 
-                    padding: 8px; 
-                    border-radius: 6px; 
+                .sensor-row {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                    background: var(--card-background-color, #202020);
+                    padding: 8px;
+                    border-radius: 6px;
                     border: 1px solid var(--divider-color);
+                }
+                .sensor-row-main {
+                    display: grid;
+                    grid-template-columns: 40px 1fr 40px 40px;
+                    gap: 12px;
+                    align-items: center;
+                }
+                .sensor-row-alias {
+                    display: grid;
+                    grid-template-columns: 40px 1fr 80px;
+                    gap: 12px;
+                    align-items: center;
+                }
+                .alias-input {
+                    width: 100%;
+                    box-sizing: border-box;
+                    background: rgba(255,255,255,0.05);
+                    border: 1px solid var(--divider-color);
+                    color: var(--primary-text-color);
+                    padding: 8px 10px;
+                    border-radius: 4px;
+                    font-size: 14px;
+                }
+                .alias-input:focus {
+                    outline: none;
+                    border-color: var(--primary-color);
+                }
+                .alias-label {
+                    color: var(--secondary-text-color);
+                    font-size: 12px;
+                    text-transform: uppercase;
+                    font-weight: 500;
+                    text-align: right;
                 }
                 
                 .color-wrap { position: relative; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 1px solid var(--divider-color); cursor: pointer; }
@@ -4076,6 +4172,8 @@ class DetailedChartsPanelEditor extends HTMLElement {
         (c.sensors || []).forEach((s, index) => {
             const row = document.createElement('div'); row.className = 'sensor-row';
 
+            const mainRow = document.createElement('div'); mainRow.className = 'sensor-row-main';
+
             // 1. Color
             const colWrap = document.createElement('div'); colWrap.className = 'color-wrap';
             colWrap.style.backgroundColor = s.color;
@@ -4083,7 +4181,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
             colInp.type = 'color'; colInp.className = 'color-inp'; colInp.value = s.color;
             colInp.onchange = (e) => this._updateSensor(index, 'color', e.target.value);
             colWrap.appendChild(colInp);
-            row.appendChild(colWrap);
+            mainRow.appendChild(colWrap);
 
             // 2. Entity Selector
             const selContainer = document.createElement('div');
@@ -4095,7 +4193,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
             entitySelector.hass = this._hass;
             entitySelector.addEventListener('value-changed', (e) => this._updateSensor(index, 'entityId', e.detail.value));
             selContainer.appendChild(entitySelector);
-            row.appendChild(selContainer);
+            mainRow.appendChild(selContainer);
 
             // 3. Hide Button
             const btnHide = document.createElement('button');
@@ -4103,7 +4201,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
             btnHide.innerHTML = s.hidden ? ICONS.eyeClosed : ICONS.eyeOpen;
             btnHide.title = s.hidden ? t('show') : t('hide');
             btnHide.onclick = () => this._updateSensor(index, 'hidden', !s.hidden);
-            row.appendChild(btnHide);
+            mainRow.appendChild(btnHide);
 
             // 4. Delete Button
             const btnDel = document.createElement('button');
@@ -4111,7 +4209,26 @@ class DetailedChartsPanelEditor extends HTMLElement {
             btnDel.innerHTML = ICONS.delete;
             btnDel.title = t('remove');
             btnDel.onclick = () => this._removeSensor(index);
-            row.appendChild(btnDel);
+            mainRow.appendChild(btnDel);
+
+            row.appendChild(mainRow);
+
+            // 5. Alias Input (second row, aligned with entity selector)
+            const aliasRow = document.createElement('div'); aliasRow.className = 'sensor-row-alias';
+            const spacer = document.createElement('div');
+            aliasRow.appendChild(spacer);
+            const aliasInp = document.createElement('input');
+            aliasInp.type = 'text';
+            aliasInp.className = 'alias-input';
+            aliasInp.value = s.alias || '';
+            aliasInp.placeholder = t('aliasPlaceholder');
+            aliasInp.addEventListener('change', (e) => this._updateSensor(index, 'alias', e.target.value.trim()));
+            aliasRow.appendChild(aliasInp);
+            const aliasLbl = document.createElement('div');
+            aliasLbl.className = 'alias-label';
+            aliasLbl.textContent = t('aliasLabel');
+            aliasRow.appendChild(aliasLbl);
+            row.appendChild(aliasRow);
 
             sensorList.appendChild(row);
         });
@@ -4159,6 +4276,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
         const sensors = [...(this._config.sensors || [])];
         const s = { ...sensors[index], [key]: val };
         if (key === 'hidden' && val === false) delete s.hidden;
+        if (key === 'alias' && !val) delete s.alias;
         sensors[index] = s;
         this._configChanged({ ...this._config, sensors });
     }

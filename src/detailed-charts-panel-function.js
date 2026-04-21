@@ -665,8 +665,16 @@ export function getPanelTemplate() {
                  <input id="threshold-input" type="number" step="any" placeholder="z.B. 500" title="Zeigt eine rote Linie bei diesem Wert an">
               </div>
               <div class="control-group" style="margin-top:10px;">
+                 <label>${t('threshold1Alias')}</label>
+                 <input id="threshold-alias-input" type="text" placeholder="Limit">
+              </div>
+              <div class="control-group" style="margin-top:10px;">
                  <label>${t('threshold2')}</label>
                  <input id="threshold2-input" type="number" step="any" placeholder="z.B. 1000" title="Zeigt eine hellblaue Linie bei diesem Wert an">
+              </div>
+              <div class="control-group" style="margin-top:10px;">
+                 <label>${t('threshold2Alias')}</label>
+                 <input id="threshold2-alias-input" type="text" placeholder="Limit2">
               </div>
               <div class="control-group" style="margin-top:10px;">
                  <label>${t('yMinLabel')}</label>

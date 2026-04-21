@@ -26,7 +26,9 @@ export const de = {
     scatter: "Scatter (Punkte)",
     stackedArea: "Stacked Area (gestapelt)",
     threshold1: "Referenzlinie 1 (Wert):",
+    threshold1Alias: "Referenzlinie 1 (Bezeichnung):",
     threshold2: "Referenzlinie 2 (Wert):",
+    threshold2Alias: "Referenzlinie 2 (Bezeichnung):",
     yMinLabel: "Y-Achse Min",
     yMaxLabel: "Y-Achse Max",
     yMinTitle: "Minimalwert Y-Achse. Leer lassen für Auto-Skalierung.",
@@ -132,5 +134,7 @@ export const de = {
     fillAreaLabel: "Fläche füllen",
     statisticsLabel: "Statistiken",
     sensorLabel: "Sensor",
+    aliasLabel: "Alias",
+    aliasPlaceholder: "Anzeigename (leer für Standard)",
     addSensorBtn: "+ SENSOR HINZUFÜGEN"
 };

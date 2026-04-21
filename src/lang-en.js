@@ -26,7 +26,9 @@ export const en = {
     scatter: "Scatter (Points)",
     stackedArea: "Stacked Area",
     threshold1: "Reference Line 1 (Value):",
+    threshold1Alias: "Reference Line 1 (Label):",
     threshold2: "Reference Line 2 (Value):",
+    threshold2Alias: "Reference Line 2 (Label):",
     yMinLabel: "Y-Axis Min",
     yMaxLabel: "Y-Axis Max",
     yMinTitle: "Minimum Y-axis value. Leave empty for autoscale.",
@@ -132,5 +134,7 @@ export const en = {
     fillAreaLabel: "Fill area",
     statisticsLabel: "Statistics",
     sensorLabel: "Sensor",
+    aliasLabel: "Alias",
+    aliasPlaceholder: "Display name (leave empty for default)",
     addSensorBtn: "+ ADD SENSOR"
 };

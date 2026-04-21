@@ -111,15 +111,47 @@ class DetailedChartsPanelEditor extends HTMLElement {
 
                 /* SENSOR LIST STYLES */
                 .sensor-list { display: flex; flex-direction: column; gap: 10px; }
-                .sensor-row { 
-                    display: grid; 
-                    grid-template-columns: 40px 1fr 40px 40px; 
-                    gap: 12px; 
-                    align-items: center;
-                    background: var(--card-background-color, #202020); 
-                    padding: 8px; 
-                    border-radius: 6px; 
+                .sensor-row {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                    background: var(--card-background-color, #202020);
+                    padding: 8px;
+                    border-radius: 6px;
                     border: 1px solid var(--divider-color);
+                }
+                .sensor-row-main {
+                    display: grid;
+                    grid-template-columns: 40px 1fr 40px 40px;
+                    gap: 12px;
+                    align-items: center;
+                }
+                .sensor-row-alias {
+                    display: grid;
+                    grid-template-columns: 40px 1fr 80px;
+                    gap: 12px;
+                    align-items: center;
+                }
+                .alias-input {
+                    width: 100%;
+                    box-sizing: border-box;
+                    background: rgba(255,255,255,0.05);
+                    border: 1px solid var(--divider-color);
+                    color: var(--primary-text-color);
+                    padding: 8px 10px;
+                    border-radius: 4px;
+                    font-size: 14px;
+                }
+                .alias-input:focus {
+                    outline: none;
+                    border-color: var(--primary-color);
+                }
+                .alias-label {
+                    color: var(--secondary-text-color);
+                    font-size: 12px;
+                    text-transform: uppercase;
+                    font-weight: 500;
+                    text-align: right;
                 }
                 
                 .color-wrap { position: relative; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 1px solid var(--divider-color); cursor: pointer; }
@@ -256,6 +288,8 @@ class DetailedChartsPanelEditor extends HTMLElement {
         (c.sensors || []).forEach((s, index) => {
             const row = document.createElement('div'); row.className = 'sensor-row';
 
+            const mainRow = document.createElement('div'); mainRow.className = 'sensor-row-main';
+
             // 1. Color
             const colWrap = document.createElement('div'); colWrap.className = 'color-wrap';
             colWrap.style.backgroundColor = s.color;
@@ -263,7 +297,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
             colInp.type = 'color'; colInp.className = 'color-inp'; colInp.value = s.color;
             colInp.onchange = (e) => this._updateSensor(index, 'color', e.target.value);
             colWrap.appendChild(colInp);
-            row.appendChild(colWrap);
+            mainRow.appendChild(colWrap);
 
             // 2. Entity Selector
             const selContainer = document.createElement('div');
@@ -275,7 +309,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
             entitySelector.hass = this._hass;
             entitySelector.addEventListener('value-changed', (e) => this._updateSensor(index, 'entityId', e.detail.value));
             selContainer.appendChild(entitySelector);
-            row.appendChild(selContainer);
+            mainRow.appendChild(selContainer);
 
             // 3. Hide Button
             const btnHide = document.createElement('button');
@@ -283,7 +317,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
             btnHide.innerHTML = s.hidden ? ICONS.eyeClosed : ICONS.eyeOpen;
             btnHide.title = s.hidden ? t('show') : t('hide');
             btnHide.onclick = () => this._updateSensor(index, 'hidden', !s.hidden);
-            row.appendChild(btnHide);
+            mainRow.appendChild(btnHide);
 
             // 4. Delete Button
             const btnDel = document.createElement('button');
@@ -291,7 +325,26 @@ class DetailedChartsPanelEditor extends HTMLElement {
             btnDel.innerHTML = ICONS.delete;
             btnDel.title = t('remove');
             btnDel.onclick = () => this._removeSensor(index);
-            row.appendChild(btnDel);
+            mainRow.appendChild(btnDel);
+
+            row.appendChild(mainRow);
+
+            // 5. Alias Input (second row, aligned with entity selector)
+            const aliasRow = document.createElement('div'); aliasRow.className = 'sensor-row-alias';
+            const spacer = document.createElement('div');
+            aliasRow.appendChild(spacer);
+            const aliasInp = document.createElement('input');
+            aliasInp.type = 'text';
+            aliasInp.className = 'alias-input';
+            aliasInp.value = s.alias || '';
+            aliasInp.placeholder = t('aliasPlaceholder');
+            aliasInp.addEventListener('change', (e) => this._updateSensor(index, 'alias', e.target.value.trim()));
+            aliasRow.appendChild(aliasInp);
+            const aliasLbl = document.createElement('div');
+            aliasLbl.className = 'alias-label';
+            aliasLbl.textContent = t('aliasLabel');
+            aliasRow.appendChild(aliasLbl);
+            row.appendChild(aliasRow);
 
             sensorList.appendChild(row);
         });
@@ -339,6 +392,7 @@ class DetailedChartsPanelEditor extends HTMLElement {
         const sensors = [...(this._config.sensors || [])];
         const s = { ...sensors[index], [key]: val };
         if (key === 'hidden' && val === false) delete s.hidden;
+        if (key === 'alias' && !val) delete s.alias;
         sensors[index] = s;
         this._configChanged({ ...this._config, sensors });
     }

@@ -55,6 +55,8 @@ export class DetailedChartsLogic extends HTMLElement {
         this.sidebarCollapsed = false;
         this.thresholdValue = "";
         this.thresholdValue2 = "";
+        this.thresholdAlias1 = "";
+        this.thresholdAlias2 = "";
         this.autoScale = false;
         this.chartTension = 4;
 
@@ -847,7 +849,7 @@ export class DetailedChartsLogic extends HTMLElement {
             const val = parseFloat(this.thresholdValue);
             if (!isNaN(val)) {
                 datasets.push({
-                    label: 'Limit',
+                    label: this.thresholdAlias1 || 'Limit',
                     data: [{ x: st.getTime(), y: val }, { x: et.getTime(), y: val }],
                     borderColor: '#f44336', borderWidth: 1.5, borderDash: [10, 5],
                     pointRadius: 0, fill: false, type: 'line', yAxisID: 'y', order: -1,
@@ -859,7 +861,7 @@ export class DetailedChartsLogic extends HTMLElement {
             const val2 = parseFloat(this.thresholdValue2);
             if (!isNaN(val2)) {
                 datasets.push({
-                    label: 'Limit2',
+                    label: this.thresholdAlias2 || 'Limit2',
                     data: [{ x: st.getTime(), y: val2 }, { x: et.getTime(), y: val2 }],
                     borderColor: '#03a9f4', borderWidth: 1.5, borderDash: [10, 5],
                     pointRadius: 0, fill: false, type: 'line', yAxisID: 'y', order: -1,
@@ -1393,7 +1395,7 @@ export class DetailedChartsLogic extends HTMLElement {
                                 else { if (min < startTime.getTime() || max > endTime.getTime()) { this.loadSpecificRange(new Date(min), new Date(max)); } else { this._updateVisibleStats(chart, sensorIndex); } }
                             }
                         },
-                        zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x', onZoom: () => { if (showZoomBtn) resetBtn.style.display = 'block'; }, onZoomComplete: ({ chart }) => { this._updateVisibleStats(chart, sensorIndex); } }
+                        zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x', onZoom: () => { if (showZoomBtn) resetBtn.style.display = 'block'; }, onZoomComplete: ({ chart }) => { this._updateVisibleStats(chart, sensorIndex); const xMin = chart.scales.x.min; const xMax = chart.scales.x.max; let refUpdated = false; chart.data.datasets.forEach(ds => { if (ds.stack === 'threshold1' || ds.stack === 'threshold2') { if (ds.data.length === 2) { ds.data[0].x = xMin; ds.data[1].x = xMax; refUpdated = true; } } }); if (refUpdated) chart.update('none'); } }
                     }
                 },
                 scales: {
