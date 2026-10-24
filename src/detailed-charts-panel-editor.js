@@ -1,6 +1,6 @@
 /* detailed-charts-panel-editor.js */
 console.log(
-    "%c📉️ DetailedChartsPanelEditor: v_2.6 ready",
+    "%c📉️ DetailedChartsPanelEditor: v_2.8 ready",
     "background: #5596c5; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold;"
 );
 
@@ -229,6 +229,9 @@ class DetailedChartsPanelEditor extends HTMLElement {
         row2.appendChild(this._createSelector('zoomLevel', t('zoomLabel'), { number: { min: 0.5, max: 2.0, step: 0.1, mode: "box" } }, c.zoomLevel ?? 1.0));
         if (c.layoutMode !== 'combined') row2.appendChild(this._createSelector('gridColumns', t('columnsLabel'), { number: { min: 1, max: 6, step: 1, mode: "box" } }, c.gridColumns ?? 1));
         secDisp.appendChild(row2);
+        const rowTension = document.createElement('div'); rowTension.className = 'row';
+        rowTension.appendChild(this._createSelector('chartTension', t('lineSmoothing'), { number: { min: 0, max: 5, step: 1, mode: "box" } }, c.chartTension ?? 4));
+        secDisp.appendChild(rowTension);
         // Reference lines section
         const refDiv = document.createElement('div'); refDiv.style.marginTop = '8px';
         const refLabel = document.createElement('div'); refLabel.style.cssText = 'font-size:12px;font-weight:500;margin-bottom:4px;'; refLabel.textContent = t('refLinesLabel');
@@ -291,6 +294,15 @@ class DetailedChartsPanelEditor extends HTMLElement {
         const rowOpt4 = document.createElement('div'); rowOpt4.className = 'row';
         rowOpt4.appendChild(this._createSelector('dateFormat', t('dateFormat'), { select: { mode: "dropdown", options: [{ label: t('dateFormatDMY'), value: 'dmy' }, { label: t('dateFormatMDY'), value: 'mdy' }] } }, c.dateFormat || 'dmy'));
         secOpt.appendChild(rowOpt4);
+
+        const rowOpt5 = document.createElement('div'); rowOpt5.className = 'row';
+        rowOpt5.appendChild(this._createSelector('showPeaks', t('showPeaks'), { boolean: {} }, c.showPeaks === true));
+        rowOpt5.appendChild(this._createSelector('showNowLine', t('showNowLine'), { boolean: {} }, c.showNowLine === true));
+        secOpt.appendChild(rowOpt5);
+
+        const rowOpt6 = document.createElement('div'); rowOpt6.className = 'row';
+        rowOpt6.appendChild(this._createSelector('showDayNight', t('showDayNight'), { boolean: {} }, c.showDayNight === true));
+        secOpt.appendChild(rowOpt6);
 
         if (c.chartType === 'bar' && c.layoutMode !== 'split') secOpt.appendChild(this._createSelector('stackedBars', t('stackedBars'), { boolean: {} }, c.stackedBars === true));
         container.appendChild(secOpt);

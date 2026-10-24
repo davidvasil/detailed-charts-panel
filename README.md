@@ -3,6 +3,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/jayjojayson/detailed-charts-panel?include_prereleases&sort=semver&color=blue&style=flat-square)](https://github.com/jayjojayson/detailed-charts-panel/releases/)
 ![Panel Size](https://img.shields.io/badge/Panel%20Size-427%20kB-blue)
 [![README Deutsch](https://img.shields.io/badge/README-DE-orange)](https://github.com/jayjojayson/detailed-charts-panel/blob/main/docs/README-de.md)
+![Downloads](https://img.shields.io/github/downloads/jayjojayson/detailed-charts-panel/total?label=Downloads&color=blue)
 [![Support](https://img.shields.io/badge/%20-Support%20Me-steelblue?style=flat&logo=paypal&logoColor=white)](https://www.paypal.me/quadFlyerFW)
 [![stars](https://img.shields.io/github/stars/jayjojayson/detailed-charts-panel)](https://github.com/jayjojayson/detailed-charts-panel/stargazers)
 
@@ -34,7 +35,17 @@ If you like this panel, I would be very happy about a star rating ⭐. 🤗
     - *Combined:* Everything in a single chart.
     - *Grid:* 1 to 4 columns side by side.
     - *Mixed:* Overview on top, details below.
-- **🔴 Thresholds:** Set warning lines (e.g. at 600 W) as visual references.
+- **🔴 Reference Lines:** Add any number of reference lines, each with its own color and label.
+- **📐 Manual Y-Axis:** Optionally set a fixed Y-axis min/max (leave empty for autoscale).
+- **🏷️ Sensor Aliases:** Give each sensor a custom display name.
+- **🧱 Stacked Area:** Additional stacked area chart type.
+- **🧮 Meter Sensors (m³, kWh):** Cumulative counters (`total_increasing`, e.g. water/gas in m³ or energy) are aggregated as consumption (sum of increases) instead of being averaged.
+- **🔧 Display Options:** Hide the legend, hide the min/max highlight button, and choose the date format (day.month / month/day).
+- **📊 Live Range Statistics:** Statistics recalculate for the currently visible range while zooming/panning.
+- **🎨 Color Palette:** One click assigns a harmonious, theme-friendly color set ("shuffle colors").
+- **➕ Multi-Add & Areas/Devices:** Select several sensors at once, or add all sensors of a whole area or device.
+- **📍 Peak Markers:** Optional min / max / current markers with labels directly on the line.
+- **🕒 Now Line & Day/Night:** Optional "now" line and day/night background shading for easier reading.
 - **💾 Dual Storage:** Save views locally in the browser or globally in a file.
 - **📈 Live Statistics:** Min / Max / Average / Sum / Current — intelligently calculated.
 - **🏗️ Drag & Drop:** Easily rearrange charts in grid mode using drag & drop.

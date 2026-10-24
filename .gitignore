@@ -4,3 +4,8 @@
 /node_modules
 CLAUDE.md
 update_hass.sh
+
+# Local tooling / OS files (not part of the project)
+plan.md
+.claude/
+.DS_Store
